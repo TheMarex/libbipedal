@@ -1,0 +1,15 @@
+PROJECT ( PatternGenerator )
+
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6.4)
+
+CMAKE_POLICY(VERSION 2.6)
+
+FIND_PACKAGE(Simox REQUIRED)
+FIND_PACKAGE(Coin3D REQUIRED)
+IF(Simox_USE_COIN_VISUALIZATION)
+  FILE(GLOB SRCS ${PROJECT_SOURCE_DIR}/PatternGeneratorDemo.cpp ${PROJECT_SOURCE_DIR}/PatternGeneratorWindow.cpp)
+  FILE(GLOB INCS ${PROJECT_SOURCE_DIR}/PatternGeneratorWindow.h)
+  set(GUI_MOC_HDRS ${PROJECT_SOURCE_DIR}/PatternGeneratorWindow.h)
+  set(GUI_UIS ${PROJECT_SOURCE_DIR}/PatternGeneratorWindow.ui)
+  SimoxQtApplication(${PROJECT_NAME} "${SRCS}" "${INCS}" "${GUI_MOC_HDRS}" "${GUI_UIS}")
+ENDIF()
