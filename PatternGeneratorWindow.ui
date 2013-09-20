@@ -40,9 +40,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>540</y>
+         <y>510</y>
          <width>201</width>
-         <height>221</height>
+         <height>251</height>
         </rect>
        </property>
        <property name="title">
@@ -124,6 +124,19 @@
         </property>
         <property name="text">
          <string>Show CoM</string>
+        </property>
+       </widget>
+       <widget class="QCheckBox" name="checkBoxSupportPolygon">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>210</y>
+          <width>131</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>Show Support Polygon</string>
         </property>
        </widget>
       </widget>

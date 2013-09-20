@@ -1,6 +1,6 @@
 
-#ifndef __stabilityScene_WINDOW_H_
-#define __stabilityScene_WINDOW_H_
+#ifndef __PatternGeneratorScene_WINDOW_H_
+#define __PatternGeneratorScene_WINDOW_H_
 
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/Robot.h>
@@ -22,7 +22,10 @@
 #include <Inventor/nodes/SoSeparator.h>
 #include <vector>
 
+#include "PolynomialFootstepPlaner.h"
+
 #include "ui_PatternGeneratorWindow.h"
+
 
 class PatternGeneratorWindow : public QMainWindow
 {
@@ -39,18 +42,31 @@ public slots:
 	void quit();
 	/*!< Overriding the close event, so we know when the window was closed by the user. */
 	void closeEvent(QCloseEvent *event);
-	void resetSceneryAll();
-	void selectRobot();
+	
 	void collisionModel();
 	void selectJoint(int nr);
 	void jointValueChanged(int pos);
 	void selectRNS(int nr);
+	void performCoMIK();
+	
+	// handle UI responses
+	void selectRobot();
+	void resetSceneryAll();
+
+	void updateStepPeriod();
+	void updateStepLength();
+	void updateDoubleSupportLength();
+	void updateStepHeight();
+
+	void calculateButtonPushed();
+
+	void showFootstepPositions();
+	void showFeetTrajectories();
+	void showZMPTrajectory();
+	void showCoMTrajectory();
+	void showZMP();
 	void showCoM();
 	void showSupportPolygon();
-	void performCoMIK();
-	void comTargetMovedX(int value);
-	void comTargetMovedY(int value);
-
 
 protected:
 	void loadRobot();
@@ -86,11 +102,11 @@ protected:
 	
 	VirtualRobot::RobotNodePtr currentRobotNode;
 	
-	
 	bool useColModel;
 
-
     boost::shared_ptr<VirtualRobot::CoinVisualization> visualization;
+
+	boost::shared_ptr<PolynomialFootstepPlaner> pFootStepPlaner;
 };
 
-#endif // __stabilityScene_WINDOW_H_
+#endif // __PatternGeneratorScene_WINDOW_H_

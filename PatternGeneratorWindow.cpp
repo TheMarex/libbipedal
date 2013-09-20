@@ -53,7 +53,7 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	sceneSep->addChild(supportVisu);
 
 	MathTools::Plane p =  MathTools::getFloorPlane();
-	//sceneSep->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,10000.0f,0.0f));
+	sceneSep->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,10000.0f,0.0f));
 
 	m_CoMTarget = Eigen::Vector2f::Zero();
 	
@@ -90,20 +90,35 @@ void PatternGeneratorWindow::setupUI()
 	m_pExViewer->setSceneGraph(sceneSep);
 	m_pExViewer->viewAll();
 
-	connect(UI.pushButtonReset, SIGNAL(clicked()), this, SLOT(resetSceneryAll()));
 	connect(UI.pushButtonLoad, SIGNAL(clicked()), this, SLOT(selectRobot()));
+	connect(UI.pushButtonReset, SIGNAL(clicked()), this, SLOT(resetSceneryAll()));
+
 
 //	connect(UI.checkBoxColModel, SIGNAL(clicked()), this, SLOT(collisionModel()));
-	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
 //	connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
 //	connect(UI.comboBoxRNS, SIGNAL(activated(int)), this, SLOT(selectRNS(int)));
-
 //	connect(UI.comboBoxJoint, SIGNAL(activated(int)), this, SLOT(selectJoint(int)));
 //	connect(UI.horizontalSliderPos, SIGNAL(valueChanged(int)), this, SLOT(jointValueChanged(int)));
 //	connect(UI.horizontalSliderPos, SIGNAL(sliderReleased()), this, SLOT(showSupportPolygon()));
-
 //	connect(UI.sliderX, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedX(int)));
 //	connect(UI.sliderY, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedY(int)));
+	
+	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
+	connect(UI.lineEditStepPeriod, SIGNAL(editingFinished()), this, SLOT(updateStepPeriod()));
+	connect(UI.lineEditStepLength, SIGNAL(editingFinished()), this, SLOT(updateStepLength()));
+	connect(UI.lineEditDSLength, SIGNAL(editingFinished()), this, SLOT(updateDoubleSupportLength()));
+	connect(UI.lineEditStepHeight, SIGNAL(editingFinished()), this, SLOT(updateStepHeight()));
+
+	connect(UI.pushButtonCalculate, SIGNAL(clicked()), this, SLOT(calculateButtonPushed()));
+
+	connect(UI.checkBoxFootstepPositions, SIGNAL(clicked()), this, SLOT(showFootstepPositions()));
+	connect(UI.checkBoxFeetTrajectories, SIGNAL(clicked()), this, SLOT(showFeetTrajectories()));
+	connect(UI.checkBoxZMPTrajectory, SIGNAL(clicked()), this, SLOT(showZMPTrajectory()));
+	connect(UI.checkBoxCoMTrajectory, SIGNAL(clicked()), this, SLOT(showCoMTrajectory()));
+	connect(UI.checkBoxZMP, SIGNAL(clicked()), this, SLOT(showZMP()));
+	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
+	connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
+	
 }
 
 QString PatternGeneratorWindow::formatString(const char *s, float f)
@@ -123,16 +138,6 @@ QString PatternGeneratorWindow::formatString(const char *s, float f)
 	return str1;
 }
 
-// set all joint values to 0
-void PatternGeneratorWindow::resetSceneryAll()
-{
-	if (!robot)
-		return;
-	std::vector< RobotNodePtr > nodes;
-	robot->getRobotNodes(nodes);
-	std::vector<float> jv(nodes.size(),0.0f);
-	robot->setJointValues(nodes,jv);
-}
 
 
 
@@ -143,19 +148,6 @@ void PatternGeneratorWindow::collisionModel()
 	buildVisu();
 }
 
-void PatternGeneratorWindow::showSupportPolygon()
-{
-	if (!robot)
-		return;
-	updateSupportVisu();
-}
-
-void PatternGeneratorWindow::showCoM()
-{
-	if (!robot)
-		return;
-	buildVisu();
-}
 void PatternGeneratorWindow::closeEvent(QCloseEvent *event)
 {
 	quit();
@@ -432,8 +424,6 @@ void PatternGeneratorWindow::jointValueChanged(int pos)
 	}
 }
 
-
-
 void PatternGeneratorWindow::selectJoint(int nr)
 {
 	currentRobotNode.reset();
@@ -460,13 +450,6 @@ void PatternGeneratorWindow::selectJoint(int nr)
 	//	UI.horizontalSliderPos->setValue(500);
 	//	UI.horizontalSliderPos->setEnabled(false);
 	//}
-}
-
-void PatternGeneratorWindow::selectRobot()
-{
-	QString fi = QFileDialog::getOpenFileName(this, tr("Open Robot File"), QString(), tr("XML Files (*.xml)"));
-	robotFile = std::string(fi.toAscii());
-	loadRobot();
 }
 
 void PatternGeneratorWindow::loadRobot()
@@ -518,6 +501,107 @@ void PatternGeneratorWindow::performCoMIK()
 	updateCoM();
 }
 
+
+
+/*
+ *
+ *	hande UI responses
+ *
+ */
+
+
+void PatternGeneratorWindow::selectRobot()
+{
+	QString fi = QFileDialog::getOpenFileName(this, tr("Open Robot File"), QString(), tr("XML Files (*.xml)"));
+	robotFile = std::string(fi.toAscii());
+	loadRobot();
+}
+
+// set all joint values to 0
+void PatternGeneratorWindow::resetSceneryAll()
+{
+	if (!robot)
+		return;
+	std::vector< RobotNodePtr > nodes;
+	robot->getRobotNodes(nodes);
+	std::vector<float> jv(nodes.size(),0.0f);
+	robot->setJointValues(nodes,jv);
+}
+
+// update Step Period
+void PatternGeneratorWindow::updateStepPeriod()
+{
+	cout << "Step Period updated!" << endl;
+}
+
+void PatternGeneratorWindow::updateStepLength()
+{
+	cout << "Step Length updated!" << endl;
+}
+
+void PatternGeneratorWindow::updateDoubleSupportLength()
+{
+	cout << "Double Support Length updated!" << endl;
+}
+
+void PatternGeneratorWindow::updateStepHeight()
+{
+	cout << "Step Height updated!" << endl;
+}
+
+void PatternGeneratorWindow::calculateButtonPushed()
+{
+	cout << "calculate Button pressed!" << endl;
+	FootstepPlaner *planer = new PolynomialFootstepPlaner();
+	planer->generate();
+	delete planer;
+}
+
+void PatternGeneratorWindow::showFootstepPositions()
+{
+	cout << "Step Height updated!" << endl;
+}
+
+void PatternGeneratorWindow::showFeetTrajectories()
+{
+	cout << "Step Height updated!" << endl;
+}
+
+void PatternGeneratorWindow::showZMPTrajectory()
+{
+	cout << "ShowZMPTrajectory!" << endl;
+}
+
+void PatternGeneratorWindow::showCoMTrajectory()
+{
+	cout << "showCoMTrajectory!" << endl;
+}
+
+void PatternGeneratorWindow::showZMP()
+{
+	cout << "showZMP!" << endl;
+}
+
+void PatternGeneratorWindow::showCoM()
+{
+	cout << "showCoM!" << endl;
+	if (!robot)
+		return;
+	buildVisu();
+}
+
+void PatternGeneratorWindow::showSupportPolygon()
+{
+	cout << "showSupportPolygon!" << endl;
+	if (!robot)
+		return;
+	updateSupportVisu();
+}
+
+
+
+
+/*
 void PatternGeneratorWindow::comTargetMovedX(int value)
 {
 	if(!currentRobotNodeSet)
@@ -544,8 +628,9 @@ void PatternGeneratorWindow::comTargetMovedX(int value)
 	}
 
 	performCoMIK();
-}
+}*/
 
+/*
 void PatternGeneratorWindow::comTargetMovedY(int value)
 {
 	Eigen::Matrix4f T;
@@ -570,3 +655,5 @@ void PatternGeneratorWindow::comTargetMovedY(int value)
 
 	performCoMIK();
 }
+*/
+
