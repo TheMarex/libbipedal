@@ -35,6 +35,7 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 :QMainWindow(NULL)
 {
 	VR_INFO << " start " << endl;
+	pFootStepPlaner.reset(new PolynomialFootstepPlaner());
 
 	robotFile = sRobotFile;
 	useColModel = false;
@@ -51,6 +52,16 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	sceneSep->addChild(comTargetVisu);
 	supportVisu = new SoSeparator;
 	sceneSep->addChild(supportVisu);
+	_vFootstepPositions = new SoSeparator;
+	sceneSep->addChild(_vFootstepPositions);
+	_vFeetTrajectories = new SoSeparator;
+	sceneSep->addChild(_vFeetTrajectories);
+	_vZMPTrajectory = new SoSeparator;
+	sceneSep->addChild(_vZMPTrajectory);
+	_vCoMTrajectory = new SoSeparator;
+	sceneSep->addChild(_vCoMTrajectory);
+	_vZMP = new SoSeparator;
+	sceneSep->addChild(_vZMP);
 
 	MathTools::Plane p =  MathTools::getFloorPlane();
 	sceneSep->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,10000.0f,0.0f));
@@ -119,6 +130,11 @@ void PatternGeneratorWindow::setupUI()
 	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
 	connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
 	
+	UI.lineEditDSLength->setValidator(new QDoubleValidator());
+	UI.lineEditStepHeight->setValidator(new QDoubleValidator());
+	UI.lineEditStepLength->setValidator(new QDoubleValidator());
+	UI.lineEditStepPeriod->setValidator(new QDoubleValidator());
+
 }
 
 QString PatternGeneratorWindow::formatString(const char *s, float f)
@@ -172,6 +188,7 @@ void PatternGeneratorWindow::buildVisu()
 
 	comVisu->removeAllChildren();
 	comProjectionVisu->removeAllChildren();
+	comTargetVisu->removeAllChildren();
 	if (UI.checkBoxCoM->isChecked())
 	{
 		SoMatrixTransform *m = new SoMatrixTransform();
@@ -219,9 +236,26 @@ void PatternGeneratorWindow::buildVisu()
 	}
 
 	updateSupportVisu();
+	updateTrajectoriesVisu();
+	updateZMPVisu();
 
 	m_pExViewer->scheduleRedraw();
 
+}
+
+void PatternGeneratorWindow::getUIParameters() 
+{
+	QString value;
+	double dStepPeriod, dStepLength, dDSPhase, dHeight;
+	value = UI.lineEditStepPeriod->text();
+	dStepPeriod = value.toDouble();
+	value = UI.lineEditStepLength->text();
+	dStepLength = value.toDouble();
+	value = UI.lineEditDSLength->text();
+	dDSPhase = value.toDouble();
+	value = UI.lineEditStepHeight->text();
+	dHeight = value.toDouble();
+	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase);
 }
 
 void PatternGeneratorWindow::updateCoM()
@@ -271,45 +305,143 @@ void PatternGeneratorWindow::updateCoM()
 void PatternGeneratorWindow::updateSupportVisu()
 {
 	supportVisu->removeAllChildren();
-	//if (UI.checkBoxSupportPolygon->isChecked())
-	//{
-	//	/*SoMaterial *material = new SoMaterial;
-	//	material->diffuseColor.setValue(1.0f,0.2f,0.2f);
-	//	supportVisu->addChild(material);*/
+	MathTools::Plane p =  MathTools::getFloorPlane();
 
-	//	MathTools::Plane p =  MathTools::getFloorPlane();
-	//	
-	//	//supportVisu->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,100000.0f,0.5f));
-	//	/*RobotNodeSetPtr rns = robot->getRobotNodeSet("TorsoRightArm");
-	//	RobotNodePtr rn = robot->getRobotNode("Wrist1");
-	//	CollisionModelPtr colModel = rn->getCollisionModel();
-	//	colChecker->getContacts(p, colModel, points, 5.0f);*/
+	if (UI.checkBoxSupportPolygon->isChecked())
+	{
+		/*SoMaterial *material = new SoMaterial;
+		material->diffuseColor.setValue(1.0f,0.2f,0.2f);
+		supportVisu->addChild(material);*/
+
+		
+		//supportVisu->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,100000.0f,0.5f));
+		/*RobotNodeSetPtr rns = robot->getRobotNodeSet("TorsoRightArm");
+		RobotNodePtr rn = robot->getRobotNode("Wrist1");
+		CollisionModelPtr colModel = rn->getCollisionModel();
+		colChecker->getContacts(p, colModel, points, 5.0f);*/
 
 
-	//	std::vector< CollisionModelPtr > colModels =  robot->getCollisionModels();
-	//	CollisionCheckerPtr colChecker = CollisionChecker::getGlobalCollisionChecker();
-	//	std::vector< CollisionModelPtr >::iterator i = colModels.begin();
+		std::vector< CollisionModelPtr > colModels =  robot->getCollisionModels();
+		CollisionCheckerPtr colChecker = CollisionChecker::getGlobalCollisionChecker();
+		std::vector< CollisionModelPtr >::iterator i = colModels.begin();
+		
+		std::vector< MathTools::ContactPoint > points;
+		while (i!=colModels.end())
+		{
+			colChecker->getContacts(p, *i, points, 5.0f);
+			i++;
+		}
 
-	//	std::vector< MathTools::ContactPoint > points;
-	//	while (i!=colModels.end())
-	//	{
-	//		colChecker->getContacts(p, *i, points, 5.0f);
-	//		i++;
-	//	}
+		std::vector< Eigen::Vector2f > points2D;
+		//MathTools::Plane plane2(Eigen::Vector3f(0,0,0),Eigen::Vector3f(0,1.0f,0));
+		for (size_t u=0;u<points.size();u++)
+		{
+			
+			Eigen::Vector2f pt2d = MathTools::projectPointToPlane2D(points[u].p,p);
+			points2D.push_back(pt2d);
+		}
 
-	//	std::vector< Eigen::Vector2f > points2D;
-	//	//MathTools::Plane plane2(Eigen::Vector3f(0,0,0),Eigen::Vector3f(0,1.0f,0));
-	//	for (size_t u=0;u<points.size();u++)
-	//	{
-	//		
-	//		Eigen::Vector2f pt2d = MathTools::projectPointToPlane2D(points[u].p,p);
-	//		points2D.push_back(pt2d);
-	//	}
+		MathTools::ConvexHull2DPtr cv = MathTools::createConvexHull2D(points2D);
+		SoSeparator* visu = CoinVisualizationFactory::CreateConvexHull2DVisualization(cv,p,VisualizationFactory::Color::Blue(),VisualizationFactory::Color::Black(),6.0f,Eigen::Vector3f(0,0,2.0f));
+		supportVisu->addChild(visu);
+	}
 
-	//	MathTools::ConvexHull2DPtr cv = MathTools::createConvexHull2D(points2D);
-	//	SoSeparator* visu = CoinVisualizationFactory::CreateConvexHull2DVisualization(cv,p,VisualizationFactory::Color::Blue(),VisualizationFactory::Color::Black(),6.0f,Eigen::Vector3f(0,0,2.0f));
-	//	supportVisu->addChild(visu);
-	//}
+	// Visualize Footstep-Positions
+	_vFootstepPositions->removeAllChildren();
+	if (UI.checkBoxFootstepPositions->isChecked()) {
+		// get separate shapes for right and left foot
+		CollisionCheckerPtr colChecker = CollisionChecker::getGlobalCollisionChecker();
+		VirtualRobot::RobotNodePtr pRightFoot = robot->getRobotNode("RightLeg_BodyAnkle2");
+		VirtualRobot::RobotNodePtr pLeftFoot = robot->getRobotNode("LeftLeg_BodyAnkle2");
+		std::vector< MathTools::ContactPoint > pointsRightFoot;
+		std::vector< MathTools::ContactPoint > pointsLeftFoot;
+		std::vector< Eigen::Vector2f > pointsRight2D;
+		std::vector< Eigen::Vector2f > pointsLeft2D;
+		if (pRightFoot) {
+			// calculate shape of right foot
+			VirtualRobot::CollisionModelPtr pRightCollision = pRightFoot->getCollisionModel();
+			//TODO: catch if no collision model is returned
+			colChecker->getContacts(p, pRightCollision, pointsRightFoot, 5.0f);
+			for (size_t u=0;u<pointsRightFoot.size();u++)
+			{
+				Eigen::Vector2f pt2d = MathTools::projectPointToPlane2D(pointsRightFoot[u].p,p);
+				pointsRight2D.push_back(pt2d);
+			}
+			//std::cout << "Anzahl Kontaktpunkte rechter Fuss: " << pointsRight2D.size() << std::endl;
+			MathTools::ConvexHull2DPtr cvRight = MathTools::createConvexHull2D(pointsRight2D);
+			// calculate center
+			Eigen::Vector2f vRightCenter = MathTools::getConvexHullCenter(cvRight);
+			std::cout << "Center of Right Foot is: [" << vRightCenter.x() << "," << vRightCenter.y() << "]" << std::endl;
+			SoSeparator* visuRight = CoinVisualizationFactory::CreateConvexHull2DVisualization(cvRight,p,VisualizationFactory::Color::Blue(),VisualizationFactory::Color::Red(),6.0f,Eigen::Vector3f(0,0,2.5f));
+			Eigen::Matrix3Xd mRightFootPositions = pFootStepPlaner->getRightFootPositions();
+			for (int i=0; i<mRightFootPositions.cols(); i++)
+			{
+				Eigen::Vector3d pos = mRightFootPositions.col(i);
+				SoSeparator *pSep = new SoSeparator();
+				SoTranslation *pTranslate = new SoTranslation();
+				pTranslate->translation.setValue(pos(0), pos(1), pos(2));
+				
+				_vFootstepPositions->addChild(pSep);
+				pSep->addChild(pTranslate);
+				pSep->addChild(visuRight);
+			}
+		} else {
+			std::cout << "Rechter Fuss nicht gefunden!" << std::endl;
+		}
+		if (pLeftFoot) {
+			// calculate shape of left foot
+			VirtualRobot::CollisionModelPtr pLeftCollision = pLeftFoot->getCollisionModel();
+			colChecker->getContacts(p, pLeftCollision, pointsLeftFoot, 5.0f);
+			for (size_t u=0;u<pointsLeftFoot.size();u++)
+			{
+				Eigen::Vector2f pt2d = MathTools::projectPointToPlane2D(pointsLeftFoot[u].p,p);
+				pointsLeft2D.push_back(pt2d);
+			}
+			//std::cout << "Anzahl Kontaktpunkte linker Fuss: " << pointsLeft2D.size() << std::endl;
+			MathTools::ConvexHull2DPtr cvLeft = MathTools::createConvexHull2D(pointsLeft2D);
+			// calculate center
+			Eigen::Vector2f vLeftCenter = MathTools::getConvexHullCenter(cvLeft);
+			std::cout << "Center of Left Foot is: [" << vLeftCenter.x() << "," << vLeftCenter.y() << "]" << std::endl;
+			
+			SoSeparator* visuLeft = CoinVisualizationFactory::CreateConvexHull2DVisualization(cvLeft,p,VisualizationFactory::Color::Green(),VisualizationFactory::Color::Red(),6.0f,Eigen::Vector3f(0,0,2.5f));
+
+			Eigen::Matrix3Xd mLeftFootPositions = pFootStepPlaner->getLeftFootPositions();
+			for (int i=0; i<mLeftFootPositions.cols(); i++)
+			{
+				Eigen::Vector3d pos = mLeftFootPositions.col(i);
+				SoSeparator *pSep = new SoSeparator();
+				SoTranslation *pTranslate = new SoTranslation();
+				pTranslate->translation.setValue(pos(0), pos(1), pos(2));
+				
+				_vFootstepPositions->addChild(pSep);
+				pSep->addChild(pTranslate);
+				pSep->addChild(visuLeft);
+			}
+		} else {
+			std::cout << "Linker Fuss nicht gefunden!" << std::endl;
+		}	
+	}
+}
+
+
+void PatternGeneratorWindow::updateTrajectoriesVisu() 
+{
+	// check for trajectories and enable/disable them
+	if (UI.checkBoxFeetTrajectories->isChecked()) {
+		// do something with _vFeetTrajectories
+	}
+	if (UI.checkBoxZMP->isChecked()) 
+	{
+		// do something with _vZMPTrajectory
+	}
+	if (UI.checkBoxCoMTrajectory->isChecked()) 
+	{
+		// do something with _vCoMTrajectory
+	}
+}
+
+void PatternGeneratorWindow::updateZMPVisu() 
+{
 }
 
 void PatternGeneratorWindow::updateRNSBox()
@@ -476,13 +608,15 @@ void PatternGeneratorWindow::loadRobot()
 	
 	// get nodes
 	robot->getRobotNodes(allRobotNodes);
+	
+	/*
 	updateRNSBox();
 	selectRNS(0);
 	if (allRobotNodes.size()==0)
 		selectJoint(-1);
 	else
 		selectJoint(0);
-
+	*/
 
 	// build visualization
 	buildVisu();
@@ -552,42 +686,49 @@ void PatternGeneratorWindow::updateStepHeight()
 void PatternGeneratorWindow::calculateButtonPushed()
 {
 	cout << "calculate Button pressed!" << endl;
-	FootstepPlaner *planer = new PolynomialFootstepPlaner();
-	planer->generate();
-	delete planer;
+	getUIParameters();
+	pFootStepPlaner->generate();
 }
 
 void PatternGeneratorWindow::showFootstepPositions()
 {
-	cout << "Step Height updated!" << endl;
+	cout << "Footstep Positions clicked!" << endl;
+	updateSupportVisu();
 }
 
 void PatternGeneratorWindow::showFeetTrajectories()
 {
-	cout << "Step Height updated!" << endl;
+	cout << "Feet Trajectories clicked!" << endl;
+	updateTrajectoriesVisu();
 }
 
 void PatternGeneratorWindow::showZMPTrajectory()
 {
-	cout << "ShowZMPTrajectory!" << endl;
+	cout << "ZMP Trajectory clicked!" << endl;
+	updateTrajectoriesVisu();
 }
 
 void PatternGeneratorWindow::showCoMTrajectory()
 {
-	cout << "showCoMTrajectory!" << endl;
+	cout << "CoM Trajectory clicked!" << endl;
+	updateTrajectoriesVisu();
 }
 
 void PatternGeneratorWindow::showZMP()
 {
-	cout << "showZMP!" << endl;
+	cout << "showZMP clicked!" << endl;
+	if (!robot)
+		return;
+	updateZMPVisu();
 }
 
 void PatternGeneratorWindow::showCoM()
 {
-	cout << "showCoM!" << endl;
+	cout << "showCoM clicked!" << endl;
 	if (!robot)
 		return;
 	buildVisu();
+	updateCoM();
 }
 
 void PatternGeneratorWindow::showSupportPolygon()

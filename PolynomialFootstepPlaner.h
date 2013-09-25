@@ -34,8 +34,6 @@ protected:
 	Eigen::Matrix3Xd _footTrajectory;
 	Eigen::Matrix3Xd _footTrajectoryFirstLast;
 
-	Eigen::Matrix3Xd _leftFoot;
-	Eigen::Matrix3Xd _rightFoot;
 };
 
 #endif

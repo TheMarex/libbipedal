@@ -20,6 +20,7 @@
 #include <Inventor/Qt/viewers/SoQtExaminerViewer.h>
 #include <Inventor/Qt/SoQt.h>
 #include <Inventor/nodes/SoSeparator.h>
+#include <Inventor/nodes/SoTranslation.h>
 #include <vector>
 
 #include "PolynomialFootstepPlaner.h"
@@ -71,7 +72,8 @@ public slots:
 protected:
 	void loadRobot();
 	void buildVisu();
-	
+	void getUIParameters();
+
 	void setupUI();
 	QString formatString(const char *s, float f);
 
@@ -79,6 +81,9 @@ protected:
 	void updateRNSBox();
 	void updateCoM();
 	void updateSupportVisu();
+	void updateTrajectoriesVisu();
+	void updateZMPVisu();
+	
 
 	Ui::MainWindowStability UI;
 	SoQtExaminerViewer *m_pExViewer; /*!< Viewer to display the 3D model of the robot and the environment. */
@@ -91,6 +96,13 @@ protected:
 	SoSeparator *comProjectionVisu;
 	SoSeparator *comTargetVisu;
 	SoSeparator *supportVisu;
+	SoSeparator *_vFootstepPositions;
+	SoSeparator *_vFeetTrajectories;
+	SoSeparator *_vZMPTrajectory;
+	SoSeparator *_vCoMTrajectory;
+	SoSeparator *_vZMP;
+
+	PolynomialFootstepPlaner *_footstepPlaner;
 	
 	VirtualRobot::RobotPtr robot;
 	std::string robotFile;

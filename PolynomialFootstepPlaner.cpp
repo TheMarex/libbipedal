@@ -36,7 +36,13 @@ void PolynomialFootstepPlaner::setRightFootFirst()
 
 
 void PolynomialFootstepPlaner::generate(int numberOfSteps) {
+	if (numberOfSteps<2) numberOfSteps=2;
 	_iNumberOfSteps = numberOfSteps;
+	
+	_mLFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
+	_mRFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
+	int stepCounter=0;
+
 	// ** calculate swinging leg trajectory **
 	
 	int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod)+1;
@@ -88,7 +94,7 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// std::cout << "Matrix rows: " << _footTrajectory.rows() << ", cols:" << _footTrajectory.cols() << std::endl;
 	// ** calculate Foot Positions **
 	// initialise Matrices
-	int iSamples = iSamplesPerStep * numberOfSteps + iDS*2;
+	int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS*2;
 	_mLFootTrajectory =  Eigen::Matrix3Xd::Zero(3, iSamples);
 	_mRFootTrajectory =  Eigen::Matrix3Xd::Zero(3, iSamples);
 	bool bLeft = (_bLeftFootFirst?true:false);
@@ -102,6 +108,8 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	vRightFoot.setZero();
 	vLeftFoot(1) = -_dStepWidth/2;
 	vRightFoot(1) = _dStepWidth/2;
+	_mLFootPositions.col(stepCounter)=vLeftFoot;
+	_mRFootPositions.col(stepCounter)=vRightFoot;
 	// starting with full DS-Phase
 	for (int j=0; j<iDS; j++) {
 		// insert DS-starting phase
@@ -109,9 +117,9 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
 	}
-	for (int i=0; i<numberOfSteps; i++) {
+	for (int i=0; i<_iNumberOfSteps; i++) {
 		// starting and ending steps are half steps, the other steps are full steps
-		if ((i==0) || (i==numberOfSteps-1))
+		if ((i==0) || (i==_iNumberOfSteps-1))
 			halfStep = true;
 		else
 			halfStep = false;
@@ -146,6 +154,10 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		// save new foot positions to temporary vectors
 		vLeftFoot = _mLFootTrajectory.col(index-1);
 		vRightFoot = _mRFootTrajectory.col(index-1);
+		stepCounter++;
+		_mLFootPositions.col(stepCounter)=vLeftFoot;
+		_mRFootPositions.col(stepCounter)=vRightFoot;
+
 	}
 	for (int j=0; j<iDS; j++) {
 		// insert ending DS-phase

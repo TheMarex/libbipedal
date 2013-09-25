@@ -9,7 +9,8 @@ int main(int argc, char *argv[])
 	SoQt::init(argc,argv,"stability demo");
 	cout << " --- START --- " << endl;
 	//std::string filenameRob("robots/ArmarIII/ArmarIII.xml");
-	std::string filenameRob("robots/iCub/iCub.xml");
+	//std::string filenameRob("robots/iCub/iCub.xml");
+	std::string filenameRob("robots/armar4_StartLeftLeg/ArmarIV-StartLeftLeg.xml");
 	VirtualRobot::RuntimeEnvironment::getDataFileAbsolute(filenameRob);
 	
 	VirtualRobot::RuntimeEnvironment::considerKey("robot");
