@@ -301,7 +301,7 @@ void PatternGeneratorWindow::updateCoM()
 	}
 }
 
-
+// changes on Visualization of SupportPolygon or 
 void PatternGeneratorWindow::updateSupportVisu()
 {
 	supportVisu->removeAllChildren();
@@ -349,6 +349,9 @@ void PatternGeneratorWindow::updateSupportVisu()
 	// Visualize Footstep-Positions
 	_vFootstepPositions->removeAllChildren();
 	if (UI.checkBoxFootstepPositions->isChecked()) {
+		if (pFootStepPlaner)
+			pFootStepPlaner->addToVisualization(_vFootstepPositions);
+		/*
 		// get separate shapes for right and left foot
 		CollisionCheckerPtr colChecker = CollisionChecker::getGlobalCollisionChecker();
 		VirtualRobot::RobotNodePtr pRightFoot = robot->getRobotNode("RightLeg_BodyAnkle2");
@@ -419,11 +422,11 @@ void PatternGeneratorWindow::updateSupportVisu()
 			}
 		} else {
 			std::cout << "Linker Fuss nicht gefunden!" << std::endl;
-		}	
+		}	*/
 	}
 }
 
-
+// changes on ZMP or Feet Trajectory Checkboxes
 void PatternGeneratorWindow::updateTrajectoriesVisu() 
 {
 	// check for trajectories and enable/disable them

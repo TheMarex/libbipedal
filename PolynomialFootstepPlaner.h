@@ -14,10 +14,14 @@ public:
 	void setLeftFootFirst();
 	void setRightFootFirst();
 
+	virtual SoSeparator* getShapeLeftFoot();
+	virtual SoSeparator* getShapeRightFoot();
+
 	virtual void generate(int numberOfSteps=5);
 
 
 protected:
+
 	double _dStepLength;
 	double _dStepWidth;
 	double _dStepHeight;
@@ -31,8 +35,13 @@ protected:
 	bool _bParametersInitialized;
 
 	double _dSS, _dDS;
+	// generalized trajectory for a swinging leg
 	Eigen::Matrix3Xd _footTrajectory;
+	// generalized trajectory for the first and last swinging leg
 	Eigen::Matrix3Xd _footTrajectoryFirstLast;
+	
+
+
 
 };
 

@@ -1,10 +1,12 @@
 #include "PolynomialFootstepPlaner.h"
+#include <VirtualRobot/Robot.h>
 
+#include "VirtualRobot/CollisionDetection/CollisionChecker.h"
+#include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
 PolynomialFootstepPlaner::PolynomialFootstepPlaner(void) : _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true)
 {
 } 
-
 
 PolynomialFootstepPlaner::~PolynomialFootstepPlaner(void) {
 }
@@ -24,16 +26,28 @@ void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPerio
 	generate();
 }
 
+// start walking with left foot first
 void PolynomialFootstepPlaner::setLeftFootFirst() 
 {
 	_bLeftFootFirst=true;
 }
 
+// start walking with right foot first
 void PolynomialFootstepPlaner::setRightFootFirst()
 {
 	_bLeftFootFirst=false;
 }
 
+
+// TODO:
+SoSeparator* PolynomialFootstepPlaner::getShapeLeftFoot() {
+	return 0;
+}
+
+// TODO:
+SoSeparator* PolynomialFootstepPlaner::getShapeRightFoot() {
+	return 0;
+}
 
 void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	if (numberOfSteps<2) numberOfSteps=2;
@@ -42,9 +56,9 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	_mLFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
 	_mRFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
 	int stepCounter=0;
-
-	// ** calculate swinging leg trajectory **
-	
+	// ***************************************************
+	// ** calculate generalized swinging leg trajectory **
+	// ***************************************************
 	int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod)+1;
 	double sampleDelta = 1.0f / _iSampleSize;
 	// initialise Matrix
@@ -66,6 +80,7 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	double cx, dx, bz, cz, dz, xtemp, ztemp, x1, x2, x3, x4;
 	// calculating foot trajectory for swinging leg including resting phase
 	for (int i=0; i<_footTrajectory.cols(); i++) {
+		// precalculate {c*x, d*x, b*z, c*z, d*z, x^1, x^2, x^3, x^4} for optimization purposes
 		cx = -2*S/T3;
 		dx = 3*S/T2;
 		bz = 16*H/T4;
@@ -87,12 +102,14 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		}
 		_footTrajectory(0, i)= xtemp;
 		_footTrajectory(2, i)= ztemp;
+		// half steps are half the length and half the height
 		_footTrajectoryFirstLast(0, i) = xtemp/2;
 		_footTrajectoryFirstLast(2, i) = ztemp/2;
 		// std::cout << "timestamp: " << x1 << ", x: " << xtemp << ", z: " << ztemp << std::endl;
 	}
-	// std::cout << "Matrix rows: " << _footTrajectory.rows() << ", cols:" << _footTrajectory.cols() << std::endl;
-	// ** calculate Foot Positions **
+	// ******************************************
+	// ** calculate Foot Positions for n-Steps **
+	// ******************************************
 	// initialise Matrices
 	int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS*2;
 	_mLFootTrajectory =  Eigen::Matrix3Xd::Zero(3, iSamples);
@@ -112,7 +129,6 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	_mRFootPositions.col(stepCounter)=vRightFoot;
 	// starting with full DS-Phase
 	for (int j=0; j<iDS; j++) {
-		// insert DS-starting phase
 		_mLFootTrajectory.col(index) = vLeftFoot;
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
@@ -159,14 +175,15 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		_mRFootPositions.col(stepCounter)=vRightFoot;
 
 	}
+	// insert ending DS-phase
 	for (int j=0; j<iDS; j++) {
-		// insert ending DS-phase
 		_mLFootTrajectory.col(index) = vLeftFoot;
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
 	}
 	// std::cout << _mLFootTrajectory << std::endl;
-	std::cout << "Matrix rows: " << _mLFootTrajectory.rows() << ", cols:" << _mLFootTrajectory.cols() << std::endl;
+	// std::cout << "Matrix rows: " << _mLFootTrajectory.rows() << ", cols:" << _mLFootTrajectory.cols() << std::endl;
+	_bGenerated = true;
 }
 
 

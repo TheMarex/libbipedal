@@ -102,7 +102,7 @@ protected:
 	SoSeparator *_vCoMTrajectory;
 	SoSeparator *_vZMP;
 
-	PolynomialFootstepPlaner *_footstepPlaner;
+	//PolynomialFootstepPlaner *_footstepPlaner;
 	
 	VirtualRobot::RobotPtr robot;
 	std::string robotFile;
