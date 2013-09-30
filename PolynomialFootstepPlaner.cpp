@@ -38,21 +38,24 @@ void PolynomialFootstepPlaner::setRightFootFirst()
 	_bLeftFootFirst=false;
 }
 
-
+/*
 // TODO:
 SoSeparator* PolynomialFootstepPlaner::getShapeLeftFoot() {
 	return 0;
 }
+*/
 
+/*
 // TODO:
 SoSeparator* PolynomialFootstepPlaner::getShapeRightFoot() {
 	return 0;
 }
+*/
 
 void PolynomialFootstepPlaner::generate(int numberOfSteps) {
-	if (numberOfSteps<2) numberOfSteps=2;
+	if (numberOfSteps<2) 
+		numberOfSteps=2;
 	_iNumberOfSteps = numberOfSteps;
-	
 	_mLFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
 	_mRFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
 	int stepCounter=0;
@@ -105,7 +108,6 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		// half steps are half the length and half the height
 		_footTrajectoryFirstLast(0, i) = xtemp/2;
 		_footTrajectoryFirstLast(2, i) = ztemp/2;
-		// std::cout << "timestamp: " << x1 << ", x: " << xtemp << ", z: " << ztemp << std::endl;
 	}
 	// ******************************************
 	// ** calculate Foot Positions for n-Steps **
@@ -181,9 +183,11 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
 	}
-	// std::cout << _mLFootTrajectory << std::endl;
-	// std::cout << "Matrix rows: " << _mLFootTrajectory.rows() << ", cols:" << _mLFootTrajectory.cols() << std::endl;
 	_bGenerated = true;
+	// **********************************
+	// ** generate visualization nodes **
+	// **********************************
+	buildVisualization();
 }
 
 

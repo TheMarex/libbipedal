@@ -14,8 +14,8 @@ public:
 	void setLeftFootFirst();
 	void setRightFootFirst();
 
-	virtual SoSeparator* getShapeLeftFoot();
-	virtual SoSeparator* getShapeRightFoot();
+	//virtual SoSeparator* getShapeLeftFoot();
+	//virtual SoSeparator* getShapeRightFoot();
 
 	virtual void generate(int numberOfSteps=5);
 
