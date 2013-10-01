@@ -121,15 +121,33 @@ void FootstepPlaner::computeFeetShape() {
 	VirtualRobot::MathTools::ConvexHull2DPtr cvLeft = VirtualRobot::MathTools::createConvexHull2D(pointsLeft2D);
 	Eigen::Vector2f vRightCenter = VirtualRobot::MathTools::getConvexHullCenter(cvRight);
 	Eigen::Vector2f vLeftCenter = VirtualRobot::MathTools::getConvexHullCenter(cvLeft);
-	// TODO: save foot positions and compute walking direction
+	// save foot positions
+	_vRightFootStart = vRightCenter / 1000.0f;
+	_vLeftFootStart = vLeftCenter / 1000.0f;
+	// compute walking direction
 	Eigen::Vector2f center = (vLeftCenter+vRightCenter)*0.5;
 	Eigen::Vector2f centerToLeft = (vLeftCenter - center);
+	centerToLeft.normalize();
 	Eigen::Matrix2f rotNinety; 
 	rotNinety << 0, 1, -1, 0;
 	Eigen::Vector2f walkingDirection =  rotNinety * centerToLeft;
+	// save rotation for walking
+	_mRotateWalking << walkingDirection.x(), centerToLeft.x(), walkingDirection.y(), centerToLeft.y();
+	// test the rotation matrix
+	walkingDirection.x() = 1.0f;
+	walkingDirection.y() = 0.0f;
+	walkingDirection = _mRotateWalking * walkingDirection;
+
+	// add an arrow for walking direction
+	SoSeparator* sArrow = new SoSeparator();
+	SoTranslation* sArrowT = new SoTranslation();
+	sArrowT->translation.setValue(center.x()/1000, center.y()/1000, 0);
+	sArrow->addChild(sArrowT);
 	Eigen::Vector3f walkingDir3D;
-	walkingDir3D << walkingDirection.x(), walkingDirection.y(), 1.0f;
-	_visualization->addChild (VirtualRobot::CoinVisualizationFactory::CreateArrow(walkingDir3D, 500.0f, 20.0f, VirtualRobot::VisualizationFactory::Color::Blue(0.5f)));
+	walkingDir3D << walkingDirection.x(), walkingDirection.y(), 0.0f;
+	sArrow->addChild (VirtualRobot::CoinVisualizationFactory::CreateArrow(walkingDir3D, 500.0f, 20.0f, 
+		VirtualRobot::VisualizationFactory::Color::Blue(0.5f)));
+	_visualization->addChild(sArrow);
 	// delete old visualizations
 	_visuRightFoot->removeAllChildren();
 	_visuLeftFoot->removeAllChildren();

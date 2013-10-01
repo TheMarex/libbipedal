@@ -32,34 +32,45 @@ protected:
 	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
 		SoSeparator* whatToInsert, Eigen::Matrix3Xd &whereToTranslate);
 
+	// data structures to save footstep positions and feet trajectories
 	Eigen::Matrix3Xd _mLFootTrajectory;
 	Eigen::Matrix3Xd _mRFootTrajectory;
 	Eigen::Matrix3Xd _mLFootPositions;
 	Eigen::Matrix3Xd _mRFootPositions;
 
+	// administrative bool values
 	bool _bChangesMade;
 	bool _bGenerated;
 	
+	// the robot model and the names of the foot segments
 	VirtualRobot::RobotPtr _pRobot;
 	std::string _sLeftFootName;
 	std::string _sRightFootName;
 
+	// starting points of robot, right-foot and left-foot
+	Eigen::Vector2d _vRobotCenterStart;
+	Eigen::Vector2f _vRightFootStart;
+	Eigen::Vector2f _vLeftFootStart;
+
+	// rotation for walking in the right direction
+	Eigen::Matrix2f _mRotateWalking;
+
+	// ** visualization nodes **
 	// visualization for the right foot (with border), without border, feet position and feet trajectory
 	SoSeparator* _visuRightFoot;
 	SoSeparator* _visuRightFootwoBorder;
 	SoSeparator* _visuRightFootPositions;
 	SoSeparator* _visuRightFootTrajectory;
-	// visualization for the left foot
+	// visualization for the left foot (with border), without border, feet position and feet trajectory
 	SoSeparator* _visuLeftFoot;
 	SoSeparator* _visuLeftFootwoBorder;
 	SoSeparator* _visuLeftFootPositions;
 	SoSeparator* _visuLeftFootTrajectory;
-	// complete visualization
+	// root node for visualization
 	SoSeparator* _visualization;
-	// switches to enable or disable visualizations
+	// switches to enable or disable visualization of footstep positions and foot trajectories
 	SoSwitch* _swPositions;
 	SoSwitch* _swTrajectories;
-	// Transparent material
 };
 
 #endif
