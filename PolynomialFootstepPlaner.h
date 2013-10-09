@@ -10,7 +10,7 @@ public:
 	PolynomialFootstepPlaner(void);
 	~PolynomialFootstepPlaner(void);
 
-	void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, int sampleSize=100);
+	void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize=100);
 	void setLeftFootFirst();
 	void setRightFootFirst();
 
@@ -36,9 +36,9 @@ protected:
 
 	double _dSS, _dDS;
 	// generalized trajectory for a swinging leg
-	Eigen::Matrix3Xd _footTrajectory;
+	Eigen::Matrix3Xf _footTrajectory;
 	// generalized trajectory for the first and last swinging leg
-	Eigen::Matrix3Xd _footTrajectoryFirstLast;
+	Eigen::Matrix3Xf _footTrajectoryFirstLast;
 	
 
 

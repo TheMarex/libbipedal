@@ -260,7 +260,7 @@ void PatternGeneratorWindow::getUIParameters()
 	dDSPhase = value.toDouble();
 	value = UI.lineEditStepHeight->text();
 	dHeight = value.toDouble();
-	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase);
+	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase, dHeight);
 }
 
 void PatternGeneratorWindow::updateCoM()

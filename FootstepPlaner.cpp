@@ -122,11 +122,12 @@ void FootstepPlaner::computeFeetShape() {
 	Eigen::Vector2f vRightCenter = VirtualRobot::MathTools::getConvexHullCenter(cvRight);
 	Eigen::Vector2f vLeftCenter = VirtualRobot::MathTools::getConvexHullCenter(cvLeft);
 	// save foot positions
-	_vRightFootStart = vRightCenter / 1000.0f;
-	_vLeftFootStart = vLeftCenter / 1000.0f;
+	_vRightFootCenter = vRightCenter / 1000.0f;
+	_vLeftFootCenter = vLeftCenter / 1000.0f;
 	// compute walking direction
 	Eigen::Vector2f center = (vLeftCenter+vRightCenter)*0.5;
 	Eigen::Vector2f centerToLeft = (vLeftCenter - center);
+	_vRobotCenter = center * 0.001f;
 	centerToLeft.normalize();
 	Eigen::Matrix2f rotNinety; 
 	rotNinety << 0, 1, -1, 0;
@@ -134,14 +135,15 @@ void FootstepPlaner::computeFeetShape() {
 	// save rotation for walking
 	_mRotateWalking << walkingDirection.x(), centerToLeft.x(), walkingDirection.y(), centerToLeft.y();
 	// test the rotation matrix
+	/*
 	walkingDirection.x() = 1.0f;
 	walkingDirection.y() = 0.0f;
 	walkingDirection = _mRotateWalking * walkingDirection;
-
+	*/
 	// add an arrow for walking direction
 	SoSeparator* sArrow = new SoSeparator();
 	SoTranslation* sArrowT = new SoTranslation();
-	sArrowT->translation.setValue(center.x()/1000, center.y()/1000, 0);
+	sArrowT->translation.setValue(center.x()/1000, center.y()/1000, 1.0f);
 	sArrow->addChild(sArrowT);
 	Eigen::Vector3f walkingDir3D;
 	walkingDir3D << walkingDirection.x(), walkingDirection.y(), 0.0f;
@@ -179,33 +181,58 @@ void FootstepPlaner::buildVisualization() {
 	}
 
 	// clean up old visualizations
-	//* TODO: enable this later again
 	std::cout << "Number of Children of _visuRightFootPositions before: " << _visuRightFootPositions->getNumChildren();
 	_visuRightFootPositions->removeAllChildren();
 	_visuLeftFootPositions->removeAllChildren();
 	_visuRightFootTrajectory->removeAllChildren();
 	_visuLeftFootTrajectory->removeAllChildren();
-	//_visuLeftFootTrajectory->addChild(_pTranspMaterial);
-	//_visuRightFootTrajectory->addChild(_pTranspMaterial);
 	std::cout << ", and after: " << _visuRightFootPositions->getNumChildren() << std::endl;
 
 	//_visualization->addChild(_visuLeftFoot);
-	// visualize foot positions
 	/*SoSeparator* spSep = new SoSeparator();
 	SoSphere* sp = new SoSphere();
 	sp->radius = 0.02;
-	spSep->addChild(sp);*/
-	//generateVisualizationDuplicatesFromTrajectories(_visuRightFootPositions, spSep /*_visuRightFoot*/ , _mRFootPositions);
-	generateVisualizationDuplicatesFromTrajectories(_visuRightFootPositions, _visuRightFoot , _mRFootPositions);
-	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootPositions, _visuLeftFoot, _mLFootPositions);
+	spSep->addChild(sp);
+	generateVisualizationDuplicatesFromTrajectories(_visuRightFootPositions, spSep, _mRFootPositions);
+	*/
+
+	// rotate generated walking pattern to walking direction
+	Eigen::Matrix3f rot;
+	rot.setIdentity();
+	rot.block(0,0,2,2) = _mRotateWalking;
+	Eigen::Matrix3Xf rFootPositions = rot * _mRFootPositions;
+	Eigen::Matrix3Xf lFootPositions = rot * _mLFootPositions;
+	Eigen::Matrix3Xf rFootTrajectories = rot * _mRFootTrajectory;
+	Eigen::Matrix3Xf lFootTrajectories = rot * _mLFootTrajectory;
+
+	// translate foot positions so that inital foot position matches actual position
+	Eigen::Vector3f rDelta, lDelta;
+	rDelta.setZero();
+	lDelta.setZero();
+	rDelta.x() =  - rFootPositions.col(0).x(); //- _vRobotCenterStart.x();
+	rDelta.y() =  - rFootPositions.col(0).y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+	lDelta.x() =  - lFootPositions.col(0).x(); //- _vRobotCenterStart.x();
+	lDelta.y() =  - lFootPositions.col(0).y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+	for (int i=0; i<rFootPositions.cols(); i++)
+		rFootPositions.col(i) += rDelta ;
+	for (int i=0; i<lFootPositions.cols(); i++)
+		lFootPositions.col(i) += lDelta ;
+	for (int i=0; i<rFootTrajectories.cols(); i++)
+		rFootTrajectories.col(i) += rDelta ;
+	for (int i=0; i<lFootTrajectories.cols(); i++)
+		lFootTrajectories.col(i) += lDelta ;
+
+
+	// visualize foot positions
+	generateVisualizationDuplicatesFromTrajectories(_visuRightFootPositions, _visuRightFoot , rFootPositions);
+	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootPositions, _visuLeftFoot, lFootPositions);
 	// visualize foot trajectories
-	generateVisualizationDuplicatesFromTrajectories(_visuRightFootTrajectory, _visuRightFootwoBorder , _mRFootTrajectory);
-	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootTrajectory, _visuLeftFootwoBorder, _mLFootTrajectory);
+	generateVisualizationDuplicatesFromTrajectories(_visuRightFootTrajectory, _visuRightFootwoBorder , rFootTrajectories);
+	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootTrajectory, _visuLeftFootwoBorder, lFootTrajectories);
 }
 
-// adds the visualization of the FootstepPlaner to a given SoSeparatorNode
+// get the visualization of the FootstepPlaner as a SoSeparator Node. The Node will be changed according to Paramater Changes
 SoSeparator* FootstepPlaner::getVisualization() {
-	// TODO: check if computations are finished
 	return _visualization;
 }
 
@@ -231,8 +258,8 @@ void FootstepPlaner::showFootTrajectories(bool isVisible) {
  * The Object is inserted according to the translation values given in the Matrix3d
  * 
  */
-void FootstepPlaner::generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, SoSeparator* whatToInsert, Eigen::Matrix3Xd &whereToTranslate) {
-	Eigen::Vector3d pos, prev;
+void FootstepPlaner::generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate) {
+	Eigen::Vector3f pos, prev;
 	pos.setZero();
 	prev.setZero();
 	for (int i=0; i<whereToTranslate.cols(); i++)
@@ -257,7 +284,6 @@ void FootstepPlaner::generateVisualizationDuplicatesFromTrajectories(SoSeparator
 /*
  * Save as scene Graph to a test file
  */
-
 void FootstepPlaner::writeSceneGraphToFile(SoSeparator* node) 
 {
 	SoOutput* output = new SoOutput();

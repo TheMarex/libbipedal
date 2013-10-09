@@ -11,7 +11,7 @@ PolynomialFootstepPlaner::PolynomialFootstepPlaner(void) : _dStepLength(0.3f), _
 PolynomialFootstepPlaner::~PolynomialFootstepPlaner(void) {
 }
 
-void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, int sampleSize) {
+void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize) {
 	if (_bParametersInitialized) {
 		//TODO: first delete all array, vectors and matrices
 	}
@@ -20,6 +20,7 @@ void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPerio
 	_dStepPeriod = stepPeriod;
 	_dDoubleSupportPhase = doubleSupportPhase;
 	_dSingleSupportPhase = _dStepPeriod - _dDoubleSupportPhase;
+	_dStepHeight = stepHeight;
 	_iSampleSize = sampleSize;
 	_bParametersInitialized = true;
 	
@@ -56,8 +57,8 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	if (numberOfSteps<2) 
 		numberOfSteps=2;
 	_iNumberOfSteps = numberOfSteps;
-	_mLFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
-	_mRFootPositions = Eigen::Matrix3Xd::Zero(3, _iNumberOfSteps+1);
+	_mLFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps+1);
+	_mRFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps+1);
 	int stepCounter=0;
 	// ***************************************************
 	// ** calculate generalized swinging leg trajectory **
@@ -65,8 +66,8 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod)+1;
 	double sampleDelta = 1.0f / _iSampleSize;
 	// initialise Matrix
-	_footTrajectory = Eigen::Matrix3Xd::Zero(3, iSamplesPerStep);
-	_footTrajectoryFirstLast = Eigen::Matrix3Xd::Zero(3, iSamplesPerStep);
+	_footTrajectory = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+	_footTrajectoryFirstLast = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
 	// percentage of different Phases
 	_dSS = (double) (_dSingleSupportPhase / _dStepPeriod);
 	_dDS = (double) (_dDoubleSupportPhase / _dStepPeriod);
@@ -114,19 +115,22 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// ******************************************
 	// initialise Matrices
 	int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS*2;
-	_mLFootTrajectory =  Eigen::Matrix3Xd::Zero(3, iSamples);
-	_mRFootTrajectory =  Eigen::Matrix3Xd::Zero(3, iSamples);
+	_mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
+	_mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
 	bool bLeft = (_bLeftFootFirst?true:false);
 	bool halfStep = true;
 	int index = 0;
 	// determine starting positions of left and right foot
-	Eigen::Vector3d vLeftFoot;
-	Eigen::Vector3d vRightFoot;
-	Eigen::Vector3d vTempL, vTempR;
+	Eigen::Vector3f vLeftFoot;
+	Eigen::Vector3f vRightFoot;
+	Eigen::Vector3f vTempL, vTempR;
 	vLeftFoot.setZero();
 	vRightFoot.setZero();
 	vLeftFoot(1) = -_dStepWidth/2;
 	vRightFoot(1) = _dStepWidth/2;
+	_vDeltaLeftFoot = vLeftFoot;
+	_vDeltaRightFoot = vRightFoot;
+
 	_mLFootPositions.col(stepCounter)=vLeftFoot;
 	_mRFootPositions.col(stepCounter)=vRightFoot;
 	// starting with full DS-Phase
