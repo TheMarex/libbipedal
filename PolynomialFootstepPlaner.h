@@ -3,6 +3,8 @@
 
 #include "footstepplaner.h"
 
+//typedef boost::shared_ptr<PolynomialFootstepPlaner> BOOST_P_FOOTSTEPPLANER;
+
 class PolynomialFootstepPlaner :
 	public FootstepPlaner
 {
@@ -10,7 +12,6 @@ public:
 	PolynomialFootstepPlaner(void);
 	~PolynomialFootstepPlaner(void);
 
-	void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize=100);
 	void setLeftFootFirst();
 	void setRightFootFirst();
 
@@ -18,18 +19,10 @@ public:
 	//virtual SoSeparator* getShapeRightFoot();
 
 	virtual void generate(int numberOfSteps=5);
-
+	virtual void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize=100);
 
 protected:
 
-	double _dStepLength;
-	double _dStepWidth;
-	double _dStepHeight;
-	double _dStepPeriod;
-	double _dSingleSupportPhase;
-	double _dDoubleSupportPhase;
-	double _iSampleSize;
-	bool _bLeftFootFirst;
 	int _iNumberOfSteps;
 	
 	bool _bParametersInitialized;

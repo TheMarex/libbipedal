@@ -24,9 +24,9 @@
 #include <vector>
 
 #include "PolynomialFootstepPlaner.h"
+#include "ZMPPreviewControl.h"
 
 #include "ui_PatternGeneratorWindow.h"
-
 
 class PatternGeneratorWindow : public QMainWindow
 {
@@ -116,8 +116,9 @@ protected:
 	bool useColModel;
 
     boost::shared_ptr<VirtualRobot::CoinVisualization> visualization;
-
-	boost::shared_ptr<PolynomialFootstepPlaner> pFootStepPlaner;
+	
+	FootstepPlaner* pFootStepPlaner;
+	ZMPPreviewControl* pZMPPreviewControl;
 };
 
 #endif // __PatternGeneratorScene_WINDOW_H_

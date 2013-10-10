@@ -9,7 +9,7 @@
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
 
-FootstepPlaner::FootstepPlaner(void) : _bChangesMade(false), _bGenerated(false), _pRobot(0)
+FootstepPlaner::FootstepPlaner(void) : _pRobot(0), _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true), _bChangesMade(false), _bGenerated(false)
 {
 	_visualization = new SoSeparator();
 	_visuRightFoot = new SoSeparator();
@@ -124,6 +124,11 @@ void FootstepPlaner::computeFeetShape() {
 	// save foot positions
 	_vRightFootCenter = vRightCenter / 1000.0f;
 	_vLeftFootCenter = vLeftCenter / 1000.0f;
+	// translate points of FootShape so, that center of convex hull is (0|0)
+	for (int i=0; i<cvRight->vertices.size(); i++)
+		cvRight->vertices[i] -= vRightCenter;
+	for (int i=0; i<cvLeft->vertices.size(); i++)
+		cvLeft->vertices[i] -= vLeftCenter;
 	// compute walking direction
 	Eigen::Vector2f center = (vLeftCenter+vRightCenter)*0.5;
 	Eigen::Vector2f centerToLeft = (vLeftCenter - center);
@@ -209,10 +214,10 @@ void FootstepPlaner::buildVisualization() {
 	Eigen::Vector3f rDelta, lDelta;
 	rDelta.setZero();
 	lDelta.setZero();
-	rDelta.x() =  - rFootPositions.col(0).x(); //- _vRobotCenterStart.x();
-	rDelta.y() =  - rFootPositions.col(0).y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
-	lDelta.x() =  - lFootPositions.col(0).x(); //- _vRobotCenterStart.x();
-	lDelta.y() =  - lFootPositions.col(0).y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+	rDelta.x() =  - rFootPositions.col(0).x() + _vRightFootCenter.x(); //- _vRobotCenterStart.x();
+	rDelta.y() =  - rFootPositions.col(0).y() + _vRightFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+	lDelta.x() =  - lFootPositions.col(0).x() + _vLeftFootCenter.x(); //- _vRobotCenterStart.x();
+	lDelta.y() =  - lFootPositions.col(0).y() + _vLeftFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
 	for (int i=0; i<rFootPositions.cols(); i++)
 		rFootPositions.col(i) += rDelta ;
 	for (int i=0; i<lFootPositions.cols(); i++)
@@ -221,14 +226,19 @@ void FootstepPlaner::buildVisualization() {
 		rFootTrajectories.col(i) += rDelta ;
 	for (int i=0; i<lFootTrajectories.cols(); i++)
 		lFootTrajectories.col(i) += lDelta ;
-
-
+	
 	// visualize foot positions
 	generateVisualizationDuplicatesFromTrajectories(_visuRightFootPositions, _visuRightFoot , rFootPositions);
 	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootPositions, _visuLeftFoot, lFootPositions);
 	// visualize foot trajectories
 	generateVisualizationDuplicatesFromTrajectories(_visuRightFootTrajectory, _visuRightFootwoBorder , rFootTrajectories);
 	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootTrajectory, _visuLeftFootwoBorder, lFootTrajectories);
+	// save transformed foot positions
+	_mRFootPositionsTransformed.resize(3, rFootPositions.cols());
+	_mRFootPositionsTransformed = rFootPositions.block(0,0,3,rFootPositions.cols());
+	_mLFootPositionsTransformed.resize(3, lFootPositions.cols());
+	_mLFootPositionsTransformed = lFootPositions.block(0,0,3,lFootPositions.cols());
+
 }
 
 // get the visualization of the FootstepPlaner as a SoSeparator Node. The Node will be changed according to Paramater Changes
@@ -271,7 +281,7 @@ void FootstepPlaner::generateVisualizationDuplicatesFromTrajectories(SoSeparator
 			continue;
 		SoSeparator *pSep = new SoSeparator();
 		SoTranslation *pTranslate = new SoTranslation();
-		pTranslate->translation.setValue(pos(0), pos(1), pos(2));
+		pTranslate->translation.setValue(pos.x(), pos.y(), pos.z());
 		whereToInsert->addChild(pSep);
 		pSep->addChild(pTranslate);
 		// TODO: add a node for transparency
@@ -293,3 +303,16 @@ void FootstepPlaner::writeSceneGraphToFile(SoSeparator* node)
 	//node->write(pWrite);
 	std::cout << "Scene Graph saved to file!" << std::endl;
 }
+
+
+Eigen::Matrix3Xf const FootstepPlaner::getLeftFootPositions()
+{
+	return _mLFootPositionsTransformed;
+}
+
+Eigen::Matrix3Xf const FootstepPlaner::getRightFootPositions() 
+{
+	return _mRFootPositionsTransformed;
+}
+
+

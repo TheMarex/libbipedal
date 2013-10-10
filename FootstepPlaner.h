@@ -6,8 +6,6 @@
 #include <Inventor/nodes/SoSwitch.h>
 #include <Inventor/nodes/SoMaterial.h>
 
-#define EIGEN_DONT_ALIGN_STATICALLY
-
 class FootstepPlaner
 {
 public:
@@ -15,7 +13,8 @@ public:
 	~FootstepPlaner();
 
 	virtual void generate(int numberOfSteps=5) = 0;
-	
+	virtual void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize=100) = 0;
+
 	void setRobotModel(VirtualRobot::RobotPtr pRobot, 
 		std::string nameRightFoot = "RightLeg_BodyAnkle2", std::string nameLeftFoot = "LeftLeg_BodyAnkle2");
 
@@ -24,21 +23,40 @@ public:
 	void showFootPositions(bool isVisible);
 	void showFootTrajectories(bool isVisible);
 
-	Eigen::Matrix3Xf const getLeftFootPositions() {return _mLFootPositions;};
-	Eigen::Matrix3Xf const getRightFootPositions() {return _mRFootPositions;};
+	Eigen::Matrix3Xf const getLeftFootPositions();
+	Eigen::Matrix3Xf const getRightFootPositions();
 	static void writeSceneGraphToFile(SoSeparator* node);
+
+	double getDSTime() {return _dDoubleSupportPhase;};
+	double getSSTime() {return _dSingleSupportPhase;};
+	bool isStartingWithLeftFoot() {return _bLeftFootFirst;};
+	int getSamplesPerSecond() {return _iSampleSize;};
+
+	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
+		SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate);
 
 protected:
 	void computeFeetShape();
 	void buildVisualization();
-	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
-		SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate);
+
 
 	// data structures to save footstep positions and feet trajectories
 	Eigen::Matrix3Xf _mLFootTrajectory;
 	Eigen::Matrix3Xf _mRFootTrajectory;
 	Eigen::Matrix3Xf _mLFootPositions;
 	Eigen::Matrix3Xf _mRFootPositions;
+	Eigen::Matrix3Xf _mLFootPositionsTransformed;
+	Eigen::Matrix3Xf _mRFootPositionsTransformed;
+
+	// parameters
+	double _dStepLength;
+	double _dStepWidth;
+	double _dStepHeight;
+	double _dStepPeriod;
+	double _dSingleSupportPhase;
+	double _dDoubleSupportPhase;
+	double _iSampleSize;
+	bool _bLeftFootFirst;
 
 	// administrative bool values
 	bool _bChangesMade;

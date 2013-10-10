@@ -9,7 +9,7 @@
 #include "VirtualRobot/BoundingBox.h"
 #include "VirtualRobot/IK/CoMIK.h"
 
- #include <QFileDialog>
+#include <QFileDialog>
 #include <Eigen/Geometry>
 
 #include <time.h>
@@ -35,23 +35,27 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 :QMainWindow(NULL)
 {
 	VR_INFO << " start " << endl;
-	pFootStepPlaner.reset(new PolynomialFootstepPlaner());
+	//pFootStepPlaner.reset(new PolynomialFootstepPlaner());
+	pFootStepPlaner = new PolynomialFootstepPlaner();
+	pZMPPreviewControl = new ZMPPreviewControl();
+
 	robotFile = sRobotFile;
 	useColModel = false;
 
-	sceneSep = new SoSeparator;
-	robotVisuSep = new SoSeparator;
-	comVisu = new SoSeparator;	
-	comProjectionVisu = new SoSeparator;
-	comTargetVisu = new SoSeparator;
-	supportVisu = new SoSeparator;
+	sceneSep = new SoSeparator();
+	robotVisuSep = new SoSeparator();
+	comVisu = new SoSeparator();	
+	comProjectionVisu = new SoSeparator();
+	comTargetVisu = new SoSeparator();
+	supportVisu = new SoSeparator();
 
-	_vFootstepPlaner = new SoSeparator;
+	_vFootstepPlaner = new SoSeparator();
 	_vFootstepPlaner->ref();
+	_vZMPTrajectory = new SoSeparator();
+	_vZMPTrajectory->ref();
 
-	_vZMPTrajectory = new SoSeparator;
-	_vCoMTrajectory = new SoSeparator;
-	_vZMP = new SoSeparator;
+	_vCoMTrajectory = new SoSeparator();
+	_vZMP = new SoSeparator();
 
 	sceneSep->ref();
 	sceneSep->addChild(robotVisuSep);
@@ -60,9 +64,11 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	sceneSep->addChild(comTargetVisu);
 	sceneSep->addChild(supportVisu);
 	sceneSep->addChild(_vFootstepPlaner);
+	sceneSep->addChild(_vZMPTrajectory);
 	_vFootstepPlaner->addChild(pFootStepPlaner->getVisualization());
 	//std::cout << "Foostep Planer: [" << pFootStepPlaner.get() << "], visualization: [" << pFootStepPlaner->getVisualization() << "]" << std::endl;
-	sceneSep->addChild(_vZMPTrajectory);
+	_vZMPTrajectory->addChild(pZMPPreviewControl->getVisualization());
+
 	sceneSep->addChild(_vCoMTrajectory);
 	sceneSep->addChild(_vZMP);
 
@@ -83,7 +89,10 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 PatternGeneratorWindow::~PatternGeneratorWindow()
 {
 	_vFootstepPlaner->unref();
+	_vZMPTrajectory->unref();
 	sceneSep->unref();
+	delete pFootStepPlaner;
+	delete pZMPPreviewControl;
 }
 
 
@@ -261,6 +270,8 @@ void PatternGeneratorWindow::getUIParameters()
 	value = UI.lineEditStepHeight->text();
 	dHeight = value.toDouble();
 	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase, dHeight);
+	pZMPPreviewControl->setFootstepPlaner(pFootStepPlaner);
+	pZMPPreviewControl->computeReference();
 }
 
 void PatternGeneratorWindow::updateCoM()
@@ -365,16 +376,18 @@ void PatternGeneratorWindow::updateSupportVisu()
 // changes on ZMP or Feet Trajectory Checkboxes
 void PatternGeneratorWindow::updateTrajectoriesVisu() 
 {
+	std::cout << "updateTrajectoriesVisu() triggered!" << std::endl;
 	// check for trajectories and enable/disable them
 	if (pFootStepPlaner)
 		pFootStepPlaner->showFootTrajectories( UI.checkBoxFeetTrajectories->isChecked() );
-	if (UI.checkBoxZMP->isChecked()) 
+	if (pZMPPreviewControl)
 	{
-		// do something with _vZMPTrajectory
+		std::cout << "refreshing ZMP-Trajectory view: " << (UI.checkBoxZMPTrajectory->isChecked()?"activating!":"deactivating!") << std::endl;
+		pZMPPreviewControl->showReference(UI.checkBoxZMPTrajectory->isChecked());
 	}
+	// TODO: do something with _vCoMTrajectory
 	if (UI.checkBoxCoMTrajectory->isChecked()) 
 	{
-		// do something with _vCoMTrajectory
 	}
 }
 
@@ -648,7 +661,8 @@ void PatternGeneratorWindow::showZMPTrajectory()
 {
 	cout << "ZMP Trajectory clicked!" << endl;
 	updateTrajectoriesVisu();
-	pFootStepPlaner->writeSceneGraphToFile(pFootStepPlaner->getVisualization());
+	m_pExViewer->scheduleRedraw();
+	//pFootStepPlaner->writeSceneGraphToFile(pFootStepPlaner->getVisualization());
 }
 
 void PatternGeneratorWindow::showCoMTrajectory()

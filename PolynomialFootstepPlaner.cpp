@@ -4,7 +4,7 @@
 #include "VirtualRobot/CollisionDetection/CollisionChecker.h"
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
-PolynomialFootstepPlaner::PolynomialFootstepPlaner(void) : _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true)
+PolynomialFootstepPlaner::PolynomialFootstepPlaner(void)
 {
 } 
 
@@ -179,7 +179,6 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		stepCounter++;
 		_mLFootPositions.col(stepCounter)=vLeftFoot;
 		_mRFootPositions.col(stepCounter)=vRightFoot;
-
 	}
 	// insert ending DS-phase
 	for (int j=0; j<iDS; j++) {
@@ -187,6 +186,10 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
 	}
+	// save last step positions
+	/*stepCounter++;
+	_mLFootPositions.col(stepCounter)=vLeftFoot;
+	_mRFootPositions.col(stepCounter)=vRightFoot;*/
 	_bGenerated = true;
 	// **********************************
 	// ** generate visualization nodes **
