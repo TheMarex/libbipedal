@@ -25,12 +25,17 @@ public:
 
 	Eigen::Matrix3Xf const getLeftFootPositions();
 	Eigen::Matrix3Xf const getRightFootPositions();
+
+	Eigen::Matrix3Xf const getLeftFootTrajectory();
+	Eigen::Matrix3Xf const getRightFootTrajectory();
+
 	static void writeSceneGraphToFile(SoSeparator* node);
 
 	double getDSTime() {return _dDoubleSupportPhase;};
 	double getSSTime() {return _dSingleSupportPhase;};
 	bool isStartingWithLeftFoot() {return _bLeftFootFirst;};
 	int getSamplesPerSecond() {return _iSampleSize;};
+	float getStepHeight() {return _dStepHeight;};
 
 	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
 		SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate);
@@ -47,6 +52,8 @@ protected:
 	Eigen::Matrix3Xf _mRFootPositions;
 	Eigen::Matrix3Xf _mLFootPositionsTransformed;
 	Eigen::Matrix3Xf _mRFootPositionsTransformed;
+	Eigen::Matrix3Xf _mLFootTrajectoryTransformed;
+	Eigen::Matrix3Xf _mRFootTrajectoryTransformed;
 
 	// parameters
 	double _dStepLength;

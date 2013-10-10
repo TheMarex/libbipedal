@@ -34,6 +34,9 @@ protected:
 	// switches to enable or disable visualization of footstep positions and foot trajectories
 	SoSwitch* _swReference;
 	SoSwitch* _swRealZMP;
+
+	int _nSamplesDS;
+	int _nSamplesSS;
 };
 
 

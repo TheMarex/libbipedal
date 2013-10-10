@@ -1,7 +1,7 @@
 #include "ZMPPlaner.h"
 #include <Inventor/nodes/SoSphere.h>
 
-ZMPPlaner::ZMPPlaner() : _pPlaner(0), _bComputed(false)
+ZMPPlaner::ZMPPlaner() : _pPlaner(0), _bComputed(false), _nSamplesDS(0), _nSamplesSS(0)
 {
 	/* working
 	_visualization = new SoSeparator();

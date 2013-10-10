@@ -235,10 +235,14 @@ void FootstepPlaner::buildVisualization() {
 	generateVisualizationDuplicatesFromTrajectories(_visuLeftFootTrajectory, _visuLeftFootwoBorder, lFootTrajectories);
 	// save transformed foot positions
 	_mRFootPositionsTransformed.resize(3, rFootPositions.cols());
-	_mRFootPositionsTransformed = rFootPositions.block(0,0,3,rFootPositions.cols());
 	_mLFootPositionsTransformed.resize(3, lFootPositions.cols());
-	_mLFootPositionsTransformed = lFootPositions.block(0,0,3,lFootPositions.cols());
-
+	_mRFootPositionsTransformed = rFootPositions; //.block(0,0,3,rFootPositions.cols());
+	_mLFootPositionsTransformed = lFootPositions; //.block(0,0,3,lFootPositions.cols());
+	// save transformed feet trajectory
+	_mLFootTrajectoryTransformed.resize(3, lFootTrajectories.cols());
+	_mRFootTrajectoryTransformed.resize(3, rFootTrajectories.cols());
+	_mLFootTrajectoryTransformed = lFootTrajectories;
+	_mRFootTrajectoryTransformed = rFootTrajectories;
 }
 
 // get the visualization of the FootstepPlaner as a SoSeparator Node. The Node will be changed according to Paramater Changes
@@ -315,4 +319,14 @@ Eigen::Matrix3Xf const FootstepPlaner::getRightFootPositions()
 	return _mRFootPositionsTransformed;
 }
 
+
+Eigen::Matrix3Xf const FootstepPlaner::getLeftFootTrajectory() 
+{
+	return _mLFootTrajectoryTransformed;
+}
+
+Eigen::Matrix3Xf const FootstepPlaner::getRightFootTrajectory()
+{
+	return _mRFootTrajectoryTransformed;
+}
 

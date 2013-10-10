@@ -13,6 +13,8 @@ public:
 
 	virtual void computeReference();
 	void setPreview(int N);
+	void computeCoM();
+	void computeRealZMP();
 
 protected:
 	void buildReferenceVisualization();
