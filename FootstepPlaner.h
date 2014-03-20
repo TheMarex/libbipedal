@@ -36,6 +36,10 @@ public:
 	bool isStartingWithLeftFoot() {return _bLeftFootFirst;};
 	int getSamplesPerSecond() {return _iSampleSize;};
 	float getStepHeight() {return _dStepHeight;};
+    float getCoMHeight() {return _dCoMHeight;};
+
+    Eigen::Vector3f getInitialCoMPosition() {return _mInitialCoMPosition;};
+    void setInitialCoMPosition(Eigen::Vector3f v) {_mInitialCoMPosition=v;};
 
 	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
 		SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate);
@@ -56,11 +60,14 @@ protected:
 	Eigen::Matrix3Xf _mLFootTrajectoryTransformed;
 	Eigen::Matrix3Xf _mRFootTrajectoryTransformed;
 
+    Eigen::Vector3f _mInitialCoMPosition;
+
 	// parameters
 	double _dStepLength;
 	double _dStepWidth;
 	double _dStepHeight;
 	double _dStepPeriod;
+    double _dCoMHeight;
 	double _dSingleSupportPhase;
 	double _dDoubleSupportPhase;
 	double _iSampleSize;

@@ -82,8 +82,8 @@ void ZMPPreviewControl::computeReference()
 		std::cout << "Left and right foot: [" << vLeftFoot.x() << "|" << vLeftFoot.y() << "], [" << vRightFoot.x() << "|" << vRightFoot.y() << "]" << std::endl << std::flush;
 		// process state
 		switch (state) {
-		case 0:
-            // starting, move ZMP from center of both feet to next standing foot
+        case 0: // starting phase
+            // 1. starting, move ZMP from center of both feet to next standing foot
 			start = (vLeftFoot + vRightFoot) * 0.5f;
 			end  = (bLeftSwing?vRightFoot:vLeftFoot);
             //std::cout << "0[DS-Start] Moving from center to standing foot!" << std::endl << start << std::endl << end << std::endl << std::flush;
@@ -95,8 +95,8 @@ void ZMPPreviewControl::computeReference()
 			// next is swing-phase
 			state = 1;
 			break;
-		case 1:
-			// SS Phase - keep zmp on standing foot
+        case 1: // walking phase
+            // 1. SS Phase - keep zmp on standing foot
 			start = (bLeftSwing?vRightFoot:vLeftFoot);
 			//std::cout << "1[SS] Remaining on one foot!" << std::endl << start << std::endl << std::flush;
             std::cout << "1[SS][ZMPPreview] index: " << index << " iSS: " << iSS << " i" << i << std::endl;
@@ -104,7 +104,7 @@ void ZMPPreviewControl::computeReference()
 				_mReference.col(index+t)=start;
 			// increase index
 			index += iSS;
-			// normal DS Phase - move from standing foot to swinging foot
+            // 2. normal DS Phase - move from standing foot to swinging foot
 			start = (bLeftSwing?vRightFoot:vLeftFoot);
 			end = (bLeftSwing?vLeftFoot:vRightFoot);
 			//std::cout << "1[DS] Moving from one foot to other foot!" << std::endl << start << std::endl << end << std::endl << std::flush;
@@ -119,8 +119,8 @@ void ZMPPreviewControl::computeReference()
 			if (i==size-2)
 				state=2;
 			break;
-		case 2:
-			// SS Phase - keep zmp on standing foot
+        case 2: // stopping phase
+            // 1. SS Phase - keep zmp on standing foot
 			start = (bLeftSwing?vRightFoot:vLeftFoot);
 			//std::cout << "2[SS] Remaining on one foot!" << std::endl << start << std::endl << std::flush;
             std::cout << "2[SS][ZMPPreview] index: " << index << " iSS: " << iSS << " i" << i << std::endl;
@@ -128,7 +128,7 @@ void ZMPPreviewControl::computeReference()
 				_mReference.col(index+t)=start;
 			// increase index
 			index += iSS;
-			// ending DS Phase
+            // 2. ending DS Phase
 			start = (bLeftSwing?vRightFoot:vLeftFoot);
 			end = (vLeftFoot + vRightFoot) * 0.5f;
 			//std::cout << "2[DS-END] Moving from standing foot to center!" << std::endl << start << std::endl << end << std::endl << std::flush;
@@ -138,9 +138,6 @@ void ZMPPreviewControl::computeReference()
 			// increase index
 			index += iDS;
 			break;
-        case 3:
-            // TODO: moving from standing leg to center of both legs - Stop-Phase
-            break;
 		}
 
 	}
@@ -163,13 +160,13 @@ void ZMPPreviewControl::buildReferenceVisualization()
 	sp->radius = 0.002;
 	sep->addChild(sp);
 
-    Eigen::Matrix3Xf positions;
-    positions.resize(3, _mReference.cols());
-    positions.setZero();
-    positions.block(0,0,2,_mReference.cols()) = _mReference;
-    std::cout << "Number of entries in position matrix: " << std::endl << positions.cols() << std::endl;
+	Eigen::Matrix3Xf positions;
+	positions.resize(3, _mReference.cols());
+	positions.setZero();
+	positions.block(0,0,2,_mReference.cols()) = _mReference;
+	std::cout << "Number of entries in position matrix: " << std::endl << positions.cols() << std::endl;
 
-    _pPlaner->generateVisualizationDuplicatesFromTrajectories(_referenceNodes, sep, positions); // (Eigen::Matrix3Xf) positions.block(0,0,3,100));
+	_pPlaner->generateVisualizationDuplicatesFromTrajectories(_referenceNodes, sep, positions); // (Eigen::Matrix3Xf) positions.block(0,0,3,100));
 }
 
 // Visualize the real-ZMP computed from CoM trajectory ...  TODO: check again
@@ -207,10 +204,11 @@ void ZMPPreviewControl::buildCoMVisualization()
 
     SoSeparator* sep = new SoSeparator();
     SoSphere* sp = new SoSphere();
-    sp->radius = 0.1;
+    sp->radius = 0.01;
 
     sep->addChild(sp);
     std::cout << "using following 10 com coordinates: " << std::endl << _mCoM.block(0,0,3,10) << std::endl << std::flush;
+
     _pPlaner->generateVisualizationDuplicatesFromTrajectories(_comNodes, sep, _mCoM); // (Eigen::Matrix3Xf) positions.block(0,0,3,100));
 }
 
@@ -232,23 +230,31 @@ void ZMPPreviewControl::computeCoM()
 
     float T = 1.0f / (_pPlaner->getSamplesPerSecond());
 	float g = 9.81;
-	float hCoM = _pPlaner->getStepHeight();
+    float hCoM = _pPlaner->getCoMHeight(); //0.7 as standard
 
 	Eigen::Matrix3f A;
 	Eigen::MatrixXf B;
 	Eigen::MatrixXf C;
 	
 	A.setIdentity();
-    A.col(0).y() = T;
-    A.col(0).z() = T*T/2;
-    A.col(1).z() = T;
+// *  this should be the correct version A={{1,0,0} | {T,1,0} | {T²/2,T,1}}
+    A.col(1).x() = T;
+    A.col(2).x() = T*T/2;
+    A.col(2).y() = T;
 
+    // this one worked previously
+/*    A.col(0).x() = T;
+    A.col(1).y() = T;
+    A.col(2).x() = T*T/2;
+*/
+
+    // B = {T³/6, T²/2, T}
 	B.resize(3,1);
 	B << pow(T,3)/6, pow(T,2)/2, T;
 
+    // C = {{1} | {0} | {-hCoM/g}}
 	C.resize(1,3);
 	C << 1, 0, -1*hCoM/g;
-
 
     Eigen::MatrixXf PX;
     Eigen::MatrixXf PU;
@@ -262,19 +268,28 @@ void ZMPPreviewControl::computeCoM()
     Eigen::Matrix3f tempM;
     std::vector<Eigen::Matrix3f> powerOfA;
     tempM.setIdentity();
+    // TEST
+    // tempM = A;
 
+    // build PX:=[CA; CA^2; CA^3; ... CA^N]
     for (int i=0; i<N; i++)
     {
+        powerOfA.push_back(tempM);  // save A^i for later use
+        tempM = tempM*A;            // tempM = A^(i)*A = A^(i+1)
         PX.block(i,0,1,3) = C*tempM;
-        powerOfA.push_back(tempM);
-        tempM = tempM*A;
     }
+    powerOfA.push_back(tempM);
 
+    Eigen::Matrix3f dummy;
+    Eigen::MatrixXf res;
+    //float dummyFloat = 0;
     for (int i=0; i<N; i++)
     {
         for (int j=0; j<i; j++) //TODO: Endbedingung überprüfen
         {
-            PU(i,j)=(C*powerOfA[i-j]*B)(0,0);
+            dummy = powerOfA[i-j];
+            res=((C*dummy)*B);
+            PU(i,j) = res(0,0);
         }
     }
 
@@ -284,20 +299,34 @@ void ZMPPreviewControl::computeCoM()
     Q = 1.0f;
     R = 1e-6;
 
-    Eigen::MatrixXf w, wi, vX, vY, id, zero, zmpRefX, zmpRefY, jerkX, jerkY;
+    Eigen::MatrixXf w, wi, vX, vY, id, initX, initY, zmpRefX, zmpRefY, jerkX, jerkY;
     /*w.resize(N,N);
     v.resize(N,1);*/
     id.resize(N,N);
     id.setIdentity();
-    zero.resize(3,1);
-    zero.setZero();
-
+    // load reference ZMP values
     zmpRefX = _mReference.row(0).transpose();
     zmpRefY = _mReference.row(1).transpose();
+    // set initial values for CoM, where every variable a has 3 dim in form of (a, a', a'')
+    initX.resize(3,1);
+    initX.setZero();
+    initY.resize(3,1);
+    initY.setZero();
+    initX(0) = zmpRefX(0);
+    initY(0) = zmpRefY(0);
+
+    /* hack
+    initX(1) = 0.001;
+    initY(1) = 0.001;*/
+
+    std::cout << "Using initial values of [" << initX.col(0).x() << "|" << initY.col(0).x() << "] for CoM!" << std::endl;
+    //initX(0,0,1,1) = zmpRefX(0,0,1,1);
+    //initY(0,0,1,1) = zmpRefY(0,0,1,1);
+
 
     w = Q * PUt * PU + R*id;
-    vX = Q * PUt * PX * zero - Q*PUt * zmpRefX;
-    vY = Q * PUt * PX * zero - Q*PUt * zmpRefY;
+    vX = Q * PUt * PX * initX - Q*PUt * zmpRefX;
+    vY = Q * PUt * PX * initY - Q*PUt * zmpRefY;
 
     wi = w.inverse();
 
@@ -308,33 +337,52 @@ void ZMPPreviewControl::computeCoM()
     jerkY = - wi * vY;
 
     // now compute CoM and realZMP
-    Eigen::MatrixXf CX, CY, ZX, ZY, cxk, cyk, zxk, zyk;
-    CX.resize(N,3);
-    CY.resize(N,3);
-    ZX.resize(N,1);
-    ZY.resize(N,1);
+    Eigen::MatrixXf CX, CY, ZX, ZY, cxk, cyk; //, zxk, zyk;
+    float zxk, zyk;
+    CX.resize(N,3); // CoM X, X', X''
+    CY.resize(N,3); // CoM Y, Y', Y''
+    ZX.resize(N,1); // ZMP X
+    ZY.resize(N,1); // ZMP Y
 
     cxk.resize(3,1);
     cyk.resize(3,1);
-    zxk.resize(1,1);
-    zyk.resize(1,1);
+    //zxk.resize(1,1);
+    //zyk.resize(1,1);
 
     cxk.setZero();
     cyk.setZero();
+    cxk = initX;    // initial CoM values x, x', x''
+    cyk = initY;    // initial CoM values y, y', y''
+
+    // 0.085698, -0.000523125, 0.811306
+    /* Unfortunately this is not working in debug mode, therefore we implement a hack
+    float dummyX = _pPlaner->getInitialCoMPosition().x() / 1000.0f;
+    float dummyY = _pPlaner->getInitialCoMPosition().y() / 1000.0f;
+    float dummyZ = _pPlaner->getInitialCoMPosition().z() / 1000.0f;
+    cxk(0) = dummyX;
+    cyk(1) = dummyY;
+    std::cout << "Initial CoM Position of Robot: [" << dummyX << ", " << dummyY << ", " << dummyZ << "]" << std::endl;
+    */
+
+    /*cxk(0) = zmpRefX(0,0);
+    cyk(0) = zmpRefY(0,0);*/
+
 
     for (int i=0; i<N; i++)
     {
         cxk=A*cxk+B*jerkX(i);
         cyk=A*cyk+B*jerkY(i);
 
-        zxk=C*cxk;
-        zyk=C*cyk;
+        zxk = (C*cxk).col(0).x();
+        zyk = (C*cyk).col(0).x();
 
         CX.block(i,0,1,3) = cxk.transpose();
         CY.block(i,0,1,3) = cyk.transpose();
 
-        ZX(i,0) = zxk(0,0);
-        ZY(i,0) = zyk(0,0);
+        ZX(i) = zxk;
+        ZY(i) = zyk;
+        //ZX(i,0) = zxk(0,0);
+        //ZY(i,0) = zyk(0,0);
     }
     _mZMP.resize(2,N);
     _mZMP.block(0,0,1,N) = ZX.transpose();
@@ -348,15 +396,30 @@ void ZMPPreviewControl::computeCoM()
     _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose();
     _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose();
 
-    _mCoM *= 1000;
+    //_mCoM *= -1000;
     _mCoM.block(2,0,1,N) = height;
+
+    std::cout << std::endl << "\tZMPPreviewControl::computeCom(): _mCoM(0): ["
+              << _mCoM(0,0) << "," << _mCoM(1,0) << "," << _mCoM(2,0) << "], _mZMP(0): ["
+              << _mZMP(0,0) << "," << _mZMP(1,0) << "," << "], given height ["
+              << hCoM << "]" << std::endl << std::endl;
+
+    std::cout << std::endl << "\tZMPPreviewControl::computeCom(): _mCoM(200): ["
+              << _mCoM(0,200) << "," << _mCoM(1,200) << "," << _mCoM(2,200) << "], _mZMP(200): ["
+              << _mZMP(0,200) << "," << _mZMP(1,200) << "," << "], given height ["
+              << hCoM << "]" << std::endl << std::endl;
+
+    std::cout << std::endl << "\tZMPPreviewControl::computeCom(): _mCoM(N-1): ["
+              << _mCoM(0,N-1) << "," << _mCoM(1,N-1) << "," << _mCoM(2,N-1) << "], _mZMP(N-1): ["
+              << _mZMP(0,N-1) << "," << _mZMP(1, N-1) << "," << "], given height ["
+              << hCoM << "]" << std::endl << std::endl;
 
     buildRealZMPVisualization();
     buildCoMVisualization();
 
 
 
-    //computeRealZMP();
+    //computeRealZMP(); // this is already done
 }
 
 

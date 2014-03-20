@@ -26,18 +26,18 @@ public:
 protected:
 	FootstepPlaner* _pPlaner;
 	bool _bComputed;
-	Eigen::Matrix2Xf _mReference;
-	Eigen::Matrix2Xf _mZMP;
-	Eigen::Matrix3Xf _mCoM;
+    Eigen::Matrix2Xf _mReference;   // ZMPReference
+    Eigen::Matrix3Xf _mCoM;         // computed CoM
+    Eigen::Matrix2Xf _mZMP;         // computed "real" ZMP (resulting from CoM)
 	// root node for visualization
 	SoSeparator* _visualization;
 	SoSeparator* _referenceNodes;
-	SoSeparator* _realNodes;
 	SoSeparator* _comNodes;
-	// switches to enable or disable visualization of footstep positions and foot trajectories
+    SoSeparator* _realNodes;
+    // switches to enable or disable visualization of referenceZMP/CoM-Trajectory/resulting-ZMP
 	SoSwitch* _swReference;
-	SoSwitch* _swRealZMP;
 	SoSwitch* _swCoM;
+    SoSwitch* _swRealZMP;
 
 	int _nSamplesDS;
 	int _nSamplesSS;

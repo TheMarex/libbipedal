@@ -63,7 +63,7 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// ***************************************************
 	// ** calculate generalized swinging leg trajectory **
 	// ***************************************************
-	int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod)+1;
+    int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod);
 	double sampleDelta = 1.0f / _iSampleSize;
 	// initialise Matrix
 	_footTrajectory = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
@@ -116,8 +116,8 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// ******************************************
 	// initialise Matrices
     std::cout << "calculate Foot Positions for " << _iNumberOfSteps << " Steps: (iDS/iSS: [" << iDS << "|" << iSS << "])" << std::endl;
-	int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS*2;
-    std::cout << "generating a total of " << iSamples << " samples. Using " << iSamplesPerStep << " samples per step and " << iDS << " samples for DS-phase!" << std::endl;
+    int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS;
+    std::cout << "generating a total of " << iSamples << " samples. Using " << iSamplesPerStep << " samples per step and ["<< iSS << "|" << iDS << "] samples for [SS|DS]-phase!" << std::endl;
 	_mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
 	_mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
 	bool bLeft = (_bLeftFootFirst?true:false);
@@ -184,11 +184,12 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 		_mRFootPositions.col(stepCounter)=vRightFoot;
 	}
 	// insert ending DS-phase
-	for (int j=0; j<iDS; j++) {
+    /* this is too much
+    for (int j=0; j<iDS; j++) {
 		_mLFootTrajectory.col(index) = vLeftFoot;
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
-	}
+    }*/
 	// save last step positions
 	/*stepCounter++;
 	_mLFootPositions.col(stepCounter)=vLeftFoot;

@@ -128,7 +128,6 @@ void PatternGeneratorWindow::setupUI()
 //	connect(UI.sliderX, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedX(int)));
 //	connect(UI.sliderY, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedY(int)));
 	
-	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
 	connect(UI.lineEditStepPeriod, SIGNAL(editingFinished()), this, SLOT(updateStepPeriod()));
 	connect(UI.lineEditStepLength, SIGNAL(editingFinished()), this, SLOT(updateStepLength()));
 	connect(UI.lineEditDSLength, SIGNAL(editingFinished()), this, SLOT(updateDoubleSupportLength()));
@@ -141,8 +140,8 @@ void PatternGeneratorWindow::setupUI()
 	connect(UI.checkBoxZMPTrajectory, SIGNAL(clicked()), this, SLOT(showZMPTrajectory()));
 	connect(UI.checkBoxCoMTrajectory, SIGNAL(clicked()), this, SLOT(showCoMTrajectory()));
 	connect(UI.checkBoxZMP, SIGNAL(clicked()), this, SLOT(showZMP()));
-	connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
-	connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
+    connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
+    connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
 	
 	UI.lineEditDSLength->setValidator(new QDoubleValidator());
 	UI.lineEditStepHeight->setValidator(new QDoubleValidator());
@@ -271,7 +270,12 @@ void PatternGeneratorWindow::getUIParameters()
 	dHeight = value.toDouble();
 	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase, dHeight);
 	pZMPPreviewControl->setFootstepPlaner(pFootStepPlaner);
-	pZMPPreviewControl->computeReference();
+    if (robot!=0) {
+        std::cout << "Initial CoM Position set!" << std::endl;
+        Eigen::Vector3f com = robot->getCoMLocal();
+        pFootStepPlaner->setInitialCoMPosition(com);
+    }
+    pZMPPreviewControl->computeReference();
 }
 
 void PatternGeneratorWindow::updateCoM()
