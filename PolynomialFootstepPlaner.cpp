@@ -75,12 +75,12 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	int iSS = (int) (iSamplesPerStep * _dSS);
 	int iDS = (int) (iSamplesPerStep * _dDS);
 	// temporary variables
-	double T1 = _dSingleSupportPhase;
-	double T2 = T1*T1;
-	double T3 = T2*T1;
-	double T4 = T3*T1;
-	double S = _dStepLength;
-	double H = _dStepHeight;
+    double T1 = _dSingleSupportPhase;   // T^1
+    double T2 = T1*T1;                  // T^2
+    double T3 = T2*T1;                  // T^3
+    double T4 = T3*T1;                  // T^4
+    double S = _dStepLength;            // StepLength
+    double H = _dStepHeight;            // Height
 	double cx, dx, bz, cz, dz, xtemp, ztemp, x1, x2, x3, x4;
 	// calculating foot trajectory for swinging leg including resting phase
 	for (int i=0; i<_footTrajectory.cols(); i++) {
@@ -105,6 +105,7 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 			ztemp = 0;
 		}
 		_footTrajectory(0, i)= xtemp;
+        _footTrajectory(1, i)= 0;
 		_footTrajectory(2, i)= ztemp;
 		// half steps are half the length and half the height
 		_footTrajectoryFirstLast(0, i) = xtemp/2;
@@ -114,7 +115,9 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// ** calculate Foot Positions for n-Steps **
 	// ******************************************
 	// initialise Matrices
+    std::cout << "calculate Foot Positions for " << _iNumberOfSteps << " Steps: (iDS/iSS: [" << iDS << "|" << iSS << "])" << std::endl;
 	int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS*2;
+    std::cout << "generating a total of " << iSamples << " samples. Using " << iSamplesPerStep << " samples per step and " << iDS << " samples for DS-phase!" << std::endl;
 	_mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
 	_mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
 	bool bLeft = (_bLeftFootFirst?true:false);
@@ -145,12 +148,12 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 			halfStep = true;
 		else
 			halfStep = false;
-		// TODO: elegantere Lösung implementieren
+        // TODO: find a more elegant solution
 		vTempL.setZero();
 		vTempR.setZero();
 		if (halfStep) {
 			for (int j=0; j<iSamplesPerStep; j++) {
-				// which foot to move?
+                // which foot do we move?
 				if (bLeft)
 					vTempL = _footTrajectoryFirstLast.col(j);
 				else

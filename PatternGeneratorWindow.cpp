@@ -287,7 +287,7 @@ void PatternGeneratorWindow::updateCoM()
 		globalPoseCoM.block(0,3,3,1) = currentRobotNodeSet->getCoM();
 	} else if (robot)
 	{
-		globalPoseCoM.block(0,3,3,1) = robot->getCoM();
+        globalPoseCoM.block(0,3,3,1) = robot->getCoMLocal();
 	}
 	SoMatrixTransform *m = dynamic_cast<SoMatrixTransform *>(comVisu->getChild(0));
 	if (m)
@@ -384,11 +384,17 @@ void PatternGeneratorWindow::updateTrajectoriesVisu()
 	{
 		std::cout << "refreshing ZMP-Trajectory view: " << (UI.checkBoxZMPTrajectory->isChecked()?"activating!":"deactivating!") << std::endl;
 		pZMPPreviewControl->showReference(UI.checkBoxZMPTrajectory->isChecked());
-	}
+
+        pZMPPreviewControl->showRealZMP(UI.checkBoxZMP->isChecked());
+
+        pZMPPreviewControl->showCoM(UI.checkBoxCoMTrajectory->isChecked());
+    }
+    /*
 	// TODO: do something with _vCoMTrajectory
 	if (UI.checkBoxCoMTrajectory->isChecked()) 
 	{
-	}
+        std::cout << "CoMTrajectory clicked!" << std::endl;
+    } */
 }
 
 void PatternGeneratorWindow::updateZMPVisu() 
@@ -669,14 +675,20 @@ void PatternGeneratorWindow::showCoMTrajectory()
 {
 	cout << "CoM Trajectory clicked!" << endl;
 	updateTrajectoriesVisu();
+    m_pExViewer->scheduleRedraw();
 }
 
 void PatternGeneratorWindow::showZMP()
 {
-	cout << "showZMP clicked!" << endl;
+    cout << "showZMP clicked!" << endl;
+    updateTrajectoriesVisu();
+    m_pExViewer->scheduleRedraw();
+
+    /*
+    cout << "showZMP clicked!" << endl;
 	if (!robot)
 		return;
-	updateZMPVisu();
+    updateZMPVisu();*/
 }
 
 void PatternGeneratorWindow::showCoM()

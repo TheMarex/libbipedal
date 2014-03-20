@@ -33,6 +33,7 @@ int main(int argc, char *argv[])
 	PatternGeneratorWindow rw(filenameRob);
 	rw.main();
 
-	return 0;
+    cout << " --- END --- " << endl;
+    return 0;
 
 }

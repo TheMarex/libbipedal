@@ -9,7 +9,7 @@
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
 
-FootstepPlaner::FootstepPlaner(void) : _pRobot(0), _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true), _bChangesMade(false), _bGenerated(false)
+FootstepPlaner::FootstepPlaner(void) : _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true), _bChangesMade(false), _bGenerated(false)
 {
 	_visualization = new SoSeparator();
 	_visuRightFoot = new SoSeparator();
@@ -214,10 +214,13 @@ void FootstepPlaner::buildVisualization() {
 	Eigen::Vector3f rDelta, lDelta;
 	rDelta.setZero();
 	lDelta.setZero();
-	rDelta.x() =  - rFootPositions.col(0).x() + _vRightFootCenter.x(); //- _vRobotCenterStart.x();
+
+    rDelta.x() =  - rFootPositions.col(0).x() + _vRightFootCenter.x(); //- _vRobotCenterStart.x();
 	rDelta.y() =  - rFootPositions.col(0).y() + _vRightFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+    // rDelta = _vRightFootCenter-rFootPositions.block(0,0,2,1);
 	lDelta.x() =  - lFootPositions.col(0).x() + _vLeftFootCenter.x(); //- _vRobotCenterStart.x();
 	lDelta.y() =  - lFootPositions.col(0).y() + _vLeftFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
+    // lDelta = _vLeftFootCenter-lFootPositions.block(0,0,2,1);
 	for (int i=0; i<rFootPositions.cols(); i++)
 		rFootPositions.col(i) += rDelta ;
 	for (int i=0; i<lFootPositions.cols(); i++)

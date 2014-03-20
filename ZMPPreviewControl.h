@@ -18,8 +18,8 @@ public:
 
 protected:
 	void buildReferenceVisualization();
-
-
+    void buildRealZMPVisualization();
+    void buildCoMVisualization();
 
 protected:
 	int _nPreviewCount;

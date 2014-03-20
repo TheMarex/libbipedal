@@ -22,16 +22,22 @@ ZMPPlaner::ZMPPlaner() : _pPlaner(0), _bComputed(false), _nSamplesDS(0), _nSampl
 	_visualization = new SoSeparator();
 	_swReference = new SoSwitch();
 	_swRealZMP = new SoSwitch();
-	_referenceNodes = new SoSeparator();
+    _swCoM = new SoSwitch();
+    _referenceNodes = new SoSeparator();
 	_realNodes = new SoSeparator();
-	_swReference->whichChild=SO_SWITCH_ALL;
+    _comNodes = new SoSeparator();
+    _swReference->whichChild=SO_SWITCH_ALL;
 	_swRealZMP->whichChild=SO_SWITCH_ALL;
+    _swCoM->whichChild=SO_SWITCH_ALL;
 
 	_visualization->addChild(_swReference);
 	_visualization->addChild(_swRealZMP);
+    _visualization->addChild(_swCoM);
 
 	_swReference->addChild(_referenceNodes);
-	//_referenceNodes->addChild(new SoSphere());
+    _swRealZMP->addChild(_realNodes);
+    _swCoM->addChild(_comNodes);
+    //_referenceNodes->addChild(new SoSphere());
 	
 
 	/*
@@ -76,7 +82,19 @@ void ZMPPlaner::showRealZMP(bool isVisible)
 	_swRealZMP->whichChild=(isVisible?SO_SWITCH_ALL:SO_SWITCH_NONE);
 	if (isVisible) 
 		std::cout << "Make computed ZMP visible!" << std::endl;
+	else
+		std::cout << "Make computed ZMP invisible!" << std::endl;
 }
+
+void ZMPPlaner::showCoM(bool isVisible)
+{
+	_swCoM->whichChild=(isVisible?SO_SWITCH_ALL:SO_SWITCH_NONE);
+	if (isVisible) 
+		std::cout << "Make CoM Trajectory visible!" << std::endl;
+	else
+		std::cout << "Make CoM Trajectory invisible!" << std::endl;
+}
+
 
 // saves computed ZMP-Positions to given Matrix
 // returns 1 if successful, 0 otherwise

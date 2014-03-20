@@ -1,7 +1,7 @@
 #ifndef __POLYNOMIAL_FOOTSTEP_PLANER_H_
 #define __POLYNOMIAL_FOOTSTEP_PLANER_H_
 
-#include "footstepplaner.h"
+#include "FootstepPlaner.h"
 
 //typedef boost::shared_ptr<PolynomialFootstepPlaner> BOOST_P_FOOTSTEPPLANER;
 

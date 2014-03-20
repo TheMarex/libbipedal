@@ -44,10 +44,11 @@ protected:
 	void computeFeetShape();
 	void buildVisualization();
 
-
+public:
 	// data structures to save footstep positions and feet trajectories
 	Eigen::Matrix3Xf _mLFootTrajectory;
 	Eigen::Matrix3Xf _mRFootTrajectory;
+protected:
 	Eigen::Matrix3Xf _mLFootPositions;
 	Eigen::Matrix3Xf _mRFootPositions;
 	Eigen::Matrix3Xf _mLFootPositionsTransformed;
