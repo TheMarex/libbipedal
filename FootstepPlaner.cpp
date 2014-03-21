@@ -155,7 +155,7 @@ void FootstepPlaner::computeFeetShape() {
 	walkingDir3D << walkingDirection.x(), walkingDirection.y(), 0.0f;
 	sArrow->addChild (VirtualRobot::CoinVisualizationFactory::CreateArrow(walkingDir3D, 500.0f, 20.0f, 
 		VirtualRobot::VisualizationFactory::Color::Blue(0.5f)));
-	_visualization->addChild(sArrow);
+    //_visualization->addChild(sArrow);
 	// delete old visualizations
 	_visuRightFoot->removeAllChildren();
 	_visuLeftFoot->removeAllChildren();
@@ -298,6 +298,30 @@ void FootstepPlaner::generateVisualizationDuplicatesFromTrajectories(SoSeparator
 	}
 }
 
+void FootstepPlaner::generateVisualizationForLineTrajectories(SoSeparator* whereToInsert, Eigen::Matrix3Xf positionList, float rColor, float gColor, float bColor, float scale)
+{
+    Eigen::Matrix4f mFrom, mTo;
+    mFrom.setIdentity();
+    mTo.setIdentity();
+    for (int i=0; i<positionList.cols()-1; i++) {
+        mFrom.block(0,3,3,1) = positionList.col(i)*scale;
+        mTo.block(0,3,3,1) = positionList.col(i+1)*scale;
+        //VirtualRobot::VisualizationNodePtr p = visualizationFactory->createLine(vFrom, vTo, 2.0f, 0.1f, 0.8f, 0.1f);
+        //_realNodes->addChild(VirtualRobot::CoinVisualizationFactory::getCoinVisualization(p));
+        whereToInsert->addChild(VirtualRobot::CoinVisualizationFactory::createCoinLine(mFrom, mTo, 5.0f, rColor, gColor, bColor));
+    }
+
+}
+
+void FootstepPlaner::generateVisualizationForLineTrajectories(SoSeparator* whereToInsert, Eigen::Vector3f from, Eigen::Vector3f to, float rColor, float gColor, float bColor,  float scale)
+{
+    Eigen::Matrix4f mFrom, mTo;
+    mFrom.setIdentity();
+    mTo.setIdentity();
+    mFrom.block(0,3,3,1) = from*scale;
+    mTo.block(0,3,3,1) = to*scale;
+    whereToInsert->addChild(VirtualRobot::CoinVisualizationFactory::createCoinLine(mFrom, mTo, 5.0f, rColor, gColor, bColor));
+}
 
 /*
  * Save as scene Graph to a test file

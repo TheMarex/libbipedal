@@ -43,12 +43,14 @@ public:
 
 	static void generateVisualizationDuplicatesFromTrajectories(SoSeparator* whereToInsert, 
 		SoSeparator* whatToInsert, Eigen::Matrix3Xf &whereToTranslate);
+    static void generateVisualizationForLineTrajectories(SoSeparator* whereToInsert, Eigen::Vector3f from, Eigen::Vector3f to, float rColor = 0.8f, float gColor = 0.1f, float bColor = 0.1f,  float scale=1000.0f);
+    static void generateVisualizationForLineTrajectories(SoSeparator* whereToInsert, Eigen::Matrix3Xf positionList, float rColor = 0.8f, float gColor = 0.1f, float bColor = 0.1f,  float scale=1000.0f);
 
 protected:
 	void computeFeetShape();
 	void buildVisualization();
 
-public:
+//public:
 	// data structures to save footstep positions and feet trajectories
 	Eigen::Matrix3Xf _mLFootTrajectory;
 	Eigen::Matrix3Xf _mRFootTrajectory;
