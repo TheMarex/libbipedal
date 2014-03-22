@@ -17,6 +17,7 @@ public:
 
 	void setRobotModel(VirtualRobot::RobotPtr pRobot, 
 		std::string nameRightFoot = "RightLeg_BodyAnkle2", std::string nameLeftFoot = "LeftLeg_BodyAnkle2");
+    VirtualRobot::RobotPtr getRobotModel() {return _pRobot;};
 
 	SoSeparator* getVisualization();
 

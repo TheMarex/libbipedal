@@ -3,6 +3,12 @@
 #include <Inventor/nodes/SoSphere.h>
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
+#include <VirtualRobot/Robot.h>
+#include <VirtualRobot/Nodes/RobotNode.h>
+
+#include <VirtualRobot/IK/CoMIK.h>
+#include <VirtualRobot/IK/HierarchicalIK.h>
+
 ZMPPreviewControl::ZMPPreviewControl() : _nPreviewCount(150), ZMPPlaner()
 {
 	std::cout << "Construction ZMP Preview Controller" << std::endl;
@@ -263,13 +269,13 @@ void ZMPPreviewControl::computeCoM()
 
     int N = _mReference.cols();
 
-    float T = 1.0f / (_pPlaner->getSamplesPerSecond());
-	float g = 9.81;
-    float hCoM = _pPlaner->getCoMHeight(); //0.7 as standard
+    double T = 1.0f / (_pPlaner->getSamplesPerSecond());
+    double g = 9.81;
+    double hCoM = _pPlaner->getCoMHeight(); //0.7 as standard
 
-	Eigen::Matrix3f A;
-	Eigen::MatrixXf B;
-	Eigen::MatrixXf C;
+    Eigen::Matrix3d A;
+    Eigen::MatrixXd B;
+    Eigen::MatrixXd C;
 	
 	A.setIdentity();
 // *  this should be the correct version A={{1,0,0} | {T,1,0} | {T²/2,T,1}}
@@ -289,40 +295,54 @@ void ZMPPreviewControl::computeCoM()
 
     // C = {{1} | {0} | {-hCoM/g}}
 	C.resize(1,3);
-	C << 1, 0, -1*hCoM/g;
+    //C << 1, 0, -1*hCoM/g;
+    C.col(0).x() = 1;
+    C.col(1).x() = 0;
+    C.col(2).x() = -1*hCoM/g;
 
-    Eigen::MatrixXf PX;
-    Eigen::MatrixXf PU;
-    Eigen::MatrixXf PUt;
+    Eigen::MatrixXd PX;
+    Eigen::MatrixXd PU;
+    Eigen::MatrixXd PUt;
 
     PX.resize(N,3);
     PU.resize(N,N);
     PX.setZero();
     PU.setZero();
 
-    Eigen::Matrix3f tempM;
-    std::vector<Eigen::Matrix3f> powerOfA;
-    tempM.setIdentity();
+    Eigen::Matrix3d tempM;
+    // Eigen::MatrixXd powerOfA;
+    // std::vector<Eigen::Matrix3d> powerOfA;
+
     // TEST
     // tempM = A;
 
     // build PX:=[CA; CA^2; CA^3; ... CA^N]
+    // iterate from 0..N-1 and calculate PX=C*A^(i+1)
+    // powerOfA.resize(3,3*N);
+
+    tempM.setIdentity();
     for (int i=0; i<N; i++)
     {
-        powerOfA.push_back(tempM);  // save A^i for later use
+        //powerOfA.push_back(tempM);  // save A^i for later use
+        //powerOfA.block(i*3, 0, 3, 3) = tempM;
         tempM = tempM*A;            // tempM = A^(i)*A = A^(i+1)
         PX.block(i,0,1,3) = C*tempM;
     }
-    powerOfA.push_back(tempM);
+    //powerOfA.push_back(tempM);
 
-    Eigen::Matrix3f dummy;
-    Eigen::MatrixXf res;
+
+    Eigen::Matrix3d dummy;
+    Eigen::MatrixXd res;
     //float dummyFloat = 0;
     for (int i=0; i<N; i++)
     {
         for (int j=0; j<i; j++) //TODO: Endbedingung überprüfen
         {
-            dummy = powerOfA[i-j];
+            //dummy = powerOfA[i-j];
+            // dummy = powerOfA.block((i-j)*3, 0, 3, 3);
+            dummy.setIdentity();
+            for (int k=0; k<i-j; k++)
+                dummy=dummy*A;
             PU(i,j) = ((C*dummy)*B).col(0).x(); // Eigen is beeing a bitch about this...
             /*res=((C*dummy)*B);
             PU(i,j) = res(0,0);*/
@@ -331,18 +351,18 @@ void ZMPPreviewControl::computeCoM()
 
     PUt = PU.transpose();
 
-    float Q,R;
+    double Q,R;
     Q = 1.0f;
     R = 1e-6;
 
-    Eigen::MatrixXf w, wi, vX, vY, id, initX, initY, zmpRefX, zmpRefY, jerkX, jerkY;
+    Eigen::MatrixXd w, wi, vX, vY, id, initX, initY, zmpRefX, zmpRefY, jerkX, jerkY;
     /*w.resize(N,N);
     v.resize(N,1);*/
     id.resize(N,N);
     id.setIdentity();
     // load reference ZMP values
-    zmpRefX = _mReference.row(0).transpose();
-    zmpRefY = _mReference.row(1).transpose();
+    zmpRefX = _mReference.row(0).transpose().cast<double>();
+    zmpRefY = _mReference.row(1).transpose().cast<double>();
     // set initial values for CoM, where every variable a has 3 dim in form of (a, a', a'')
     initX.resize(3,1);
     initX.setZero();
@@ -373,8 +393,8 @@ void ZMPPreviewControl::computeCoM()
     jerkY = - wi * vY;
 
     // now compute CoM and realZMP
-    Eigen::MatrixXf CX, CY, ZX, ZY, cxk, cyk; //, zxk, zyk;
-    float zxk, zyk;
+    Eigen::MatrixXd CX, CY, ZX, ZY, cxk, cyk; //, zxk, zyk;
+    double zxk, zyk;
     CX.resize(N,3); // CoM X, X', X''
     CY.resize(N,3); // CoM Y, Y', Y''
     ZX.resize(N,1); // ZMP X
@@ -421,19 +441,21 @@ void ZMPPreviewControl::computeCoM()
         //ZY(i,0) = zyk(0,0);
     }
     _mZMP.resize(2,N);
-    _mZMP.block(0,0,1,N) = ZX.transpose();
-    _mZMP.block(1,0,1,N) = ZY.transpose();
+    _mZMP.block(0,0,1,N) = ZX.transpose().cast<float>();
+    _mZMP.block(1,0,1,N) = ZY.transpose().cast<float>();
 
-    Eigen::MatrixXf height;
+    Eigen::MatrixXd height;
     height.resize(1,N);
     height.setConstant(hCoM);
 
     _mCoM.resize(3,N);
-    _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose();
-    _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose();
+//    _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose().cast<float>;
+//    _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose().cast<float>;
+    _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose().cast<float>();
+    _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose().cast<float>();
 
     //_mCoM *= -1000;
-    _mCoM.block(2,0,1,N) = height;
+    _mCoM.block(2,0,1,N) = height.cast<float>();
 
     std::cout << std::endl << "\tZMPPreviewControl::computeCom(): _mCoM(0): ["
               << _mCoM(0,0) << "," << _mCoM(1,0) << "," << _mCoM(2,0) << "], _mZMP(0): ["
@@ -461,9 +483,91 @@ void ZMPPreviewControl::computeCoM()
 
 
     //computeRealZMP(); // this is already done
+    computeInverseKinematics();
 }
 
 
-void ZMPPreviewControl::computeRealZMP() {
+void ZMPPreviewControl::computeInverseKinematics() {
+    // robot        RobotPtr auf Modell
+    // _mCoM        CoM-Positionen 3xN Matrix
+    // N            Anzahl Frames
+    // leftFootPos  Positionen des linken Fußes 3xN Matrix
+    // rightFootPos  Positionen des rechten Fußes 3xN Matrix
+    VirtualRobot::RobotPtr robot = _pPlaner->getRobotModel();
+    Eigen::Matrix3Xf leftFootPos = _pPlaner->getLeftFootPositions();
+    Eigen::Matrix3Xf rightFootPos = _pPlaner->getRightFootPositions();
+    std::vector < VirtualRobot::RobotNodePtr > allRobotNodes;
+    // get all Robot Nodes
+    robot->getRobotNodes(allRobotNodes);
+    VirtualRobot::RobotNodeSetPtr nodeSetjoints = robot->getRobotNodeSet("Left2RightLeg");
+    VirtualRobot::RobotNodeSetPtr nodeSetbodies = robot->getRobotNodeSet("ColModelAll");
+    //VirtualRobot::RobotNodeSetPtr
+    // do magic
+    VirtualRobot::CoMIKPtr comIK;
+    VirtualRobot::DifferentialIKPtr difIK;
 
+    comIK.reset(new VirtualRobot::CoMIK(nodeSetjoints, nodeSetbodies));
+    difIK.reset(new VirtualRobot::DifferentialIK(nodeSetjoints));
+
+    VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
+    VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
+
+    jRightFoot.jacProvider = difIK;
+
+    //jCoM.jacProvider = comIK;
+    //jCoM.delta = (_mCoM.block(0,0,3,1) - robot->getCoMLocal());
+    //jCoM.delta = robot->getCoMLocal() + Eigen::Vector3f(1.0f,0.0f,0.0f);
+    jRightFoot.delta = Eigen::Vector3f(0.1f,0.1f,0.1f);
+
+    std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
+    //jacobiDefinitions.push_back(jCoM);
+    jacobiDefinitions.push_back(jRightFoot);
+
+    // float e = VirtualRobot::HierarchicalIK::computeStep(jacobiDefinitions).norm();
+
+
+
+
+
+    VirtualRobot::HierarchicalIK hIK(nodeSetjoints);
+    Eigen::Vector3f dummyGoal = nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1) + Eigen::Vector3f(15.0f,0.0f,0.0f);
+    difIK->setGoal(dummyGoal);
+
+
+
+    float e = 0;
+    bool b = false;
+    for (int i=0; i<15; i++) {
+        //e = hIK.computeStep(jacobiDefinitions).norm();
+        b = difIK->computeSteps(0.2f, 0.2f, 20);
+        //std::cout << "Error is: " << e << std::endl;
+        std::cout << "return value is: " << b << std::endl;
+    }
+
+    // mögliche Fehler
+    // - kein Sync mit visu
+    // - gelenkwinkel werden nicht gesetzt im robotermodell
+    // - falsch benutzt
+    // - evtl. später fehler in der comIK wegen 2d->3d
+
+
+    /*
+    float error = 100;
+    while(error > 0.1)
+    {
+        float e = hIK.computeStep(jacobiDefinitions).norm();
+
+        std::cout << e << std::endl;
+
+        /*
+         * if(fabs(error - e) < 0.001 || (error < e))
+        {
+            std::cout << "No progress." << std::endl;
+            break;
+        }* /
+
+        error = e;
+    }
+*/
 }
+

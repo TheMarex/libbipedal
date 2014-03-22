@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 	cout << " --- START --- " << endl;
 	//std::string filenameRob("robots/ArmarIII/ArmarIII.xml");
 	//std::string filenameRob("robots/iCub/iCub.xml");
-	std::string filenameRob("robots/armar4_StartLeftLeg/ArmarIV-StartLeftLeg.xml");
+    std::string filenameRob("robots/armar4_StartLeftLeg/ArmarIV-StartLeftLegColModel.xml");
 	VirtualRobot::RuntimeEnvironment::getDataFileAbsolute(filenameRob);
 	
 	VirtualRobot::RuntimeEnvironment::considerKey("robot");
