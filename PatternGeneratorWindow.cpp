@@ -286,13 +286,14 @@ void PatternGeneratorWindow::updateCoM()
 	// Draw CoM
 	Eigen::Matrix4f globalPoseCoM;	
 	globalPoseCoM.setIdentity();
-	if (currentRobotNodeSet)
+    globalPoseCoM.block(0,3,3,1) = robot->getRobotNodeSet("ColModelAll")->getCoM();
+    /*if (currentRobotNodeSet)
 	{
 		globalPoseCoM.block(0,3,3,1) = currentRobotNodeSet->getCoM();
 	} else if (robot)
 	{
         globalPoseCoM.block(0,3,3,1) = robot->getCoMLocal();
-	}
+    }*/
 	SoMatrixTransform *m = dynamic_cast<SoMatrixTransform *>(comVisu->getChild(0));
 	if (m)
 	{

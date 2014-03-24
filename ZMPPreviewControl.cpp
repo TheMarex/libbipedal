@@ -310,7 +310,7 @@ void ZMPPreviewControl::computeCoM()
     PU.setZero();
 
     Eigen::Matrix3d tempM;
-    // Eigen::MatrixXd powerOfA;
+    Eigen::Matrix3Xd powerOfA;
     // std::vector<Eigen::Matrix3d> powerOfA;
 
     // TEST
@@ -318,18 +318,19 @@ void ZMPPreviewControl::computeCoM()
 
     // build PX:=[CA; CA^2; CA^3; ... CA^N]
     // iterate from 0..N-1 and calculate PX=C*A^(i+1)
-    // powerOfA.resize(3,3*N);
+    powerOfA.resize(3,(3+1)*N);
+    powerOfA.setZero();
 
     tempM.setIdentity();
     for (int i=0; i<N; i++)
     {
         //powerOfA.push_back(tempM);  // save A^i for later use
-        //powerOfA.block(i*3, 0, 3, 3) = tempM;
+        powerOfA.block(0, i*3, 3, 3) = tempM;
         tempM = tempM*A;            // tempM = A^(i)*A = A^(i+1)
         PX.block(i,0,1,3) = C*tempM;
     }
     //powerOfA.push_back(tempM);
-
+    powerOfA.block(0, N*3, 3, 3) = tempM;
 
     Eigen::Matrix3d dummy;
     Eigen::MatrixXd res;
@@ -339,10 +340,12 @@ void ZMPPreviewControl::computeCoM()
         for (int j=0; j<i; j++) //TODO: Endbedingung überprüfen
         {
             //dummy = powerOfA[i-j];
-            // dummy = powerOfA.block((i-j)*3, 0, 3, 3);
+            dummy = powerOfA.block(0, (i-j)*3, 3, 3);
+            /*
             dummy.setIdentity();
             for (int k=0; k<i-j; k++)
                 dummy=dummy*A;
+                */
             PU(i,j) = ((C*dummy)*B).col(0).x(); // Eigen is beeing a bitch about this...
             /*res=((C*dummy)*B);
             PU(i,j) = res(0,0);*/
@@ -500,6 +503,7 @@ void ZMPPreviewControl::computeInverseKinematics() {
     // get all Robot Nodes
     robot->getRobotNodes(allRobotNodes);
     VirtualRobot::RobotNodeSetPtr nodeSetjoints = robot->getRobotNodeSet("Left2RightLeg");
+    //VirtualRobot::RobotNodeSetPtr nodeSetjoints = robot->getRobotNodeSet("Left2RightLegAllJoints");//Left2RightLeg");
     VirtualRobot::RobotNodeSetPtr nodeSetbodies = robot->getRobotNodeSet("ColModelAll");
     //VirtualRobot::RobotNodeSetPtr
     // do magic
@@ -514,14 +518,14 @@ void ZMPPreviewControl::computeInverseKinematics() {
 
     jRightFoot.jacProvider = difIK;
 
-    //jCoM.jacProvider = comIK;
-    //jCoM.delta = (_mCoM.block(0,0,3,1) - robot->getCoMLocal());
-    //jCoM.delta = robot->getCoMLocal() + Eigen::Vector3f(1.0f,0.0f,0.0f);
-    jRightFoot.delta = Eigen::Vector3f(0.1f,0.1f,0.1f);
+    jCoM.jacProvider = comIK;
+   // jCoM.delta = (_mCoM.block(0,0,3,1) - robot->getCoMLocal());
+    jCoM.delta = Eigen::Vector3f(0.0f,30.0f,0.0f);
+    jRightFoot.delta = Eigen::Vector3f(0.0f,30.0f,0.0f);
 
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
-    //jacobiDefinitions.push_back(jCoM);
     jacobiDefinitions.push_back(jRightFoot);
+    jacobiDefinitions.push_back(jCoM);
 
     // float e = VirtualRobot::HierarchicalIK::computeStep(jacobiDefinitions).norm();
 
@@ -530,18 +534,34 @@ void ZMPPreviewControl::computeInverseKinematics() {
 
 
     VirtualRobot::HierarchicalIK hIK(nodeSetjoints);
-    Eigen::Vector3f dummyGoal = nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1) + Eigen::Vector3f(15.0f,0.0f,0.0f);
-    difIK->setGoal(dummyGoal);
+    Eigen::Vector3f footGoal = nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1) + Eigen::Vector3f(0.0f,150.0f,0.0f);
+    Eigen::Vector3f CoMGoal = nodeSetbodies->getCoM() + Eigen::Vector3f(0.0f,350.0f,0.0f);
+    difIK->setGoal(footGoal);
+    comIK->setGoal(CoMGoal);
 
+    std::cout << "---START---\ntcp:\n" << nodeSetjoints->getTCP()->getGlobalPose() << std::endl;
+    std::cout << "---COM:\n" << nodeSetbodies->getCoM() << std::endl;
 
-
-    float e = 0;
     bool b = false;
-    for (int i=0; i<15; i++) {
-        //e = hIK.computeStep(jacobiDefinitions).norm();
-        b = difIK->computeSteps(0.2f, 0.2f, 20);
+    int i=0;
+    for (i=0; i<15; i++)
+    {
+
+        jCoM.delta = CoMGoal - nodeSetbodies->getCoM();
+        jRightFoot.delta = footGoal - nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1);
+
+        Eigen::VectorXf e = hIK.computeStep(jacobiDefinitions);
+        Eigen::VectorXf jv;
+        nodeSetjoints->getJointValues(jv);
+        jv+=e;
+        nodeSetjoints->setJointValues(jv);
+
+    //b = difIK->computeSteps(0.2f, 0.00002f, 20);
+    //b = comIK->solveIK(0.2f);
         //std::cout << "Error is: " << e << std::endl;
-        std::cout << "return value is: " << b << std::endl;
+        std::cout << "--loop " << i << ":\n return value is: " << e.norm() << std::endl;
+        std::cout << "tcp:\n" << nodeSetjoints->getTCP()->getGlobalPose() << std::endl;
+        std::cout << "---COM:\n" << nodeSetbodies->getCoM() << std::endl;
     }
 
     // mögliche Fehler
