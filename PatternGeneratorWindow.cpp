@@ -142,6 +142,8 @@ void PatternGeneratorWindow::setupUI()
 	connect(UI.checkBoxZMP, SIGNAL(clicked()), this, SLOT(showZMP()));
     connect(UI.checkBoxCoM, SIGNAL(clicked()), this, SLOT(showCoM()));
     connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
+
+    connect(UI.frameSlider, SIGNAL(valueChanged(int)), this, SLOT(trajectorySliderValueChanged(int)));
 	
 	UI.lineEditDSLength->setValidator(new QDoubleValidator());
 	UI.lineEditStepHeight->setValidator(new QDoubleValidator());
@@ -275,7 +277,18 @@ void PatternGeneratorWindow::getUIParameters()
         Eigen::Vector3f com = robot->getCoMLocal();
         pFootStepPlaner->setInitialCoMPosition(com);
     }
+
     pZMPPreviewControl->computeReference();
+    pZMPPreviewControl->computeWalkingTrajectory();
+
+    // Update slider
+    int numSteps = pZMPPreviewControl->getWalkingTrajectory().cols();
+    std::cout << "Walking trajectory has " << numSteps << " steps" << std::endl;
+    UI.frameSlider->setRange(0, numSteps - 1);
+    UI.frameSlider->setEnabled(true);
+
+    // The trajectory computation changes the robot configuration => Reset
+    resetSceneryAll();
 }
 
 void PatternGeneratorWindow::updateCoM()
@@ -620,6 +633,11 @@ void PatternGeneratorWindow::resetSceneryAll()
 {
 	if (!robot)
 		return;
+
+    Eigen::Matrix4f pose = robot->getGlobalPose();
+    pose.block(0,3,3,1) = Eigen::Vector3f(0, 0, 0);
+    robot->setGlobalPose(pose);
+
 	std::vector< RobotNodePtr > nodes;
 	robot->getRobotNodes(nodes);
 	std::vector<float> jv(nodes.size(),0.0f);
@@ -651,7 +669,7 @@ void PatternGeneratorWindow::calculateButtonPushed()
 {
 	cout << "calculate Button pressed!" << endl;
 	getUIParameters();
-	//pFootStepPlaner->generate();
+    //pFootStepPlaner->generate();
 }
 
 void PatternGeneratorWindow::showFootstepPositions()
@@ -710,7 +728,27 @@ void PatternGeneratorWindow::showSupportPolygon()
 	cout << "showSupportPolygon!" << endl;
 	if (!robot)
 		return;
-	updateSupportVisu();
+    updateSupportVisu();
+}
+
+void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
+{
+    std::cout << "Showing configuration #" << value << " of the walking trajectory" << std::endl;
+
+    if(!robot)
+    {
+        return;
+    }
+
+    RobotNodeSetPtr nodeSet = robot->getRobotNodeSet("Left2RightLeg");
+
+    Eigen::Matrix3Xf leftFootTrajectory = pZMPPreviewControl->getLeftFootTrajectory();
+    Eigen::Matrix4f leftFootPose = nodeSet->getKinematicRoot()->getGlobalPose();
+
+    leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(value);
+    robot->setGlobalPose(leftFootPose);
+
+    nodeSet->setJointValues(pZMPPreviewControl->getWalkingTrajectory().col(value));
 }
 
 

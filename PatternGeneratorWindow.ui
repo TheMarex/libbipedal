@@ -430,16 +430,6 @@
       </property>
      </spacer>
     </item>
-    <item row="3" column="0" colspan="2">
-     <widget class="QSlider" name="frameSlider">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="0" rowspan="3">
      <widget class="QFrame" name="frameViewer">
       <property name="sizePolicy">
@@ -460,6 +450,26 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
+      <zorder>frameSlider</zorder>
+     </widget>
+    </item>
+    <item row="3" column="0" colspan="2">
+     <widget class="QSlider" name="frameSlider">
+      <property name="enabled">
+       <bool>false</bool>
+      </property>
+      <property name="sliderPosition">
+       <number>0</number>
+      </property>
+      <property name="tracking">
+       <bool>true</bool>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="tickPosition">
+       <enum>QSlider::NoTicks</enum>
+      </property>
      </widget>
     </item>
    </layout>
@@ -470,7 +480,7 @@
      <x>0</x>
      <y>0</y>
      <width>888</width>
-     <height>20</height>
+     <height>19</height>
     </rect>
    </property>
   </widget>

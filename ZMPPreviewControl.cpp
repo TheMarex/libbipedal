@@ -483,111 +483,105 @@ void ZMPPreviewControl::computeCoM()
     for (int i=0; i<_mZMP.cols(); i++)
         std::cout << _mReference.col(i).x() << ", " << _mCoM.col(i).x() << ", "<< _mZMP.col(i).x() << std::endl;
     std::cout << "########################  End ZMPref.x, CoM.x, ZMP.x output  ########################" << std::endl;
-
-
-    //computeRealZMP(); // this is already done
-    computeInverseKinematics();
 }
 
-
-void ZMPPreviewControl::computeInverseKinematics() {
-    // robot        RobotPtr auf Modell
-    // _mCoM        CoM-Positionen 3xN Matrix
-    // N            Anzahl Frames
-    // leftFootPos  Positionen des linken Fußes 3xN Matrix
-    // rightFootPos  Positionen des rechten Fußes 3xN Matrix
+void ZMPPreviewControl::computeWalkingTrajectory()
+{
     VirtualRobot::RobotPtr robot = _pPlaner->getRobotModel();
-    Eigen::Matrix3Xf leftFootPos = _pPlaner->getLeftFootPositions();
-    Eigen::Matrix3Xf rightFootPos = _pPlaner->getRightFootPositions();
-    std::vector < VirtualRobot::RobotNodePtr > allRobotNodes;
-    // get all Robot Nodes
+
+    std::string nodeSetName = "Left2RightLeg";
+    std::string colModelName = "ColModelAll";
+
+    VirtualRobot::RobotNodeSetPtr nodeSet = robot->getRobotNodeSet(nodeSetName);
+
+    int rows = nodeSet->getSize();
+
+    Eigen::Matrix3Xf rightTrajectory = _pPlaner->getRightFootTrajectory();
+    Eigen::Matrix3Xf leftTrajectory = _pPlaner->getLeftFootTrajectory();
+
+    trajectory.resize(rows, rightTrajectory.cols());
+
+    Eigen::Matrix4f rightInitialPose = nodeSet->getTCP()->getGlobalPose();
+    Eigen::Matrix4f leftInitialPose = nodeSet->getKinematicRoot()->getGlobalPose();
+
+    Eigen::VectorXf configuration;
+    for(int i = 0; i < trajectory.cols(); i++)
+    {
+        // Move basis along with the left foot
+        Eigen::Matrix4f leftFootPose = leftInitialPose;
+        leftFootPose.block(0,3,3,1) = 1000 * leftTrajectory.col(i);
+        robot->setGlobalPose(leftFootPose);
+
+        computeStepConfiguration(nodeSetName, colModelName, 1000 * _mCoM.col(i), 1000 * rightTrajectory.col(i), rightInitialPose, configuration);
+        trajectory.col(i) = configuration;
+    }
+}
+
+void ZMPPreviewControl::computeStepConfiguration(const std::string &nodeSetName, const std::string &colModelName,
+                                                 const Eigen::Vector3f &targetCoM, const Eigen::Vector3f &targetFoot,
+                                                 const Eigen::Matrix4f &initialFootPose, Eigen::VectorXf &result)
+{
+    VirtualRobot::RobotPtr robot = _pPlaner->getRobotModel();
+
+    std::vector<VirtualRobot::RobotNodePtr> allRobotNodes;
     robot->getRobotNodes(allRobotNodes);
-    VirtualRobot::RobotNodeSetPtr nodeSetjoints = robot->getRobotNodeSet("Left2RightLeg");
-    //VirtualRobot::RobotNodeSetPtr nodeSetjoints = robot->getRobotNodeSet("Left2RightLegAllJoints");//Left2RightLeg");
-    VirtualRobot::RobotNodeSetPtr nodeSetbodies = robot->getRobotNodeSet("ColModelAll");
-    //VirtualRobot::RobotNodeSetPtr
-    // do magic
+
+    VirtualRobot::RobotNodeSetPtr nodeSetJoints = robot->getRobotNodeSet(nodeSetName);
+    VirtualRobot::RobotNodeSetPtr nodeSetBodies = robot->getRobotNodeSet(colModelName);
+
     VirtualRobot::CoMIKPtr comIK;
-    VirtualRobot::DifferentialIKPtr difIK;
+    VirtualRobot::DifferentialIKPtr diffIK;
 
-    comIK.reset(new VirtualRobot::CoMIK(nodeSetjoints, nodeSetbodies));
-    difIK.reset(new VirtualRobot::DifferentialIK(nodeSetjoints));
-
-    VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
-    VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
-
-    jRightFoot.jacProvider = difIK;
-
-    jCoM.jacProvider = comIK;
-   // jCoM.delta = (_mCoM.block(0,0,3,1) - robot->getCoMLocal());
-    jCoM.delta = Eigen::Vector3f(0.0f,30.0f,0.0f);
-    jRightFoot.delta = Eigen::Vector3f(0.0f,30.0f,0.0f);
+    comIK.reset(new VirtualRobot::CoMIK(nodeSetJoints, nodeSetBodies));
+    diffIK.reset(new VirtualRobot::DifferentialIK(nodeSetJoints));
 
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
+
+    VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
+    jRightFoot.jacProvider = diffIK;
     jacobiDefinitions.push_back(jRightFoot);
-    jacobiDefinitions.push_back(jCoM);
 
-    // float e = VirtualRobot::HierarchicalIK::computeStep(jacobiDefinitions).norm();
+    Eigen::Matrix4f footGoal = initialFootPose;
+    footGoal.block(0,3,3,1) = targetFoot;
+    diffIK->setGoal(footGoal);
 
+    VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
+    jCoM.jacProvider = comIK;
+    //jacobiDefinitions.push_back(jCoM);
 
+    comIK->setGoal(targetCoM);
 
+    VirtualRobot::HierarchicalIK hIK(nodeSetJoints);
 
+    std::cout << "---START---\ntcp:\n" << nodeSetJoints->getTCP()->getGlobalPose() << std::endl;
+    std::cout << "---COM:\n" << nodeSetBodies->getCoM() << std::endl;
 
-    VirtualRobot::HierarchicalIK hIK(nodeSetjoints);
-    Eigen::Vector3f footGoal = nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1) + Eigen::Vector3f(0.0f,150.0f,0.0f);
-    Eigen::Vector3f CoMGoal = nodeSetbodies->getCoM() + Eigen::Vector3f(0.0f,350.0f,0.0f);
-    difIK->setGoal(footGoal);
-    comIK->setGoal(CoMGoal);
-
-    std::cout << "---START---\ntcp:\n" << nodeSetjoints->getTCP()->getGlobalPose() << std::endl;
-    std::cout << "---COM:\n" << nodeSetbodies->getCoM() << std::endl;
-
-    bool b = false;
-    int i=0;
-    for (i=0; i<15; i++)
+    float lastErrorLength = 1000.0f;
+    for(int i = 0; i < 10; i++)
     {
-
-        jCoM.delta = CoMGoal - nodeSetbodies->getCoM();
-        jRightFoot.delta = footGoal - nodeSetjoints->getTCP()->getGlobalPose().block(0,3,3,1);
-
         Eigen::VectorXf e = hIK.computeStep(jacobiDefinitions);
-        Eigen::VectorXf jv;
-        nodeSetjoints->getJointValues(jv);
-        jv+=e;
-        nodeSetjoints->setJointValues(jv);
 
-    //b = difIK->computeSteps(0.2f, 0.00002f, 20);
-    //b = comIK->solveIK(0.2f);
-        //std::cout << "Error is: " << e << std::endl;
-        std::cout << "--loop " << i << ":\n return value is: " << e.norm() << std::endl;
-        std::cout << "tcp:\n" << nodeSetjoints->getTCP()->getGlobalPose() << std::endl;
-        std::cout << "---COM:\n" << nodeSetbodies->getCoM() << std::endl;
-    }
-
-    // mögliche Fehler
-    // - kein Sync mit visu
-    // - gelenkwinkel werden nicht gesetzt im robotermodell
-    // - falsch benutzt
-    // - evtl. später fehler in der comIK wegen 2d->3d
-
-
-    /*
-    float error = 100;
-    while(error > 0.1)
-    {
-        float e = hIK.computeStep(jacobiDefinitions).norm();
-
-        std::cout << e << std::endl;
-
-        /*
-         * if(fabs(error - e) < 0.001 || (error < e))
+        std::cout << "Error: " << e.norm() << std::endl;
+        if(e.norm() > lastErrorLength)
         {
-            std::cout << "No progress." << std::endl;
+            std::cout << "Error is increasing!" << std::endl;
             break;
-        }* /
+        }
 
-        error = e;
+        lastErrorLength = e.norm();
+
+        Eigen::VectorXf jv;
+        nodeSetJoints->getJointValues(jv);
+        jv+=e;
+        nodeSetJoints->setJointValues(jv);
+
+        if(e.norm() < 0.01)
+        {
+            std::cout << "Error is small enough" << std::endl;
+            break;
+        }
     }
-*/
+
+    nodeSetJoints->getJointValues(result);
 }
 

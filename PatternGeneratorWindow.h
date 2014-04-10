@@ -69,6 +69,8 @@ public slots:
 	void showCoM();
 	void showSupportPolygon();
 
+    void trajectorySliderValueChanged(int value);
+
 protected:
 	void loadRobot();
 	void buildVisu();
@@ -118,7 +120,7 @@ protected:
     boost::shared_ptr<VirtualRobot::CoinVisualization> visualization;
 	
 	FootstepPlaner* pFootStepPlaner;
-	ZMPPreviewControl* pZMPPreviewControl;
+    ZMPPreviewControl* pZMPPreviewControl;
 };
 
 #endif // __PatternGeneratorScene_WINDOW_H_

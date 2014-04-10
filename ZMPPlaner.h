@@ -23,6 +23,8 @@ public:
 	void showRealZMP(bool isVisible);
 	void showCoM(bool isVisible);
 
+    Eigen::MatrixXf getCoMTrajectory() { return _mCoM; }
+
 protected:
 	FootstepPlaner* _pPlaner;
 	bool _bComputed;
