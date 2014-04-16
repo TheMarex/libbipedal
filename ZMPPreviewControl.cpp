@@ -493,6 +493,7 @@ void ZMPPreviewControl::computeWalkingTrajectory()
     std::string colModelName = "ColModelAll";
 
     VirtualRobot::RobotNodeSetPtr nodeSet = robot->getRobotNodeSet(nodeSetName);
+    VirtualRobot::RobotNodeSetPtr colModelNodeSet = robot->getRobotNodeSet(colModelName);
 
     int rows = nodeSet->getSize();
 
@@ -504,15 +505,23 @@ void ZMPPreviewControl::computeWalkingTrajectory()
     Eigen::Matrix4f rightInitialPose = nodeSet->getTCP()->getGlobalPose();
     Eigen::Matrix4f leftInitialPose = nodeSet->getKinematicRoot()->getGlobalPose();
 
+    Eigen::Vector3f com = colModelNodeSet->getCoM();
+
     Eigen::VectorXf configuration;
-    for(int i = 0; i < trajectory.cols(); i++)
+    int N = trajectory.cols();
+    for(int i = 0; i < N; i++)
     {
         // Move basis along with the left foot
         Eigen::Matrix4f leftFootPose = leftInitialPose;
         leftFootPose.block(0,3,3,1) = 1000 * leftTrajectory.col(i);
         robot->setGlobalPose(leftFootPose);
 
+        std::cout << "Frame #" << i << ", ";
         computeStepConfiguration(nodeSetName, colModelName, 1000 * _mCoM.col(i), 1000 * rightTrajectory.col(i), rightInitialPose, configuration);
+
+        //Eigen::Vector3f delta = Eigen::Vector3f(0, 0, 100 * sin(2 * 3.141 * i / (float)N));
+        //computeStepConfiguration(nodeSetName, colModelName, com + delta, 1000 * rightTrajectory.col(0), rightInitialPose, configuration);
+
         trajectory.col(i) = configuration;
     }
 }
@@ -521,6 +530,8 @@ void ZMPPreviewControl::computeStepConfiguration(const std::string &nodeSetName,
                                                  const Eigen::Vector3f &targetCoM, const Eigen::Vector3f &targetFoot,
                                                  const Eigen::Matrix4f &initialFootPose, Eigen::VectorXf &result)
 {
+    const float ikPrec = 0.1;
+
     VirtualRobot::RobotPtr robot = _pPlaner->getRobotModel();
 
     std::vector<VirtualRobot::RobotNodePtr> allRobotNodes;
@@ -529,58 +540,80 @@ void ZMPPreviewControl::computeStepConfiguration(const std::string &nodeSetName,
     VirtualRobot::RobotNodeSetPtr nodeSetJoints = robot->getRobotNodeSet(nodeSetName);
     VirtualRobot::RobotNodeSetPtr nodeSetBodies = robot->getRobotNodeSet(colModelName);
 
-    VirtualRobot::CoMIKPtr comIK;
-    VirtualRobot::DifferentialIKPtr diffIK;
-
-    comIK.reset(new VirtualRobot::CoMIK(nodeSetJoints, nodeSetBodies));
-    diffIK.reset(new VirtualRobot::DifferentialIK(nodeSetJoints));
-
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
 
+    // TCP constraint for right foot pose
+    VirtualRobot::DifferentialIKPtr diffIK;
+    diffIK.reset(new VirtualRobot::DifferentialIK(nodeSetJoints));
+    Eigen::Matrix4f footGoal = initialFootPose;
+    footGoal.block(0,3,3,1) = targetFoot;
+    diffIK->setGoal(footGoal);
     VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
     jRightFoot.jacProvider = diffIK;
     jacobiDefinitions.push_back(jRightFoot);
 
-    Eigen::Matrix4f footGoal = initialFootPose;
-    footGoal.block(0,3,3,1) = targetFoot;
-    diffIK->setGoal(footGoal);
-
+    // CoM constraint
+    VirtualRobot::CoMIKPtr comIK;
+    comIK.reset(new VirtualRobot::CoMIK(nodeSetJoints, nodeSetBodies));
+    comIK->setGoal(targetCoM);
     VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
     jCoM.jacProvider = comIK;
-    //jacobiDefinitions.push_back(jCoM);
+    jacobiDefinitions.push_back(jCoM);
 
-    comIK->setGoal(targetCoM);
+    // TCP constraint for upright upper body
+    VirtualRobot::DifferentialIKPtr uprightBody;
+    uprightBody.reset(new VirtualRobot::DifferentialIK(nodeSetJoints));
+    Eigen::Matrix4f defaultOrientation = robot->getRobotNode("Waist")->getGlobalPose();
+    uprightBody->setGoal(defaultOrientation, robot->getRobotNode("Waist"), VirtualRobot::IKSolver::Orientation);
+    VirtualRobot::HierarchicalIK::JacobiDefinition jUprightBody;
+    jUprightBody.jacProvider = uprightBody;
+    jacobiDefinitions.push_back(jUprightBody);
 
     VirtualRobot::HierarchicalIK hIK(nodeSetJoints);
 
-    std::cout << "---START---\ntcp:\n" << nodeSetJoints->getTCP()->getGlobalPose() << std::endl;
-    std::cout << "---COM:\n" << nodeSetBodies->getCoM() << std::endl;
-
     float lastErrorLength = 1000.0f;
-    for(int i = 0; i < 10; i++)
+    for(int i = 0; i < 100; i++)
     {
-        Eigen::VectorXf e = hIK.computeStep(jacobiDefinitions);
-
-        std::cout << "Error: " << e.norm() << std::endl;
-        if(e.norm() > lastErrorLength)
+        float e = 0;
+        for(int j = 0; j < jacobiDefinitions.size(); j++)
         {
-            std::cout << "Error is increasing!" << std::endl;
+            e += jacobiDefinitions[j].jacProvider->getError().norm();
+        }
+
+        if(e > 2*lastErrorLength)
+        {
+            break;
+        }
+        else if(e < ikPrec)
+        {
             break;
         }
 
-        lastErrorLength = e.norm();
+        lastErrorLength = e;
 
+        Eigen::VectorXf delta = hIK.computeStep(jacobiDefinitions);
         Eigen::VectorXf jv;
         nodeSetJoints->getJointValues(jv);
-        jv+=e;
+        jv += delta;
         nodeSetJoints->setJointValues(jv);
+    }
 
-        if(e.norm() < 0.01)
+    float e1 = jacobiDefinitions[0].jacProvider->getError().norm();
+    float e2 = jacobiDefinitions[1].jacProvider->getError().norm();
+
+    bool ok = true;
+    for(int i = 0; i < jacobiDefinitions.size(); i++)
+    {
+        float e = jacobiDefinitions[i].jacProvider->getError().norm();
+
+        std::cout << "e_" << i << "=" << e << "   ";
+
+        if(e > ikPrec)
         {
-            std::cout << "Error is small enough" << std::endl;
-            break;
+            ok = false;
         }
     }
+    std::cout << ((e1 <= ikPrec && e2 <= ikPrec)? "IK Ok" : "IK Failed") << std::endl;
 
     nodeSetJoints->getJointValues(result);
 }

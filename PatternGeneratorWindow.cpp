@@ -319,7 +319,9 @@ void PatternGeneratorWindow::updateCoM()
 	}
 
 	// Draw CoM projection
-	if(currentRobotNodeSet && comProjectionVisu && comProjectionVisu->getNumChildren() > 0)
+    m = dynamic_cast<SoMatrixTransform *>(comProjectionVisu->getChild(0));
+    //if(currentRobotNodeSet && comProjectionVisu && comProjectionVisu->getNumChildren() > 0)
+    if (m)
 	{
 		globalPoseCoM(2, 3) = 0;
 		m = dynamic_cast<SoMatrixTransform *>(comProjectionVisu->getChild(0));
@@ -733,8 +735,6 @@ void PatternGeneratorWindow::showSupportPolygon()
 
 void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
 {
-    std::cout << "Showing configuration #" << value << " of the walking trajectory" << std::endl;
-
     if(!robot)
     {
         return;
@@ -749,6 +749,7 @@ void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
     robot->setGlobalPose(leftFootPose);
 
     nodeSet->setJointValues(pZMPPreviewControl->getWalkingTrajectory().col(value));
+    updateCoM();
 }
 
 
