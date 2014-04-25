@@ -51,6 +51,7 @@ public slots:
 	void performCoMIK();
 	
 	// handle UI responses
+	void exportTrajectory();
 	void selectRobot();
 	void resetSceneryAll();
 

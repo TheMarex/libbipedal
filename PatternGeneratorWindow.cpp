@@ -117,16 +117,7 @@ void PatternGeneratorWindow::setupUI()
 
 	connect(UI.pushButtonLoad, SIGNAL(clicked()), this, SLOT(selectRobot()));
 	connect(UI.pushButtonReset, SIGNAL(clicked()), this, SLOT(resetSceneryAll()));
-
-
-//	connect(UI.checkBoxColModel, SIGNAL(clicked()), this, SLOT(collisionModel()));
-//	connect(UI.checkBoxSupportPolygon, SIGNAL(clicked()), this, SLOT(showSupportPolygon()));
-//	connect(UI.comboBoxRNS, SIGNAL(activated(int)), this, SLOT(selectRNS(int)));
-//	connect(UI.comboBoxJoint, SIGNAL(activated(int)), this, SLOT(selectJoint(int)));
-//	connect(UI.horizontalSliderPos, SIGNAL(valueChanged(int)), this, SLOT(jointValueChanged(int)));
-//	connect(UI.horizontalSliderPos, SIGNAL(sliderReleased()), this, SLOT(showSupportPolygon()));
-//	connect(UI.sliderX, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedX(int)));
-//	connect(UI.sliderY, SIGNAL(valueChanged(int)), this, SLOT(comTargetMovedY(int)));
+	connect(UI.pushButtonExport, SIGNAL(clicked()), this, SLOT(exportTrajectory()));
 	
 	connect(UI.lineEditStepPeriod, SIGNAL(editingFinished()), this, SLOT(updateStepPeriod()));
 	connect(UI.lineEditStepLength, SIGNAL(editingFinished()), this, SLOT(updateStepLength()));
@@ -286,6 +277,8 @@ void PatternGeneratorWindow::getUIParameters()
     std::cout << "Walking trajectory has " << numSteps << " steps" << std::endl;
     UI.frameSlider->setRange(0, numSteps - 1);
     UI.frameSlider->setEnabled(true);
+
+	UI.pushButtonExport->setEnabled(true);
 
     // The trajectory computation changes the robot configuration => Reset
     resetSceneryAll();
@@ -628,6 +621,15 @@ void PatternGeneratorWindow::selectRobot()
 	QString fi = QFileDialog::getOpenFileName(this, tr("Open Robot File"), QString(), tr("XML Files (*.xml)"));
 	robotFile = std::string(fi.toAscii());
 	loadRobot();
+}
+
+void PatternGeneratorWindow::exportTrajectory()
+{
+	QString fileNameQ = QFileDialog::getSaveFileName(this,
+			tr("Save MMM Motion"), "",
+			tr("MMM motion XML file (*.xml)"));
+
+	/* TODO export */
 }
 
 // set all joint values to 0
