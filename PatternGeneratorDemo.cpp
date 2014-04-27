@@ -1,5 +1,8 @@
-#include "PatternGeneratorWindow.h"
+#include <iostream>
+#include <boost/filesystem.hpp>
 #include <VirtualRobot/RuntimeEnvironment.h>
+
+#include "PatternGeneratorWindow.h"
 
 using namespace VirtualRobot;
 
@@ -7,34 +10,32 @@ int main(int argc, char *argv[])
 {
 	SoDB::init();
 	SoQt::init(argc,argv,"stability demo");
-	cout << " --- START --- " << endl;
-	//std::string filenameRob("robots/ArmarIII/ArmarIII.xml");
-	//std::string filenameRob("robots/iCub/iCub.xml");
-    //std::string filenameRob("/home/terlemez/local/intern/simox/VirtualRobot/data/robots/armar4_StartLeftLeg/ArmarIV-StartLeftLegColModel.xml");
-    std::string filenameRob("/home/peter/projects/diss/code/humanoidlocomotion/InvReachBipedal/data/armar4/ArmarIV-StartLeftLeg.xml");
-	VirtualRobot::RuntimeEnvironment::getDataFileAbsolute(filenameRob);
-	
-	VirtualRobot::RuntimeEnvironment::considerKey("robot");
-	VirtualRobot::RuntimeEnvironment::processCommandLine(argc,argv);
-	VirtualRobot::RuntimeEnvironment::print();
 
-	cout << " --- START --- " << endl;
+	std::string filename("../../InvReachBipedal/data/armar4/ArmarIV-StartLeftLegColModel.xml");
 
 	if (VirtualRobot::RuntimeEnvironment::hasValue("robot"))
 	{
 		std::string robFile = VirtualRobot::RuntimeEnvironment::getValue("robot");
 		if (VirtualRobot::RuntimeEnvironment::getDataFileAbsolute(robFile))
 		{
-			filenameRob = robFile;
+			filename = robFile;
 		}
 	}
-	
-	cout << "Using robot at " << filenameRob << endl;
 
-	PatternGeneratorWindow rw(filenameRob);
+	boost::filesystem::path path(filename);
+	if (!boost::filesystem::exists(path))
+	{
+		std::cout << "Error: Robot file not found: " << path.string() << std::endl;
+		return 1;
+	}
+	filename = boost::filesystem::canonical(path).string();
+
+	std::cout << "Using robot at " << filename << std::endl;
+
+	PatternGeneratorWindow rw(filename);
 	rw.main();
 
-    cout << " --- END --- " << endl;
-    return 0;
+	std::cout << " --- END --- " << std::endl;
+	return 0;
 
 }

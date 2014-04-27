@@ -9,7 +9,7 @@
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
 
-FootstepPlaner::FootstepPlaner(void) : _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dCoMHeight(0.75f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(100), _bLeftFootFirst(true), _bChangesMade(false), _bGenerated(false)
+FootstepPlaner::FootstepPlaner(void) : _dStepLength(0.3f), _dStepWidth(0.2f), _dStepHeight(0.3f), _dStepPeriod(0.8f), _dCoMHeight(0.75f), _dSingleSupportPhase(0.7f), _dDoubleSupportPhase(0.1f), _iSampleSize(50), _bLeftFootFirst(true), _bChangesMade(false), _bGenerated(false)
 {
     _mInitialCoMPosition.setZero();
 	_visualization = new SoSeparator();
@@ -337,23 +337,23 @@ void FootstepPlaner::writeSceneGraphToFile(SoSeparator* node)
 }
 
 
-Eigen::Matrix3Xf const FootstepPlaner::getLeftFootPositions()
+const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootPositions()
 {
 	return _mLFootPositionsTransformed;
 }
 
-Eigen::Matrix3Xf const FootstepPlaner::getRightFootPositions() 
+const Eigen::Matrix3Xf& FootstepPlaner::getRightFootPositions() 
 {
 	return _mRFootPositionsTransformed;
 }
 
 
-Eigen::Matrix3Xf const FootstepPlaner::getLeftFootTrajectory() 
+const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootTrajectory() 
 {
 	return _mLFootTrajectoryTransformed;
 }
 
-Eigen::Matrix3Xf const FootstepPlaner::getRightFootTrajectory()
+const Eigen::Matrix3Xf& FootstepPlaner::getRightFootTrajectory()
 {
 	return _mRFootTrajectoryTransformed;
 }

@@ -25,6 +25,8 @@
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoSphere.h>
 
+#include "TrajectoryExporter.h"
+
 #include <sstream>
 using namespace std;
 using namespace VirtualRobot;
@@ -629,7 +631,14 @@ void PatternGeneratorWindow::exportTrajectory()
 			tr("Save MMM Motion"), "",
 			tr("MMM motion XML file (*.xml)"));
 
-	/* TODO export */
+	const Eigen::Matrix3Xf leftFootTrajectory = pZMPPreviewControl->getLeftFootTrajectory();
+	const Eigen::MatrixXf bodyTrajectory = pZMPPreviewControl->getWalkingTrajectory();
+	TrajectoryExporter exporter(robot,
+		bodyTrajectory,
+		leftFootTrajectory
+	);
+
+	exporter.exportToMMM(fileNameQ.toStdString());
 }
 
 // set all joint values to 0

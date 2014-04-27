@@ -24,11 +24,11 @@ public:
 	void showFootPositions(bool isVisible);
 	void showFootTrajectories(bool isVisible);
 
-	Eigen::Matrix3Xf const getLeftFootPositions();
-	Eigen::Matrix3Xf const getRightFootPositions();
+	const Eigen::Matrix3Xf& getLeftFootPositions();
+	const Eigen::Matrix3Xf& getRightFootPositions();
 
-	Eigen::Matrix3Xf const getLeftFootTrajectory();
-	Eigen::Matrix3Xf const getRightFootTrajectory();
+	const Eigen::Matrix3Xf& getLeftFootTrajectory();
+	const Eigen::Matrix3Xf& getRightFootTrajectory();
 
 	static void writeSceneGraphToFile(SoSeparator* node);
 
