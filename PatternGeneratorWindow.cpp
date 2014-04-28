@@ -634,8 +634,10 @@ void PatternGeneratorWindow::exportTrajectory()
 	const Eigen::Matrix3Xf leftFootTrajectory = pZMPPreviewControl->getLeftFootTrajectory();
 	const Eigen::MatrixXf bodyTrajectory = pZMPPreviewControl->getWalkingTrajectory();
 	TrajectoryExporter exporter(robot,
+		robotFile,
 		bodyTrajectory,
-		leftFootTrajectory
+		leftFootTrajectory,
+		1.0f / pFootStepPlaner->getSamplesPerSecond()
 	);
 
 	exporter.exportToMMM(fileNameQ.toStdString());
