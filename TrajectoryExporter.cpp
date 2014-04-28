@@ -10,48 +10,11 @@
 #include <VirtualRobot/Nodes/RobotNode.h>
 
 #include <MMM/Motion/Motion.h>
+#include <MMM/XMLTools.h>
 
 #include <boost/filesystem.hpp>
 
 #include "TrajectoryExporter.h"
-
-/**
- * Limitation in boost::filesystem, Hack found on StackOverflow
- */
-namespace boost {
-namespace filesystem3 {
-template < >
-path& path::append< typename path::iterator >( typename path::iterator begin, typename path::iterator end, const codecvt_type& cvt)
-{
-	for( ; begin != end ; ++begin )
-		*this /= *begin;
-	return *this;
-}
-
-// Return path when appended to a_From will resolve to same as a_To
-path make_relative( path a_From, path a_To )
-{
-	a_From = absolute( a_From ); a_To = absolute( a_To );
-	path ret;
-	path::const_iterator itrFrom( a_From.begin() ), itrTo( a_To.begin() );
-	// Find common base
-	for( path::const_iterator toEnd( a_To.end() ), fromEnd( a_From.end() ) ; itrFrom != fromEnd && itrTo != toEnd && *itrFrom == *itrTo; ++itrFrom, ++itrTo );
-	// Navigate backwards in directory to reach previously found base
-	for( path::const_iterator fromEnd( a_From.end() ); itrFrom != fromEnd; ++itrFrom )
-	{
-		if( (*itrFrom) != "." )
-			ret /= "..";
-	}
-	// Now navigate down the directory branch
-	ret.append( itrTo, a_To.end() );
-	return ret;
-}
-}
-}
-
-/*
- * ----------------------------------------------------------------------------
- */
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
@@ -60,8 +23,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 
 	boost::filesystem::path targetPath(path);
 	boost::filesystem::path baseDir = targetPath.parent_path();
-	boost::filesystem::path robotPath(pathToRobot);
-	boost::filesystem::path relRobotPath = boost::filesystem3::make_relative(baseDir, robotPath);
+	std::string relRobotPath = MMM::XML::make_relative(baseDir.string(), pathToRobot);
 
 	MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
 
@@ -86,7 +48,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	}
 
 	MMM::ModelPtr model(new MMM::Model());
-	model->filename = relRobotPath.string();
+	model->filename = relRobotPath;
 	motion->setModel(model);
 
 	std::ofstream out(path.c_str());
