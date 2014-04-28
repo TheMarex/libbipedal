@@ -37,7 +37,8 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 
 	for (int i = 0; i < size; i++)
 	{
-		Eigen::Vector3f rootPos = leftFootTrajectory.col(i);
+		// we need rootPos in mm
+		Eigen::Vector3f rootPos = 1000 * leftFootTrajectory.col(i);
 		Eigen::MatrixXf jointAngles = bodyTrajectory.col(i);
 		MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
 		frame->setRootPose(rootPose);
