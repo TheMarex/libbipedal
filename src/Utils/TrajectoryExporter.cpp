@@ -27,10 +27,11 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 
 	MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
 
-	std::vector<VirtualRobot::RobotNodePtr> nodes = robot->getRobotNodes();
 	std::vector<std::string> jointNames;
-	for(auto& node : nodes)
-		jointNames.push_back(node->getName());
+	for(int i = 0; i < nodeSet->getSize(); i++)
+		jointNames.push_back((*nodeSet)[i]->getName());
+	
+	motion->setJointOrder(jointNames);
 
 	int size = bodyTrajectory.cols();
 	int ndof = bodyTrajectory.rows();

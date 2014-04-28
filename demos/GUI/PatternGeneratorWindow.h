@@ -24,7 +24,7 @@
 #include <vector>
 
 #include "PolynomialFootstepPlaner.h"
-#include "ZMPPreviewControl.h"
+#include "ZMP/ZMPPreviewControl.h"
 
 #include "ui_PatternGeneratorWindow.h"
 

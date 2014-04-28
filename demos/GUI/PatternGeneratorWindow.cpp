@@ -1,5 +1,4 @@
 
-#include "PatternGeneratorWindow.h"
 #include "VirtualRobot/EndEffector/EndEffector.h"
 #include "VirtualRobot/Workspace/Reachability.h"
 #include "VirtualRobot/XML/RobotIO.h"
@@ -25,7 +24,9 @@
 #include <Inventor/nodes/SoMaterial.h>
 #include <Inventor/nodes/SoSphere.h>
 
-#include "TrajectoryExporter.h"
+#include "PatternGeneratorWindow.h"
+
+#include "Utils/TrajectoryExporter.h"
 
 #include <sstream>
 using namespace std;
