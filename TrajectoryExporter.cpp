@@ -19,7 +19,7 @@
  * Limitation in boost::filesystem, Hack found on StackOverflow
  */
 namespace boost {
-namespace filesystem {
+namespace filesystem3 {
 template < >
 path& path::append< typename path::iterator >( typename path::iterator begin, typename path::iterator end, const codecvt_type& cvt)
 {
@@ -29,15 +29,15 @@ path& path::append< typename path::iterator >( typename path::iterator begin, ty
 }
 
 // Return path when appended to a_From will resolve to same as a_To
-boost::filesystem::path make_relative( boost::filesystem::path a_From, boost::filesystem::path a_To )
+path make_relative( path a_From, path a_To )
 {
-	a_From = boost::filesystem::absolute( a_From ); a_To = boost::filesystem::absolute( a_To );
-	boost::filesystem::path ret;
-	boost::filesystem::path::const_iterator itrFrom( a_From.begin() ), itrTo( a_To.begin() );
+	a_From = absolute( a_From ); a_To = absolute( a_To );
+	path ret;
+	path::const_iterator itrFrom( a_From.begin() ), itrTo( a_To.begin() );
 	// Find common base
-	for( boost::filesystem::path::const_iterator toEnd( a_To.end() ), fromEnd( a_From.end() ) ; itrFrom != fromEnd && itrTo != toEnd && *itrFrom == *itrTo; ++itrFrom, ++itrTo );
+	for( path::const_iterator toEnd( a_To.end() ), fromEnd( a_From.end() ) ; itrFrom != fromEnd && itrTo != toEnd && *itrFrom == *itrTo; ++itrFrom, ++itrTo );
 	// Navigate backwards in directory to reach previously found base
-	for( boost::filesystem::path::const_iterator fromEnd( a_From.end() ); itrFrom != fromEnd; ++itrFrom )
+	for( path::const_iterator fromEnd( a_From.end() ); itrFrom != fromEnd; ++itrFrom )
 	{
 		if( (*itrFrom) != "." )
 			ret /= "..";
@@ -61,7 +61,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	boost::filesystem::path targetPath(path);
 	boost::filesystem::path baseDir = targetPath.parent_path();
 	boost::filesystem::path robotPath(pathToRobot);
-	boost::filesystem::path relRobotPath = make_relative(baseDir, robotPath);
+	boost::filesystem::path relRobotPath = boost::filesystem3::make_relative(baseDir, robotPath);
 
 	MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
 

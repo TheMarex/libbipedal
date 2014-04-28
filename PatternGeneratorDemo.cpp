@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 	SoDB::init();
 	SoQt::init(argc,argv,"stability demo");
 
-	std::string filename("../../InvReachBipedal/data/armar4/ArmarIV-StartLeftLegColModel.xml");
+	std::string filename("../../InvReachBipedal/data/armar4/ArmarIV-StartLeftLeg.xml");
 
 	if (VirtualRobot::RuntimeEnvironment::hasValue("robot"))
 	{
