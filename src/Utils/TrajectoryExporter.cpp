@@ -15,6 +15,7 @@
 #include <boost/filesystem.hpp>
 
 #include "TrajectoryExporter.h"
+#include "VelocityEstimation.h"
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
@@ -36,15 +37,17 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	int size = bodyTrajectory.cols();
 	int ndof = bodyTrajectory.rows();
 
+	Eigen::MatrixXf bodyVelocity = VelocityEstimation::neighboursDiff(bodyTrajectory, timestep);
+
 	for (int i = 0; i < size; i++)
 	{
 		// we need rootPos in mm
 		Eigen::Vector3f rootPos = 1000 * leftFootTrajectory.col(i);
-		Eigen::MatrixXf jointAngles = bodyTrajectory.col(i);
 		MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
 		frame->setRootPose(rootPose);
 		frame->setRootPos(rootPos);
-		frame->joint = jointAngles;
+		frame->joint = bodyTrajectory.col(i);
+		frame->joint_vel = bodyVelocity.col(i);
 		frame->timestep = timestep*i;
 		motion->addMotionFrame(frame);
 	}
