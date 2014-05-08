@@ -537,6 +537,11 @@ void ZMPPreviewControl::computeStepConfiguration(const std::string &nodeSetName,
     std::vector<VirtualRobot::RobotNodePtr> allRobotNodes;
     robot->getRobotNodes(allRobotNodes);
 
+	VirtualRobot::RobotNodePtr leftArm = robot->getRobotNode("LeftArm_Joint3");
+	robot->setJointValue(leftArm, 0.3);
+	VirtualRobot::RobotNodePtr rightArm = robot->getRobotNode("RightArm_Joint3");
+	robot->setJointValue(rightArm, -0.3);
+
     VirtualRobot::RobotNodeSetPtr nodeSetJoints = robot->getRobotNodeSet(nodeSetName);
     VirtualRobot::RobotNodeSetPtr nodeSetBodies = robot->getRobotNodeSet(colModelName);
 
@@ -572,7 +577,7 @@ void ZMPPreviewControl::computeStepConfiguration(const std::string &nodeSetName,
     VirtualRobot::HierarchicalIK hIK(nodeSetJoints);
 
     float lastErrorLength = 1000.0f;
-    for(int i = 0; i < 100; i++)
+    for(int i = 0; i < 30; i++)
     {
         float e = 0;
         for(int j = 0; j < jacobiDefinitions.size(); j++)
