@@ -468,10 +468,17 @@ void PatternGeneratorWindow::exportTrajectory()
 			tr("MMM motion XML file (*.xml)"));
 
 	const Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
+	const Eigen::Matrix3Xf comTrajectory = pZMPPreviewControl->getCoMTrajectory();
+	const Eigen::Matrix2Xf zmpTrajectory = pZMPPreviewControl->getComputedZMPTrajectory();
+	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
+
 	TrajectoryExporter exporter(robot,
 		robotFile,
 		trajectoy,
 		leftFootTrajectory,
+		comTrajectory,
+		zmpTrajectory,
+		refZMPTrajectory,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
 	);
 

@@ -37,11 +37,18 @@ void run(const std::string& robotPath, const std::string& targetPath)
 		planer->getLeftFootTrajectory(),
 		trajectory);
 
+	const Eigen::Matrix3Xf comTrajectory = controller.getCoMTrajectory();
+	const Eigen::Matrix2Xf zmpTrajectory = controller.getComputedZMPTrajectory();
+	const Eigen::Matrix2Xf refZMPTrajectory = controller.getReferenceZMPTrajectory();
+
 	TrajectoryExporter exporter(robot,
 		robotPath,
 		trajectory,
 		planer->getLeftFootTrajectory(),
-		planer->getSamplesPerSecond());
+		comTrajectory,
+		zmpTrajectory,
+		refZMPTrajectory,
+		1.0 / planer->getSamplesPerSecond());
 	exporter.exportToMMM(targetPath);
 }
 
