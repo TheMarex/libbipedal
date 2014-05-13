@@ -14,7 +14,7 @@
 FootstepPlaner::FootstepPlaner(void)
 : _dStepLength(0.3f)
 , _dStepWidth(0.2f)
-, _dStepHeight(0.3f)
+, _dStepHeight(0.1f)
 , _dStepPeriod(0.8f)
 , _dCoMHeight(0.75f)
 , _dSingleSupportPhase(0.7f)

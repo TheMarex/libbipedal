@@ -20,9 +20,8 @@ void run(const std::string& robotPath, const std::string& targetPath)
 	VirtualRobot::RobotPtr robot = VirtualRobot::RobotIO::loadRobot(robotPath);
 
 	PolynomialFootstepPlanerPtr planer(new PolynomialFootstepPlaner());
-	planer->setParameters(0.4, 0.8, 0.2, 0.5);
 	planer->setRobotModel(robot);
-	planer->generate();
+	planer->generate(3);
 	ZMPPreviewControl controller;
 	controller.setFootstepPlaner(boost::dynamic_pointer_cast<FootstepPlaner>(planer));
 
