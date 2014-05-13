@@ -4,18 +4,16 @@
 #include "VirtualRobot/CollisionDetection/CollisionChecker.h"
 #include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
-PolynomialFootstepPlaner::PolynomialFootstepPlaner(void)
+PolynomialFootstepPlaner::PolynomialFootstepPlaner()
+: FootstepPlaner()
 {
-} 
-
-PolynomialFootstepPlaner::~PolynomialFootstepPlaner(void) {
 }
 
 void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize) {
 	if (_bParametersInitialized) {
 		//TODO: first delete all array, vectors and matrices
 	}
-	
+
 	_dStepLength = stepLength;
 	_dStepPeriod = stepPeriod;
 	_dDoubleSupportPhase = doubleSupportPhase;
@@ -23,7 +21,7 @@ void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPerio
 	_dStepHeight = stepHeight;
 	_iSampleSize = sampleSize;
 	_bParametersInitialized = true;
-	
+
 	generate();
 }
 
@@ -39,22 +37,8 @@ void PolynomialFootstepPlaner::setRightFootFirst()
 	_bLeftFootFirst=false;
 }
 
-/*
-// TODO:
-SoSeparator* PolynomialFootstepPlaner::getShapeLeftFoot() {
-	return 0;
-}
-*/
-
-/*
-// TODO:
-SoSeparator* PolynomialFootstepPlaner::getShapeRightFoot() {
-	return 0;
-}
-*/
-
-void PolynomialFootstepPlaner::generate(int numberOfSteps) {
-	if (numberOfSteps<2) 
+void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps) {
+	if (numberOfSteps<2)
 		numberOfSteps=2;
 	_iNumberOfSteps = numberOfSteps;
 	_mLFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps+1);
@@ -65,12 +49,13 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	// ***************************************************
     int iSamplesPerStep = (int) (_iSampleSize * _dStepPeriod);
 	double sampleDelta = 1.0f / _iSampleSize;
-	// initialise Matrix
-	_footTrajectory = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-	_footTrajectoryFirstLast = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+	// initialise generalized trajectory
+	Eigen::Matrix3Xf _footTrajectory = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+	// generalized trajectory for the first and last swinging leg
+	Eigen::Matrix3Xf _footTrajectoryFirstLast = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
 	// percentage of different Phases
-	_dSS = (double) (_dSingleSupportPhase / _dStepPeriod);
-	_dDS = (double) (_dDoubleSupportPhase / _dStepPeriod);
+	double _dSS = (double) (_dSingleSupportPhase / _dStepPeriod);
+	double _dDS = (double) (_dDoubleSupportPhase / _dStepPeriod);
 	// total number of samples for each phase
 	int iSS = (int) (iSamplesPerStep * _dSS);
 	int iDS = (int) (iSamplesPerStep * _dDS);
@@ -195,10 +180,6 @@ void PolynomialFootstepPlaner::generate(int numberOfSteps) {
 	_mLFootPositions.col(stepCounter)=vLeftFoot;
 	_mRFootPositions.col(stepCounter)=vRightFoot;*/
 	_bGenerated = true;
-	// **********************************
-	// ** generate visualization nodes **
-	// **********************************
-	buildVisualization();
 }
 
 

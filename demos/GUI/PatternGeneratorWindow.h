@@ -25,6 +25,8 @@
 
 #include "PolynomialFootstepPlaner.h"
 #include "ZMP/ZMPPreviewControl.h"
+#include "Visualization/ZMPVisualization.h"
+#include "Visualization/FootVisualization.h"
 
 #include "ui_PatternGeneratorWindow.h"
 
@@ -43,13 +45,7 @@ public slots:
 	void quit();
 	/*!< Overriding the close event, so we know when the window was closed by the user. */
 	void closeEvent(QCloseEvent *event);
-	
-	void collisionModel();
-	void selectJoint(int nr);
-	void jointValueChanged(int pos);
-	void selectRNS(int nr);
-	void performCoMIK();
-	
+
 	// handle UI responses
 	void exportTrajectory();
 	void selectRobot();
@@ -86,13 +82,12 @@ protected:
 	void updateSupportVisu();
 	void updateTrajectoriesVisu();
 	void updateZMPVisu();
-	
 
 	Ui::MainWindowStability UI;
 	SoQtExaminerViewer *m_pExViewer; /*!< Viewer to display the 3D model of the robot and the environment. */
 
 	Eigen::Vector2f m_CoMTarget;
-		
+
 	SoSeparator *sceneSep;
 	SoSeparator *robotVisuSep;
 	SoSeparator *comVisu;
@@ -104,24 +99,25 @@ protected:
 	SoSeparator *_vCoMTrajectory;
 	SoSeparator *_vZMP;
 
-	//PolynomialFootstepPlaner *_footstepPlaner;
-	
 	VirtualRobot::RobotPtr robot;
 	std::string robotFile;
-	
+
 	VirtualRobot::RobotNodeSetPtr currentRobotNodeSet;
 	std::vector < VirtualRobot::RobotNodePtr > allRobotNodes;
 	std::vector < VirtualRobot::RobotNodePtr > currentRobotNodes;
-	std::vector < VirtualRobot::RobotNodeSetPtr > robotNodeSets;	
-	
+	std::vector < VirtualRobot::RobotNodeSetPtr > robotNodeSets;
+
 	VirtualRobot::RobotNodePtr currentRobotNode;
-	
+
 	bool useColModel;
 
     boost::shared_ptr<VirtualRobot::CoinVisualization> visualization;
-	
-	FootstepPlaner* pFootStepPlaner;
-    ZMPPreviewControl* pZMPPreviewControl;
+
+	FootstepPlanerPtr    pFootStepPlaner;
+    ZMPPlanerPtr         pZMPPreviewControl;
+	ZMPVisualizationPtr  pZMPVisu;
+	FootVisualizationPtr pFootVisu;
+	Eigen::MatrixXf      trajectoy;
 };
 
 #endif // __PatternGeneratorScene_WINDOW_H_

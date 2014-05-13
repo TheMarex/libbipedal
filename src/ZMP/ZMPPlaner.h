@@ -2,49 +2,43 @@
 #define _ZMP_PLANER_H_
 
 #include <VirtualRobot/VirtualRobot.h>
-#include <Inventor/nodes/SoSeparator.h>
+#include <boost/shared_ptr.hpp>
 
 #include "FootstepPlaner.h"
 
-class ZMPPlaner 
+class ZMPPlaner
 {
 public:
-	ZMPPlaner();
-	~ZMPPlaner();
+	ZMPPlaner()
+	: _bComputed(false)
+	, _nSamplesDS(0)
+	, _nSamplesSS(0)
+	{
+	}
 
-public:
-	void setFootstepPlaner(FootstepPlaner* planer) {_pPlaner = planer;};
-	int getZMPPositions(Eigen::Matrix2Xf& zmp);
+	void setFootstepPlaner(FootstepPlanerPtr planer)
+    {
+		_pPlaner = planer;
+    }
 
 	virtual void computeReference() = 0;
 
-	SoSeparator* getVisualization() {return _visualization;};
-	void showReference(bool isVisible);
-	void showRealZMP(bool isVisible);
-	void showCoM(bool isVisible);
-
-    Eigen::MatrixXf getCoMTrajectory() { return _mCoM; }
+    Eigen::Matrix3Xf getCoMTrajectory() { return _mCoM; }
+    Eigen::Matrix2Xf getReferenceZMPTrajectory() { return _mReference; }
+    Eigen::Matrix2Xf getComputedZMPTrajectory() { return _mZMP; }
 
 protected:
-	FootstepPlaner* _pPlaner;
+	FootstepPlanerPtr _pPlaner;
 	bool _bComputed;
     Eigen::Matrix2Xf _mReference;   // ZMPReference
     Eigen::Matrix3Xf _mCoM;         // computed CoM
     Eigen::Matrix2Xf _mZMP;         // computed "real" ZMP (resulting from CoM)
-	// root node for visualization
-	SoSeparator* _visualization;
-	SoSeparator* _referenceNodes;
-	SoSeparator* _comNodes;
-    SoSeparator* _realNodes;
-    // switches to enable or disable visualization of referenceZMP/CoM-Trajectory/resulting-ZMP
-	SoSwitch* _swReference;
-	SoSwitch* _swCoM;
-    SoSwitch* _swRealZMP;
 
 	int _nSamplesDS;
 	int _nSamplesSS;
 };
 
+typedef boost::shared_ptr<ZMPPlaner> ZMPPlanerPtr;
 
 #endif
 

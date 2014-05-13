@@ -27,6 +27,9 @@
 #include "PatternGeneratorWindow.h"
 
 #include "Utils/TrajectoryExporter.h"
+#include "Utils/Kinematics.h"
+
+#include <boost/make_shared.hpp>
 
 #include <sstream>
 using namespace std;
@@ -38,9 +41,13 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 :QMainWindow(NULL)
 {
 	VR_INFO << " start " << endl;
-	//pFootStepPlaner.reset(new PolynomialFootstepPlaner());
-	pFootStepPlaner = new PolynomialFootstepPlaner();
-	pZMPPreviewControl = new ZMPPreviewControl();
+	pFootStepPlaner = boost::make_shared<PolynomialFootstepPlaner>();
+	pZMPPreviewControl = boost::dynamic_pointer_cast<ZMPPlaner>(
+		boost::make_shared<ZMPPreviewControl>()
+	);
+	pZMPVisu = boost::make_shared<ZMPVisualization>(pZMPPreviewControl);
+	pFootVisu = boost::make_shared<FootVisualization>(pFootStepPlaner);
+	pFootVisu->buildVisualization();
 
 	robotFile = sRobotFile;
 	useColModel = false;
@@ -68,9 +75,9 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	sceneSep->addChild(supportVisu);
 	sceneSep->addChild(_vFootstepPlaner);
 	sceneSep->addChild(_vZMPTrajectory);
-	_vFootstepPlaner->addChild(pFootStepPlaner->getVisualization());
+	_vFootstepPlaner->addChild(pFootVisu->getVisualization());
 	//std::cout << "Foostep Planer: [" << pFootStepPlaner.get() << "], visualization: [" << pFootStepPlaner->getVisualization() << "]" << std::endl;
-	_vZMPTrajectory->addChild(pZMPPreviewControl->getVisualization());
+	_vZMPTrajectory->addChild(pZMPVisu->getVisualization());
 
 	sceneSep->addChild(_vCoMTrajectory);
 	sceneSep->addChild(_vZMP);
@@ -94,8 +101,6 @@ PatternGeneratorWindow::~PatternGeneratorWindow()
 	_vFootstepPlaner->unref();
 	_vZMPTrajectory->unref();
 	sceneSep->unref();
-	delete pFootStepPlaner;
-	delete pZMPPreviewControl;
 }
 
 
@@ -163,22 +168,11 @@ QString PatternGeneratorWindow::formatString(const char *s, float f)
 	return str1;
 }
 
-
-
-
-void PatternGeneratorWindow::collisionModel()
-{
-	if (!robot)
-		return;
-	buildVisu();
-}
-
 void PatternGeneratorWindow::closeEvent(QCloseEvent *event)
 {
 	quit();
 	QMainWindow::closeEvent(event);
 }
-
 
 void PatternGeneratorWindow::buildVisu()
 {
@@ -273,10 +267,20 @@ void PatternGeneratorWindow::getUIParameters()
     }
 
     pZMPPreviewControl->computeReference();
-    pZMPPreviewControl->computeWalkingTrajectory();
+
+	Kinematics::computeWalkingTrajectory(robot,
+		pZMPPreviewControl->getCoMTrajectory(),
+		pFootStepPlaner->getRightFootTrajectory(),
+		pFootStepPlaner->getLeftFootTrajectory(),
+		trajectoy);
+
+	pZMPVisu->buildCoMVisualization();
+	pZMPVisu->buildComputedZMPVisualization();
+	pZMPVisu->buildReferenceZMPVisualization();
+	pFootVisu->buildVisualization();
 
     // Update slider
-    int numSteps = pZMPPreviewControl->getWalkingTrajectory().cols();
+    int numSteps = trajectoy.cols();
     std::cout << "Walking trajectory has " << numSteps << " steps" << std::endl;
     UI.frameSlider->setRange(0, numSteps - 1);
     UI.frameSlider->setEnabled(true);
@@ -336,28 +340,15 @@ void PatternGeneratorWindow::updateCoM()
 // changes on Visualization of SupportPolygon or 
 void PatternGeneratorWindow::updateSupportVisu()
 {
-	//std::cout << "Foostep Planer: [" << pFootStepPlaner.get() << "], visualization: [" << pFootStepPlaner->getVisualization() << "]" << std::endl;
 	supportVisu->removeAllChildren();
 	MathTools::Plane p =  MathTools::getFloorPlane();
 
 	if (UI.checkBoxSupportPolygon->isChecked())
 	{
-		/*SoMaterial *material = new SoMaterial;
-		material->diffuseColor.setValue(1.0f,0.2f,0.2f);
-		supportVisu->addChild(material);*/
-
-		
-		//supportVisu->addChild(CoinVisualizationFactory::CreatePlaneVisualization(p.p,p.n,100000.0f,0.5f));
-		/*RobotNodeSetPtr rns = robot->getRobotNodeSet("TorsoRightArm");
-		RobotNodePtr rn = robot->getRobotNode("Wrist1");
-		CollisionModelPtr colModel = rn->getCollisionModel();
-		colChecker->getContacts(p, colModel, points, 5.0f);*/
-
-
 		std::vector< CollisionModelPtr > colModels =  robot->getCollisionModels();
 		CollisionCheckerPtr colChecker = CollisionChecker::getGlobalCollisionChecker();
 		std::vector< CollisionModelPtr >::iterator i = colModels.begin();
-		
+
 		std::vector< MathTools::ContactPoint > points;
 		while (i!=colModels.end())
 		{
@@ -366,10 +357,8 @@ void PatternGeneratorWindow::updateSupportVisu()
 		}
 
 		std::vector< Eigen::Vector2f > points2D;
-		//MathTools::Plane plane2(Eigen::Vector3f(0,0,0),Eigen::Vector3f(0,1.0f,0));
 		for (size_t u=0;u<points.size();u++)
 		{
-			
 			Eigen::Vector2f pt2d = MathTools::projectPointToPlane2D(points[u].p,p);
 			points2D.push_back(pt2d);
 		}
@@ -380,37 +369,20 @@ void PatternGeneratorWindow::updateSupportVisu()
 		supportVisu->addChild(visu);
 	}
 
-	// Visualize Footstep-Positions
-	//_vFootstepPositions->removeAllChildren();
-	if (pFootStepPlaner) {
-		pFootStepPlaner->showFootPositions( UI.checkBoxFootstepPositions->isChecked() );
-		//pFootStepPlaner->showFootTrajectories( UI.checkBoxFeetTrajectories->isChecked() );
-	}
-	
+	pFootVisu->showFootPositions( UI.checkBoxFootstepPositions->isChecked() );
 }
 
 // changes on ZMP or Feet Trajectory Checkboxes
 void PatternGeneratorWindow::updateTrajectoriesVisu() 
 {
-	std::cout << "updateTrajectoriesVisu() triggered!" << std::endl;
 	// check for trajectories and enable/disable them
-	if (pFootStepPlaner)
-		pFootStepPlaner->showFootTrajectories( UI.checkBoxFeetTrajectories->isChecked() );
-	if (pZMPPreviewControl)
-	{
-		std::cout << "refreshing ZMP-Trajectory view: " << (UI.checkBoxZMPTrajectory->isChecked()?"activating!":"deactivating!") << std::endl;
-		pZMPPreviewControl->showReference(UI.checkBoxZMPTrajectory->isChecked());
+	pFootVisu->showFootTrajectories( UI.checkBoxFeetTrajectories->isChecked() );
 
-        pZMPPreviewControl->showRealZMP(UI.checkBoxZMP->isChecked());
+	pZMPVisu->showReference(UI.checkBoxZMPTrajectory->isChecked());
 
-        pZMPPreviewControl->showCoM(UI.checkBoxCoMTrajectory->isChecked());
-    }
-    /*
-	// TODO: do something with _vCoMTrajectory
-	if (UI.checkBoxCoMTrajectory->isChecked()) 
-	{
-        std::cout << "CoMTrajectory clicked!" << std::endl;
-    } */
+	pZMPVisu->showRealZMP(UI.checkBoxZMP->isChecked());
+
+	pZMPVisu->showCoM(UI.checkBoxCoMTrajectory->isChecked());
 }
 
 void PatternGeneratorWindow::updateZMPVisu() 
@@ -419,60 +391,14 @@ void PatternGeneratorWindow::updateZMPVisu()
 
 void PatternGeneratorWindow::updateRNSBox()
 {
-//	UI.comboBoxRNS->clear();
-//	UI.comboBoxRNS->addItem(QString("<All>"));
-
 	std::vector < VirtualRobot::RobotNodeSetPtr > allRNS;
 	robot->getRobotNodeSets(allRNS);
-	robotNodeSets.clear();	
-
-	for (size_t i=0;i<allRNS.size();i++)
-	{
-		//if (allRNS[i]->isKinematicChain())
-		//{
-			//VR_INFO << " RNS <" << allRNS[i]->getName() << "> is a valid kinematic chain" << endl;
-//			robotNodeSets.push_back(allRNS[i]);
-//			UI.comboBoxRNS->addItem(QString(allRNS[i]->getName().c_str()));
-		/*} else
-		{
-			VR_INFO << " RNS <" << allRNS[i]->getName() << "> is not a valid kinematic chain" << endl;
-		}*/
-	}
-		
+	robotNodeSets.clear();
 
 	for (unsigned int i=0;i<allRobotNodes.size();i++)
 	{
 		allRobotNodes[i]->showBoundingBox(false);
 	}
-
-	
-	updateJointBox();
-}
-
-void PatternGeneratorWindow::selectRNS(int nr)
-{
-	currentRobotNodeSet.reset();
-	cout << "Selecting RNS nr " << nr << endl;
-	if (nr<=0)
-	{
-		// all joints
-		currentRobotNodes = allRobotNodes;
-	} else
-	{
-		nr--;
-		if (nr>=(int)robotNodeSets.size())
-			return;
-		currentRobotNodeSet = robotNodeSets[nr];
-		currentRobotNodes = currentRobotNodeSet->getAllRobotNodes();
-
-		// Set CoM target to current CoM position
-		Eigen::Vector3f com = currentRobotNodeSet->getCoM();
-		//UI.sliderX->setValue(com(0));
-		//UI.sliderY->setValue(com(1));
-	}
-	updateJointBox();
-	selectJoint(0);
-	updateCoM();
 }
 
 int PatternGeneratorWindow::main()
@@ -482,79 +408,11 @@ int PatternGeneratorWindow::main()
 	return 0;
 }
 
-
 void PatternGeneratorWindow::quit()
 {
 	std::cout << "PatternGeneratorWindow: Closing" << std::endl;
 	this->close();
 	SoQt::exitMainLoop();
-}
-
-
-void PatternGeneratorWindow::updateJointBox()
-{
-	//UI.comboBoxJoint->clear();
-
-	//for (unsigned int i=0;i<currentRobotNodes.size();i++)
-	//{
-	//	UI.comboBoxJoint->addItem(QString(currentRobotNodes[i]->getName().c_str()));
-	//}
-	selectJoint(0);
-}
-
-void PatternGeneratorWindow::jointValueChanged(int pos)
-{	
-	//int nr = UI.comboBoxJoint->currentIndex();
-	//if (nr<0 || nr>=(int)currentRobotNodes.size())
-	//	return;
-	//float fPos = currentRobotNodes[nr]->getJointLimitLo() + (float)pos / 1000.0f * (currentRobotNodes[nr]->getJointLimitHi() - currentRobotNodes[nr]->getJointLimitLo());
-	//robot->setJointValue(currentRobotNodes[nr],fPos);
-	//UI.lcdNumberJointValue->display((double)fPos);
-
-	updateCoM();
-
-	/*RobotNodePtr p = robot->getRobotNode("Foot2 L");
-	if (p)
-	{
-		BoundingBox bbox = p->getCollisionModel()->getBoundingBox(true);
-		supportVisu->addChild(CoinVisualizationFactory::CreateBBoxVisualization(bbox));
-	}*/
-	// show bbox
-	if (currentRobotNodeSet)
-	{
-		for (unsigned int i=0;i<currentRobotNodeSet->getSize();i++)
-		{
-			currentRobotNodeSet->getNode(i)->showBoundingBox(true,true);
-		}
-	}
-}
-
-void PatternGeneratorWindow::selectJoint(int nr)
-{
-	currentRobotNode.reset();
-	cout << "Selecting Joint nr " << nr << endl;
-	if (nr<0 || nr>=(int)currentRobotNodes.size())
-		return;
-	currentRobotNode = currentRobotNodes[nr];
-	currentRobotNode->print();
-	float mi = currentRobotNode->getJointLimitLo();
-	float ma = currentRobotNode->getJointLimitHi();
-	QString qMin = QString::number(mi);
-	QString qMax = QString::number(ma);
-	//UI.labelMinPos->setText(qMin);
-	//UI.labelMaxPos->setText(qMax);
-	//float j = currentRobotNode->getJointValue();
-	//UI.lcdNumberJointValue->display((double)j);
-	//if (fabs(ma-mi)>0 && (currentRobotNode->isTranslationalJoint() || currentRobotNode->isRotationalJoint()) )
-	//{
-	//	UI.horizontalSliderPos->setEnabled(true);
-	//	int pos = (int)((j-mi)/(ma-mi) * 1000.0f);
-	//	UI.horizontalSliderPos->setValue(pos);
-	//} else
-	//{
-	//	UI.horizontalSliderPos->setValue(500);
-	//	UI.horizontalSliderPos->setEnabled(false);
-	//}
 }
 
 void PatternGeneratorWindow::loadRobot()
@@ -572,24 +430,16 @@ void PatternGeneratorWindow::loadRobot()
 		cout << e.what();
 		return;
 	}
-	
+
 	if (!robot)
 	{
 		cout << " ERROR while creating robot" << endl;
 		return;
 	}
-	
+
 	// get nodes
 	robot->getRobotNodes(allRobotNodes);
-	
-	/*
-	updateRNSBox();
-	selectRNS(0);
-	if (allRobotNodes.size()==0)
-		selectJoint(-1);
-	else
-		selectJoint(0);
-	*/
+
 
 	// build visualization
 	if (pFootStepPlaner)
@@ -598,26 +448,11 @@ void PatternGeneratorWindow::loadRobot()
 	m_pExViewer->viewAll();
 }
 
-void PatternGeneratorWindow::performCoMIK()
-{
-	if(!currentRobotNodeSet)
-		return;
-
-	CoMIK comIK(currentRobotNodeSet,currentRobotNodeSet);
-	comIK.setGoal(m_CoMTarget);
-	if(!comIK.solveIK(0.3f,0,20))
-		std::cout << "IK solver did not succeed" << std::endl;
-	updateCoM();
-}
-
-
-
 /*
  *
  *	hande UI responses
  *
  */
-
 
 void PatternGeneratorWindow::selectRobot()
 {
@@ -632,11 +467,10 @@ void PatternGeneratorWindow::exportTrajectory()
 			tr("Save MMM Motion"), "",
 			tr("MMM motion XML file (*.xml)"));
 
-	const Eigen::Matrix3Xf leftFootTrajectory = pZMPPreviewControl->getLeftFootTrajectory();
-	const Eigen::MatrixXf bodyTrajectory = pZMPPreviewControl->getWalkingTrajectory();
+	const Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
 	TrajectoryExporter exporter(robot,
 		robotFile,
-		bodyTrajectory,
+		trajectoy,
 		leftFootTrajectory,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
 	);
@@ -722,12 +556,6 @@ void PatternGeneratorWindow::showZMP()
     cout << "showZMP clicked!" << endl;
     updateTrajectoriesVisu();
     m_pExViewer->scheduleRedraw();
-
-    /*
-    cout << "showZMP clicked!" << endl;
-	if (!robot)
-		return;
-    updateZMPVisu();*/
 }
 
 void PatternGeneratorWindow::showCoM()
@@ -756,72 +584,14 @@ void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
 
     RobotNodeSetPtr nodeSet = robot->getRobotNodeSet("Left2RightLeg");
 
-    Eigen::Matrix3Xf leftFootTrajectory = pZMPPreviewControl->getLeftFootTrajectory();
+    Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
     Eigen::Matrix4f leftFootPose = nodeSet->getKinematicRoot()->getGlobalPose();
 
     leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(value);
     robot->setGlobalPose(leftFootPose);
 
-    nodeSet->setJointValues(pZMPPreviewControl->getWalkingTrajectory().col(value));
+    nodeSet->setJointValues(trajectoy.col(value));
     updateCoM();
+	updateSupportVisu();
 }
-
-
-
-
-/*
-void PatternGeneratorWindow::comTargetMovedX(int value)
-{
-	if(!currentRobotNodeSet)
-		return;
-
-	Eigen::Matrix4f T;
-	T.setIdentity();
-
-	m_CoMTarget(0) = value;
-	T.block(0, 3, 2, 1) = m_CoMTarget;
-
-	if(comTargetVisu && comTargetVisu->getNumChildren() > 0)
-	{
-		SoMatrixTransform *m = dynamic_cast<SoMatrixTransform *>(comTargetVisu->getChild(0));
-		if(m)
-		{
-			SbMatrix ma(reinterpret_cast<SbMat*>(T.data()));
-            // mm -> m
-            ma[3][0] *= 0.001f;
-            ma[3][1] *= 0.001f;
-            ma[3][2] *= 0.001f;
-			m->matrix.setValue(ma);
-		}
-	}
-
-	performCoMIK();
-}*/
-
-/*
-void PatternGeneratorWindow::comTargetMovedY(int value)
-{
-	Eigen::Matrix4f T;
-	T.setIdentity();
-
-	m_CoMTarget(1) = value;
-	T.block(0, 3, 2, 1) = m_CoMTarget;
-
-	if(comTargetVisu && comTargetVisu->getNumChildren() > 0)
-	{
-		SoMatrixTransform *m = dynamic_cast<SoMatrixTransform *>(comTargetVisu->getChild(0));
-		if(m)
-		{
-			SbMatrix ma(reinterpret_cast<SbMat*>(T.data()));
-            // mm -> m
-            ma[3][0] *= 0.001f;
-            ma[3][1] *= 0.001f;
-            ma[3][2] *= 0.001f;
-			m->matrix.setValue(ma);
-		}
-	}
-
-	performCoMIK();
-}
-*/
 

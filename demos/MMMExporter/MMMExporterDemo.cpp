@@ -7,9 +7,11 @@
 
 #include <Inventor/Qt/SoQt.h>
 
+#include "FootstepPlaner.h"
 #include "PolynomialFootstepPlaner.h"
 #include "ZMP/ZMPPreviewControl.h"
 #include "Utils/TrajectoryExporter.h"
+#include "Utils/Kinematics.h"
 
 using namespace VirtualRobot;
 
@@ -17,21 +19,29 @@ void run(const std::string& robotPath, const std::string& targetPath)
 {
 	VirtualRobot::RobotPtr robot = VirtualRobot::RobotIO::loadRobot(robotPath);
 
-	PolynomialFootstepPlaner planer;
+	PolynomialFootstepPlanerPtr planer(new PolynomialFootstepPlaner());
+	planer->setParameters(0.4, 0.8, 0.2, 0.5);
+	planer->setRobotModel(robot);
+	planer->generate();
 	ZMPPreviewControl controller;
-	controller.setFootstepPlaner((FootstepPlaner*) &planer);
+	controller.setFootstepPlaner(boost::dynamic_pointer_cast<FootstepPlaner>(planer));
 
 	std::cout << "Comptuting reference..." << std::endl;
     controller.computeReference();
 
 	std::cout << "Comptuting walking trajectory..." << std::endl;
-    controller.computeWalkingTrajectory();
+	Eigen::MatrixXf trajectory;
+	Kinematics::computeWalkingTrajectory(robot,
+		controller.getCoMTrajectory(),
+		planer->getRightFootTrajectory(),
+		planer->getLeftFootTrajectory(),
+		trajectory);
 
 	TrajectoryExporter exporter(robot,
 		robotPath,
-		controller.getWalkingTrajectory(),
-		controller.getLeftFootTrajectory(),
-		planer.getSamplesPerSecond());
+		trajectory,
+		planer->getLeftFootTrajectory(),
+		planer->getSamplesPerSecond());
 	exporter.exportToMMM(targetPath);
 }
 
