@@ -21,8 +21,6 @@ void PolynomialFootstepPlaner::setParameters(double stepLength, double stepPerio
 	_dStepHeight = stepHeight;
 	_iSampleSize = sampleSize;
 	_bParametersInitialized = true;
-
-	generate();
 }
 
 // start walking with left foot first
