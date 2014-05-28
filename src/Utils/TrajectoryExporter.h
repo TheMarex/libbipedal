@@ -14,6 +14,7 @@ public:
 		const Eigen::MatrixXf& bodyTrajectory,
 		const Eigen::Matrix3Xf& leftFootTrajectory,
 		const Eigen::Matrix3Xf& comTrajectory,
+		const Eigen::Matrix2Xf& comVelocity,
 		const Eigen::Matrix2Xf& computedZMPTrajectory,
 		const Eigen::Matrix2Xf& referenceZMPTrajectory,
 		float timestep)
@@ -22,6 +23,7 @@ public:
 	, bodyTrajectory(bodyTrajectory)
 	, leftFootTrajectory(leftFootTrajectory)
 	, comTrajectory(comTrajectory)
+	, comVelocity(comVelocity)
 	, computedZMPTrajectory(computedZMPTrajectory)
 	, referenceZMPTrajectory(referenceZMPTrajectory)
 	, timestep(timestep)
@@ -39,6 +41,7 @@ private:
 	const Eigen::MatrixXf& bodyTrajectory;
 	const Eigen::Matrix3Xf& leftFootTrajectory;
 	const Eigen::Matrix3Xf& comTrajectory;
+	const Eigen::Matrix2Xf& comVelocity;
 	const Eigen::Matrix2Xf& computedZMPTrajectory;
 	const Eigen::Matrix2Xf& referenceZMPTrajectory;
 	const std::string& pathToRobot;

@@ -440,7 +440,6 @@ void PatternGeneratorWindow::loadRobot()
 	// get nodes
 	robot->getRobotNodes(allRobotNodes);
 
-
 	// build visualization
 	if (pFootStepPlaner)
 		pFootStepPlaner->setRobotModel(robot);
@@ -469,6 +468,7 @@ void PatternGeneratorWindow::exportTrajectory()
 
 	const Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
 	const Eigen::Matrix3Xf comTrajectory = pZMPPreviewControl->getCoMTrajectory();
+	const Eigen::Matrix2Xf comVel = pZMPPreviewControl->getCoMVelocity();
 	const Eigen::Matrix2Xf zmpTrajectory = pZMPPreviewControl->getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
 
@@ -477,6 +477,7 @@ void PatternGeneratorWindow::exportTrajectory()
 		trajectoy,
 		leftFootTrajectory,
 		comTrajectory,
+        comVel,
 		zmpTrajectory,
 		refZMPTrajectory,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
