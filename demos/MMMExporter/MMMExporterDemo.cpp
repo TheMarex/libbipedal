@@ -29,6 +29,12 @@ void run(const std::string& robotPath, const std::string& targetPath)
     controller.computeReference();
 
 	std::cout << "Comptuting walking trajectory..." << std::endl;
+	// force initial position
+	VirtualRobot::RobotNodePtr leftArm = robot->getRobotNode("LeftArm_Joint3");
+	robot->setJointValue(leftArm, 0.3);
+	VirtualRobot::RobotNodePtr rightArm = robot->getRobotNode("RightArm_Joint3");
+	robot->setJointValue(rightArm, -0.3);
+
 	Eigen::MatrixXf trajectory;
 	Kinematics::computeWalkingTrajectory(robot,
 		controller.getCoMTrajectory(),

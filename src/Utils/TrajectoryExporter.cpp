@@ -100,7 +100,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	int size = bodyTrajectory.cols();
 	int ndof = bodyTrajectory.rows();
 
-	Eigen::MatrixXf bodyVelocity = VelocityEstimation::neighboursDiff(bodyTrajectory, timestep);
+	Eigen::MatrixXf bodyVelocity = VelocityEstimation::simpleDiff(bodyTrajectory, timestep);
 
 	for (int i = 0; i < size; i++)
 	{

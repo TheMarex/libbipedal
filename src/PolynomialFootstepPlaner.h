@@ -18,6 +18,7 @@ public:
 	virtual void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize=100);
 
 protected:
+    void calculateStep(double ssTime, int ssSamples, double sampleDelta, double stepLength, double stepHeight, Eigen::Matrix3Xf &trajectory);
 	virtual void computeFeetTrajectories(int numberOfSteps=5);
 	int _iNumberOfSteps;
 	bool _bParametersInitialized;

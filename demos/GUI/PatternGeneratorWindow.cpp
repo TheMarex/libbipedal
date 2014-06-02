@@ -259,6 +259,7 @@ void PatternGeneratorWindow::getUIParameters()
 	value = UI.lineEditStepHeight->text();
 	dHeight = value.toDouble();
 	pFootStepPlaner->setParameters(dStepLength, dStepPeriod, dDSPhase, dHeight);
+    pFootStepPlaner->generate(5);
 	pZMPPreviewControl->setFootstepPlaner(pFootStepPlaner);
     if (robot!=0) {
         std::cout << "Initial CoM Position set!" << std::endl;
@@ -267,6 +268,11 @@ void PatternGeneratorWindow::getUIParameters()
     }
 
     pZMPPreviewControl->computeReference();
+
+	VirtualRobot::RobotNodePtr leftArm = robot->getRobotNode("LeftArm_Joint3");
+	robot->setJointValue(leftArm, 0.3);
+	VirtualRobot::RobotNodePtr rightArm = robot->getRobotNode("RightArm_Joint3");
+	robot->setJointValue(rightArm, -0.3);
 
 	Kinematics::computeWalkingTrajectory(robot,
 		pZMPPreviewControl->getCoMTrajectory(),

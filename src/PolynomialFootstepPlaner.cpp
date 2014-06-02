@@ -35,6 +35,44 @@ void PolynomialFootstepPlaner::setRightFootFirst()
 	_bLeftFootFirst=false;
 }
 
+void PolynomialFootstepPlaner::calculateStep(double ssTime, int ssSamples, double sampleDelta, double stepLength, double stepHeight, Eigen::Matrix3Xf &trajectory)
+{
+	// temporary variables
+    double T1 = ssTime;                 // T^1
+    double T2 = T1*T1;                  // T^2
+    double T3 = T2*T1;                  // T^3
+    double T4 = T3*T1;                  // T^4
+    double S = stepLength;              // StepLength
+    double H = stepHeight;              // Height
+	double cx, dx, bz, cz, dz, xtemp, ztemp, x1, x2, x3, x4;
+	// calculating foot trajectory for swinging leg including resting phase
+	for (int i = 0; i < trajectory.cols(); i++) {
+		// precalculate {c*x, d*x, b*z, c*z, d*z, x^1, x^2, x^3, x^4} for optimization purposes
+		cx = -2*S/T3;
+		dx = 3*S/T2;
+		bz = 16*H/T4;
+		cz = -32*H/T3;
+		dz = 16*H/T2;
+		x1 = sampleDelta*i;
+		x2 = x1*x1;
+		x3 = x2*x1;
+		x4 = x3*x1;
+		if (i < ssSamples)
+		{
+			// swinging phase
+			xtemp =       cx*x3+dx*x2;
+			ztemp = bz*x4+cz*x3+dz*x2;
+		} else {
+			// resting phase continues with last values
+			xtemp = S;
+			ztemp = 0;
+		}
+		trajectory(0, i) = xtemp;
+        trajectory(1, i) = 0;
+		trajectory(2, i) = ztemp;
+	}
+}
+
 void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps) {
 	if (numberOfSteps<2)
 		numberOfSteps=2;
@@ -50,50 +88,34 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps) {
 	// initialise generalized trajectory
 	Eigen::Matrix3Xf _footTrajectory = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
 	// generalized trajectory for the first and last swinging leg
-	Eigen::Matrix3Xf _footTrajectoryFirstLast = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+	Eigen::Matrix3Xf _footTrajectoryFirst = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+	Eigen::Matrix3Xf _footTrajectoryLast = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
 	// percentage of different Phases
 	double _dSS = (double) (_dSingleSupportPhase / _dStepPeriod);
 	double _dDS = (double) (_dDoubleSupportPhase / _dStepPeriod);
 	// total number of samples for each phase
 	int iSS = (int) (iSamplesPerStep * _dSS);
 	int iDS = (int) (iSamplesPerStep * _dDS);
-	// temporary variables
-    double T1 = _dSingleSupportPhase;   // T^1
-    double T2 = T1*T1;                  // T^2
-    double T3 = T2*T1;                  // T^3
-    double T4 = T3*T1;                  // T^4
-    double S = _dStepLength;            // StepLength
-    double H = _dStepHeight;            // Height
-	double cx, dx, bz, cz, dz, xtemp, ztemp, x1, x2, x3, x4;
-	// calculating foot trajectory for swinging leg including resting phase
-	for (int i=0; i<_footTrajectory.cols(); i++) {
-		// precalculate {c*x, d*x, b*z, c*z, d*z, x^1, x^2, x^3, x^4} for optimization purposes
-		cx = -2*S/T3;
-		dx = 3*S/T2;
-		bz = 16*H/T4;
-		cz = -32*H/T3;
-		dz = 16*H/T2;
-		x1 = sampleDelta*i;
-		x2 = x1*x1;
-		x3 = x2*x1;
-		x4 = x3*x1;
-		if (i<iSS) 
-		{
-			// swinging phase
-			xtemp =       cx*x3+dx*x2;
-			ztemp = bz*x4+cz*x3+dz*x2;
-		} else {
-			// resting phase continues with last values
-			xtemp = S;
-			ztemp = 0;
-		}
-		_footTrajectory(0, i)= xtemp;
-        _footTrajectory(1, i)= 0;
-		_footTrajectory(2, i)= ztemp;
-		// half steps are half the length and half the height
-		_footTrajectoryFirstLast(0, i) = xtemp/2;
-		_footTrajectoryFirstLast(2, i) = ztemp/2;
-	}
+
+    calculateStep(_dSingleSupportPhase, iSS, sampleDelta, _dStepLength, _dStepHeight, _footTrajectory);
+
+    // half the hight/step length
+    _footTrajectoryLast = _footTrajectory / 2.0;
+
+    // first step has only 3/4 of the lift-off time
+    double firstStepFactor = 3/4.0;
+    double firstStepSSPhase = _dSingleSupportPhase * firstStepFactor;
+    int iFSS = iSS * firstStepFactor;
+    int iWait = iSS - iFSS;
+    int iFirstStepSampels = iSamplesPerStep - iWait;
+	Eigen::Matrix3Xf _tempTraj = Eigen::Matrix3Xf::Zero(3, iFirstStepSampels);
+    calculateStep(firstStepSSPhase, iFSS, sampleDelta, _dStepLength/2.0, _dStepHeight/2.0, _tempTraj);
+    _footTrajectoryFirst.block(0, iSamplesPerStep - iFirstStepSampels, 3, _tempTraj.cols()) = _tempTraj;
+    for (int i = 0; i < iWait; i++)
+    {
+        _footTrajectoryFirst(0, i) = _tempTraj(0, 0);
+        _footTrajectoryFirst(2, i) = _tempTraj(2, 0);
+    }
 	// ******************************************
 	// ** calculate Foot Positions for n-Steps **
 	// ******************************************
@@ -125,38 +147,27 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps) {
 		_mRFootTrajectory.col(index) = vRightFoot;
 		index++;
 	}
+
+	Eigen::Matrix3Xf _currentFootTrajectory = _footTrajectoryFirst;
 	for (int i=0; i<_iNumberOfSteps; i++) {
-		// starting and ending steps are half steps, the other steps are full steps
-		if ((i==0) || (i==_iNumberOfSteps-1))
-			halfStep = true;
-		else
-			halfStep = false;
+        if (i == 1)
+            _currentFootTrajectory = _footTrajectory;
+        else if (i == _iNumberOfSteps-1)
+            _currentFootTrajectory = _footTrajectoryLast;
+
         // TODO: find a more elegant solution
 		vTempL.setZero();
 		vTempR.setZero();
-		if (halfStep) {
-			for (int j=0; j<iSamplesPerStep; j++) {
-                // which foot do we move?
-				if (bLeft)
-					vTempL = _footTrajectoryFirstLast.col(j);
-				else
-					vTempR = _footTrajectoryFirstLast.col(j);
-				_mLFootTrajectory.col(index) = vLeftFoot + vTempL;
-				_mRFootTrajectory.col(index) = vRightFoot + vTempR;
-				index++;
-			}
-		} else {
-			for (int j=0; j<iSamplesPerStep; j++) {
-				// which foot to move?
-				if (bLeft) 
-					vTempL = _footTrajectory.col(j);
-				else
-					vTempR = _footTrajectory.col(j);
-				_mLFootTrajectory.col(index) = vLeftFoot + vTempL;
-				_mRFootTrajectory.col(index) = vRightFoot + vTempR;
-				index++;
-			}
-		}
+        for (int j=0; j<iSamplesPerStep; j++) {
+            // which foot do we move?
+            if (bLeft)
+                vTempL = _currentFootTrajectory.col(j);
+            else
+                vTempR = _currentFootTrajectory.col(j);
+            _mLFootTrajectory.col(index) = vLeftFoot + vTempL;
+            _mRFootTrajectory.col(index) = vRightFoot + vTempR;
+            index++;
+        }
 		// switch feet
 		bLeft = (bLeft?false:true);
 		// save new foot positions to temporary vectors

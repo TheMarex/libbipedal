@@ -9,8 +9,8 @@ namespace VelocityEstimation {
 		Eigen::MatrixXf velocity;
 		velocity.resize(trajectory.rows(), trajectory.cols());
 		velocity.fill(0);
-		for (int i = 1; i < trajectory.cols(); i++)
-			velocity.col(i) = (trajectory.col(i) - trajectory.col(i-1)) / timestep;
+		for (int i = 0; i < trajectory.cols()-1; i++)
+			velocity.col(i) = (trajectory.col(i+1) - trajectory.col(i)) / timestep;
 		return velocity;
 	}
 
