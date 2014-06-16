@@ -366,13 +366,18 @@ void ZMPPreviewControl::computeCoM()
     height.setConstant(hCoM);
 
     _mCoM.resize(3,N);
-    _mCoMVel.resize(2,N);
+    _mCoMVel.resize(3,N);
+    _mCoMAcc.resize(3,N);
 //    _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose().cast<float>;
 //    _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose().cast<float>;
     _mCoM.block(0,0,1,N) = CX.block(0,0,N,1).transpose().cast<float>();
     _mCoM.block(1,0,1,N) = CY.block(0,0,N,1).transpose().cast<float>();
     _mCoMVel.block(0,0,1,N) = CX.block(0,1,N,1).transpose().cast<float>();
     _mCoMVel.block(1,0,1,N) = CY.block(0,1,N,1).transpose().cast<float>();
+    _mCoMVel.block(2,0,1,N).fill(0.0f);
+    _mCoMAcc.block(0,0,1,N) = CX.block(0,2,N,1).transpose().cast<float>();
+    _mCoMAcc.block(1,0,1,N) = CY.block(0,2,N,1).transpose().cast<float>();
+    _mCoMAcc.block(2,0,1,N).fill(0.0f);
 
     //_mCoM *= -1000;
     _mCoM.block(2,0,1,N) = height.cast<float>();

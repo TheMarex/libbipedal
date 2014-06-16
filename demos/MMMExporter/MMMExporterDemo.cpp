@@ -43,6 +43,8 @@ void run(const std::string& robotPath, const std::string& targetPath)
 		trajectory);
 
 	const Eigen::Matrix3Xf comTrajectory = controller.getCoMTrajectory();
+	const Eigen::Matrix3Xf comVel = controller.getCoMVelocity();
+	const Eigen::Matrix3Xf comAcc = controller.getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = controller.getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = controller.getReferenceZMPTrajectory();
 
@@ -51,6 +53,8 @@ void run(const std::string& robotPath, const std::string& targetPath)
 		trajectory,
 		planer->getLeftFootTrajectory(),
 		comTrajectory,
+		comVel,
+		comAcc,
 		zmpTrajectory,
 		refZMPTrajectory,
 		1.0 / planer->getSamplesPerSecond());

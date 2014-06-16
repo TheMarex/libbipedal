@@ -10,12 +10,38 @@
 
 namespace Kinematics {
 
+void computeRelativeCoMTrajectory(VirtualRobot::RobotPtr robot,
+                                  const Eigen::Matrix3Xf& leftFootTrajectory,
+                                  VirtualRobot::RobotNodePtr waist,
+                                  VirtualRobot::RobotNodeSetPtr nodeSetJoints,
+                                  const Eigen::MatrixXf& trajectory,
+                                  const Eigen::Matrix3Xf& comTrajectory,
+                                  Eigen::Matrix3Xf& relativeCoMTrajectory)
+{
+    Eigen::Matrix4f leftInitialPose = nodeSetJoints->getKinematicRoot()->getGlobalPose();
+    int N = comTrajectory.cols();
+    relativeCoMTrajectory.resize(3, N);
+    for(int i = 0; i < N; i++)
+    {
+        // Move basis along with the left foot
+        Eigen::Matrix4f leftFootPose = leftInitialPose;
+        leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(i);
+        robot->setGlobalPose(leftFootPose);
+        nodeSetJoints->setJointValues(trajectory.col(i));
+        Eigen::Matrix4f worldToWaist = waist->getGlobalPose().inverse();
+        Eigen::Vector4f homVec;
+        homVec(3, 0) = 1;
+        homVec.block(0, 0, 3, 1) = comTrajectory.col(i) * 1000;
+        relativeCoMTrajectory.col(i) = (worldToWaist * homVec).block(0, 0, 3, 1) / 1000.0;
+    }
+}
+
 /**
  * Compute IK to reach desired CoM and right foot pose.
  */
 void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints,
                               VirtualRobot::RobotNodeSetPtr nodeSetBodies,
-							  VirtualRobot::RobotNodePtr waist,
+                              VirtualRobot::RobotNodePtr waist,
                               const Eigen::Vector3f &targetCoM,
                               const Eigen::Vector3f &targetRightFoot,
                               const Eigen::Matrix4f &initialRightFootPose,

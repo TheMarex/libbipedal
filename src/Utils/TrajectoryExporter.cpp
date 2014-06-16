@@ -25,12 +25,12 @@ MMM::MotionPtr TrajectoryExporter::exportCoMMotion()
 	{
 		// we need rootPos in mm
 		Eigen::Vector3f rootPos = 1000 * comTrajectory.col(i);
-		Eigen::Vector3f rootVel;
-        rootVel.block(0, 0, 2, 1) = 1000 * comVelocity.col(i);
-        rootVel.z() = 0;
+		Eigen::Vector3f rootVel = 1000 * comVelocity.col(i);
+		Eigen::Vector3f rootAcc = 1000 * comAcceleration.col(i);
 		MMM::MotionFramePtr frame(new MMM::MotionFrame(0));
 		frame->setRootPos(rootPos);
 		frame->setRootPosVel(rootVel);
+		frame->setRootPosAcc(rootAcc);
 		frame->timestep = timestep*i;
 		motion->addMotionFrame(frame);
 	}

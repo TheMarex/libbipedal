@@ -474,16 +474,28 @@ void PatternGeneratorWindow::exportTrajectory()
 
 	const Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
 	const Eigen::Matrix3Xf comTrajectory = pZMPPreviewControl->getCoMTrajectory();
-	const Eigen::Matrix2Xf comVel = pZMPPreviewControl->getCoMVelocity();
+	const Eigen::Matrix3Xf comVel = pZMPPreviewControl->getCoMVelocity();
+	const Eigen::Matrix3Xf comAcc = pZMPPreviewControl->getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = pZMPPreviewControl->getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
+
+	Eigen::Matrix3Xf relCom;
+    Kinematics::computeRelativeCoMTrajectory(robot,
+        leftFootTrajectory,
+        robot->getRobotNode("Waist"),
+        robot->getRobotNodeSet("Left2RightLeg"),
+        trajectoy,
+        comTrajectory,
+        relCom
+    );
 
 	TrajectoryExporter exporter(robot,
 		robotFile,
 		trajectoy,
 		leftFootTrajectory,
-		comTrajectory,
+		relCom,
         comVel,
+        comAcc,
 		zmpTrajectory,
 		refZMPTrajectory,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
