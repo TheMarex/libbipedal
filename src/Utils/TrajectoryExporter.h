@@ -2,8 +2,8 @@
 #define _TRAJECTORY_EXPORTER_H_
 
 #include <sstream>
-#include <VirtualRobot/Robot.h>
 #include <Eigen/Dense>
+#include <VirtualRobot/Robot.h>
 #include <MMM/Motion/Motion.h>
 
 class TrajectoryExporter
@@ -35,9 +35,6 @@ public:
 	void exportToMMM(const std::string& path);
 
 private:
-	MMM::MotionPtr exportCoMMotion();
-	MMM::MotionPtr exportZMPMotion();
-	MMM::MotionPtr exportRefZMPMotion();
 
 	VirtualRobot::RobotPtr robot;
 	const Eigen::MatrixXf& bodyTrajectory;

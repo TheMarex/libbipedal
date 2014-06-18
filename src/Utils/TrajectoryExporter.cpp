@@ -13,72 +13,11 @@
 #include <MMM/XMLTools.h>
 
 #include <boost/filesystem.hpp>
+#include <boost/make_shared.hpp>
 
 #include "TrajectoryExporter.h"
 #include "VelocityEstimation.h"
-
-MMM::MotionPtr TrajectoryExporter::exportCoMMotion()
-{
-	MMM::MotionPtr motion(new MMM::Motion("CoM Control motion"));
-
-	for (int i = 0; i < comTrajectory.cols(); i++)
-	{
-		// we need rootPos in mm
-		Eigen::Vector3f rootPos = 1000 * comTrajectory.col(i);
-		Eigen::Vector3f rootVel = 1000 * comVelocity.col(i);
-		Eigen::Vector3f rootAcc = 1000 * comAcceleration.col(i);
-		MMM::MotionFramePtr frame(new MMM::MotionFrame(0));
-		frame->setRootPos(rootPos);
-		frame->setRootPosVel(rootVel);
-		frame->setRootPosAcc(rootAcc);
-		frame->timestep = timestep*i;
-		motion->addMotionFrame(frame);
-	}
-
-	return motion;
-}
-
-MMM::MotionPtr TrajectoryExporter::exportZMPMotion()
-{
-	MMM::MotionPtr motion(new MMM::Motion("ZMP Control motion"));
-
-	for (int i = 0; i < computedZMPTrajectory.cols(); i++)
-	{
-		// we need rootPos in mm
-		Eigen::Vector2f zmpPos = 1000 * computedZMPTrajectory.col(i);
-		Eigen::Vector3f rootPos;
-		rootPos.x() = zmpPos.x();
-		rootPos.y() = zmpPos.y();
-		rootPos.z() = 0.0;
-		MMM::MotionFramePtr frame(new MMM::MotionFrame(0));
-		frame->setRootPos(rootPos);
-		frame->timestep = timestep*i;
-		motion->addMotionFrame(frame);
-	}
-
-	return motion;
-}
-
-MMM::MotionPtr TrajectoryExporter::exportRefZMPMotion()
-{
-	MMM::MotionPtr motion(new MMM::Motion("Reference ZMP Control motion"));
-
-	for (int i = 0; i < referenceZMPTrajectory.cols(); i++)
-	{
-		// we need rootPos in mm
-		Eigen::Vector2f zmpPos = 1000 * referenceZMPTrajectory.col(i);
-		Eigen::Vector3f rootPos;
-		rootPos.x() = zmpPos.x();
-		rootPos.y() = zmpPos.y();
-		rootPos.z() = 0.0;
-		MMM::MotionFramePtr frame(new MMM::MotionFrame(0));
-		frame->setRootPos(rootPos);
-		frame->timestep = timestep*i;
-		motion->addMotionFrame(frame);
-	}
-
-	return motion;
-}
+#include "ControlPoint.h"
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
@@ -112,6 +51,29 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 		frame->joint = bodyTrajectory.col(i);
 		frame->joint_vel = bodyVelocity.col(i);
 		frame->timestep = timestep*i;
+        frame->addEntry("CoM",
+                        boost::make_shared<ControlPointEntry3f>("CoM",
+                            comTrajectory.col(i),
+                            comVelocity.col(i),
+                            comAcceleration.col(i)
+                        )
+        );
+        frame->addEntry("LeftFoot",
+                        boost::make_shared<ControlPointEntry3f>("LeftFoot",
+                            leftFootTrajectory.col(i)
+                        )
+        );
+        frame->addEntry("ZMP",
+                        boost::make_shared<ControlPointEntry2f>("ZMP",
+                            computedZMPTrajectory.col(i)
+                        )
+        );
+        frame->addEntry("ReferenceZMP",
+                        boost::make_shared<ControlPointEntry2f>("ReferenceZMP",
+                            referenceZMPTrajectory.col(i)
+                        )
+        );
+
 		motion->addMotionFrame(frame);
 	}
 
@@ -119,16 +81,9 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	model->filename = relRobotPath;
 	motion->setModel(model);
 
-	MMM::MotionPtr comMotion = exportCoMMotion();
-	MMM::MotionPtr zmpMotion = exportZMPMotion();
-	MMM::MotionPtr refZMPMotion = exportRefZMPMotion();
-
 	std::ofstream out(path.c_str());
 	out << "<MMM>"
 	<< motion->toXML()
-	<< comMotion->toXML()
-	<< zmpMotion->toXML()
-	<< refZMPMotion->toXML()
 	<< "</MMM>";
 }
 
