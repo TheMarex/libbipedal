@@ -107,7 +107,7 @@ template<typename VectorT>
 class ControlPointParser : public MMM::XMLMotionFrameTagProcessor
 {
 public:
-    ControlPointParser(std::string tagName)
+    ControlPointParser(const std::string& tagName)
     : XMLMotionFrameTagProcessor()
     , tagName(tagName)
     {
@@ -148,10 +148,10 @@ public:
 
         boost::shared_ptr<ControlPointEntry<VectorT>> entry(
             new ControlPointEntry<VectorT>(tagName,
+                                           static_cast<typename ControlPointEntry<VectorT>::ControlType>(type),
                                            pos,
                                            vel,
-                                           acc,
-                                           static_cast<typename ControlPointEntry<VectorT>::ControlType>(type))
+                                           acc)
         );
         return motionFrame->addEntry(tagName, entry);
     }
@@ -176,5 +176,51 @@ typedef ControlPointEntry<Eigen::Vector2f>  ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f> ControlPointParser2f;
 typedef ControlPointEntry<Eigen::Vector3f>  ControlPointEntry3f;
 typedef ControlPointParser<Eigen::Vector3f> ControlPointParser3f;
+
+template<typename VectorT>
+bool GetControlPointPosition(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& pos)
+{
+    if (!frame->hasEntry(name))
+        return false;
+
+    MMM::MotionFrameEntryPtr e = frame->getEntry(name);
+    boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+    if (!r)
+        return false;
+
+    pos = r->position;
+    return true;
+}
+
+template<typename VectorT>
+bool GetControlPointVelocity(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& vel)
+{
+    if (!frame->hasEntry(name))
+        return false;
+
+    MMM::MotionFrameEntryPtr e = frame->getEntry(name);
+    boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+    if (!r)
+        return false;
+
+    vel = r->velocity;
+    return true;
+}
+
+template<typename VectorT>
+bool GetControlPointAcceleration(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& acc)
+{
+    if (!frame->hasEntry(name))
+        return false;
+
+    MMM::MotionFrameEntryPtr e = frame->getEntry(name);
+    boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+    if (!r)
+        return false;
+
+    acc = r->acceleration;
+    return true;
+}
+
 
 #endif
