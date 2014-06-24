@@ -47,6 +47,7 @@ void run(const std::string& robotPath, const std::string& targetPath)
 	const Eigen::Matrix3Xf comAcc = controller.getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = controller.getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = controller.getReferenceZMPTrajectory();
+	const std::vector<ZMPPlaner::SupportPhase> phase = controller.getSupportPhases();
 
 	TrajectoryExporter exporter(robot,
 		robotPath,
@@ -57,6 +58,7 @@ void run(const std::string& robotPath, const std::string& targetPath)
 		comAcc,
 		zmpTrajectory,
 		refZMPTrajectory,
+        phase,
 		1.0 / planer->getSamplesPerSecond());
 	exporter.exportToMMM(targetPath);
 }

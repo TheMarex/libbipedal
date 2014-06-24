@@ -73,6 +73,11 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
                             referenceZMPTrajectory.col(i)
                         )
         );
+        frame->addEntry("SupportPhase",
+                        boost::make_shared<ControlValueEntry<int>>("SupportPhase",
+                            phase[i]
+                        )
+        );
 
 		motion->addMotionFrame(frame);
 	}

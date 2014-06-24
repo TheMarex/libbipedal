@@ -478,6 +478,7 @@ void PatternGeneratorWindow::exportTrajectory()
 	const Eigen::Matrix3Xf comAcc = pZMPPreviewControl->getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = pZMPPreviewControl->getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
+	const std::vector<ZMPPlaner::SupportPhase> phase = pZMPPreviewControl->getSupportPhases();
 
 	Eigen::Matrix3Xf relCom;
     Kinematics::computeRelativeCoMTrajectory(robot,
@@ -498,6 +499,7 @@ void PatternGeneratorWindow::exportTrajectory()
         comAcc,
 		zmpTrajectory,
 		refZMPTrajectory,
+        phase,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
 	);
 
