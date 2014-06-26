@@ -47,7 +47,7 @@ void run(const std::string& robotPath, const std::string& targetPath)
 	const Eigen::Matrix3Xf comAcc = controller.getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = controller.getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = controller.getReferenceZMPTrajectory();
-	const std::vector<ZMPPlaner::SupportPhase> phase = controller.getSupportPhases();
+	const std::vector<Kinematics::SupportPhase> phase = controller.getSupportPhases();
 
 	TrajectoryExporter exporter(robot,
 		robotPath,

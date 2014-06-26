@@ -6,7 +6,7 @@
 #include <VirtualRobot/Robot.h>
 #include <MMM/Motion/Motion.h>
 
-#include "../ZMP/ZMPPlaner.h"
+#include "Kinematics.h"
 
 class TrajectoryExporter
 {
@@ -20,7 +20,7 @@ public:
 		const Eigen::Matrix3Xf& comAcceleration,
 		const Eigen::Matrix2Xf& computedZMPTrajectory,
 		const Eigen::Matrix2Xf& referenceZMPTrajectory,
-		const std::vector<ZMPPlaner::SupportPhase>& phase,
+		const std::vector<Kinematics::SupportPhase>& phase,
 		float timestep)
 	: robot(robot)
 	, pathToRobot(pathToRobot)
@@ -49,7 +49,7 @@ private:
 	const Eigen::Matrix2Xf& computedZMPTrajectory;
 	const Eigen::Matrix2Xf& referenceZMPTrajectory;
 	const std::string& pathToRobot;
-    const std::vector<ZMPPlaner::SupportPhase>& phase;
+    const std::vector<Kinematics::SupportPhase>& phase;
 	float timestep;
 };
 

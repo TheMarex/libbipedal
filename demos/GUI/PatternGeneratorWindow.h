@@ -94,6 +94,7 @@ protected:
 	SoSeparator *comProjectionVisu;
 	SoSeparator *comTargetVisu;
 	SoSeparator *supportVisu;
+	SoSeparator *groundFrameVisu;
 	SoSeparator *_vFootstepPlaner;
 	SoSeparator *_vZMPTrajectory;
 	SoSeparator *_vCoMTrajectory;

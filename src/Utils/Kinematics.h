@@ -1,7 +1,8 @@
-#ifndef __KINEMARICS_H__
-#define __KINEMARICS_H__
+#ifndef __KINEMATICS_H__
+#define __KINEMATICS_H__
 
 #include <VirtualRobot/VirtualRobot.h>
+#include <VirtualRobot/Robot.h>
 #include <VirtualRobot/RobotNodeSet.h>
 #include <VirtualRobot/IK/HierarchicalIK.h>
 #include <VirtualRobot/IK/DifferentialIK.h>
@@ -10,36 +11,87 @@
 
 namespace Kinematics {
 
-void computeRelativeCoMTrajectory(VirtualRobot::RobotPtr robot,
-                                  const Eigen::Matrix3Xf& leftFootTrajectory,
-                                  VirtualRobot::RobotNodePtr waist,
-                                  VirtualRobot::RobotNodeSetPtr nodeSetJoints,
-                                  const Eigen::MatrixXf& trajectory,
-                                  const Eigen::Matrix3Xf& comTrajectory,
-                                  Eigen::Matrix3Xf& relativeCoMTrajectory)
+enum SupportPhase
 {
-    Eigen::Matrix4f leftInitialPose = nodeSetJoints->getKinematicRoot()->getGlobalPose();
-    int N = comTrajectory.cols();
-    relativeCoMTrajectory.resize(3, N);
+    SUPPORT_NONE  = 0,
+    SUPPORT_LEFT  = 1,
+    SUPPORT_RIGHT = 2,
+    SUPPORT_BOTH  = 3
+};
+
+/*
+ * Return pose of ground frame.
+ *
+ * Warning: Since the frame comes form simox it is in mm!
+ */
+inline Eigen::Matrix4f computeGroundFrame(VirtualRobot::RobotNodePtr leftFoot,
+                                    VirtualRobot::RobotNodePtr rightFoot,
+                                    SupportPhase phase)
+{
+    Eigen::Matrix4f refToWorld = Eigen::Matrix4f::Identity();
+    switch (phase)
+    {
+        case SUPPORT_LEFT:
+            refToWorld = leftFoot->getGlobalPose();
+            break;
+        case SUPPORT_RIGHT:
+            refToWorld = rightFoot->getGlobalPose();
+            break;
+        case SUPPORT_BOTH:
+            Eigen::Matrix4f rightPose = rightFoot->getGlobalPose();
+            Eigen::Matrix4f leftPose  = leftFoot->getGlobalPose();
+            refToWorld.block(0, 3, 3, 1) = (rightPose.block(0, 3, 3, 1) + leftPose.block(0, 3, 3, 1)) / 2.0;
+            Eigen::Vector3f zAxis(0, 0, 1);
+            Eigen::Vector3f xAxis = (rightPose.block(0, 0, 3, 1) + leftPose.block(0, 0, 3, 1)) / 2.0;
+            xAxis /= xAxis.norm();
+            Eigen::Vector3f yAxis = zAxis.cross(xAxis);
+            yAxis /= yAxis.norm();
+            refToWorld.block(0, 0, 3, 1) = xAxis;
+            refToWorld.block(0, 1, 3, 1) = yAxis;
+            refToWorld.block(0, 2, 3, 1) = zAxis;
+            break;
+    }
+
+    return refToWorld;
+}
+
+/*
+ * Transforms trajectory to ground frame.
+ *
+ * Both trajectory and relativeTrajectory are in m.
+ */
+inline void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
+                                      const Eigen::Matrix3Xf& leftFootTrajectory,
+                                      VirtualRobot::RobotNodePtr leftFoot,
+                                      VirtualRobot::RobotNodePtr rightFoot,
+                                      VirtualRobot::RobotNodeSetPtr bodyJoints,
+                                      const Eigen::MatrixXf& bodyTrajectory,
+                                      const Eigen::Matrix3Xf& trajectory,
+                                      const std::vector<SupportPhase>& phase,
+                                      Eigen::Matrix3Xf& relativeTrajectory)
+{
+    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
+    int N = trajectory.cols();
+    relativeTrajectory.resize(3, N);
     for(int i = 0; i < N; i++)
     {
         // Move basis along with the left foot
         Eigen::Matrix4f leftFootPose = leftInitialPose;
         leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(i);
         robot->setGlobalPose(leftFootPose);
-        nodeSetJoints->setJointValues(trajectory.col(i));
-        Eigen::Matrix4f worldToWaist = waist->getGlobalPose().inverse();
+        bodyJoints->setJointValues(bodyTrajectory.col(i));
+        Eigen::Matrix4f worldToRef = computeGroundFrame(leftFoot, rightFoot, phase[i]);
         Eigen::Vector4f homVec;
         homVec(3, 0) = 1;
-        homVec.block(0, 0, 3, 1) = comTrajectory.col(i) * 1000;
-        relativeCoMTrajectory.col(i) = (worldToWaist * homVec).block(0, 0, 3, 1) / 1000.0;
+        homVec.block(0, 0, 3, 1) = trajectory.col(i) * 1000;
+        relativeTrajectory.col(i) = worldToRef.colPivHouseholderQr().solve(homVec).block(0, 0, 3, 1) / 1000.0;
     }
 }
 
 /**
  * Compute IK to reach desired CoM and right foot pose.
  */
-void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints,
+inline void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints,
                               VirtualRobot::RobotNodeSetPtr nodeSetBodies,
                               VirtualRobot::RobotNodePtr waist,
                               const Eigen::Vector3f &targetCoM,
@@ -135,7 +187,7 @@ void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints,
  * Right foot should be the TCP.
  * trajectory is the computed walking trajectory.
  */
-void computeWalkingTrajectory(VirtualRobot::RobotPtr robot,
+inline void computeWalkingTrajectory(VirtualRobot::RobotPtr robot,
                               const Eigen::Matrix3Xf& comTrajectory,
                               const Eigen::Matrix3Xf& rightFootTrajectory,
                               const Eigen::Matrix3Xf& leftFootTrajectory,

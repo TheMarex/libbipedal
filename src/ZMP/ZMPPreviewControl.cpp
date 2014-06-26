@@ -105,7 +105,7 @@ void ZMPPreviewControl::computeReference()
                         _mReference.col(index+t)=end;
                 else
                     _mReference.col(index+t)=start+ ((10*(end-start))/pow(iDS,3)*pow(t,3)) + ((15*(start-end))/pow(iDS,4)*pow(t,4)) + ((6*(end-start))/pow(iDS,5)*pow(t,5));
-            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, SUPPORT_BOTH);
+            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, Kinematics::SUPPORT_BOTH);
 			// increase index
 			index += iDS;
 			// next is swing-phase
@@ -115,9 +115,9 @@ void ZMPPreviewControl::computeReference()
             // 1. SS Phase - keep zmp on standing foot
 			start = (bLeftSwing?vRightFoot:vLeftFoot);
             if (bLeftSwing)
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, SUPPORT_RIGHT);
+                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_RIGHT);
             else
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, SUPPORT_LEFT);
+                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_LEFT);
 			//std::cout << "1[SS] Remaining on one foot!" << std::endl << start << std::endl << std::flush;
             std::cout << "1[SS][ZMPPreview] index: " << index << " iSS: " << iSS << " i" << i << std::endl;
 			for (int t=0; t<iSS; t++) 
@@ -134,7 +134,7 @@ void ZMPPreviewControl::computeReference()
                     _mReference.col(index+t)=end;
                 else
                     _mReference.col(index+t)=start+ ((10*(end-start))/pow(iDS,3)*pow(t,3)) + ((15*(start-end))/pow(iDS,4)*pow(t,4)) + ((6*(end-start))/pow(iDS,5)*pow(t,5));
-            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, SUPPORT_BOTH);
+            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, Kinematics::SUPPORT_BOTH);
 			// increase index
 			index += iDS;
 			// switch next swing foot
@@ -151,9 +151,9 @@ void ZMPPreviewControl::computeReference()
 			for (int t=0; t<iSS; t++) 
 				_mReference.col(index+t)=start;
             if (bLeftSwing)
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, SUPPORT_RIGHT);
+                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_RIGHT);
             else
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, SUPPORT_LEFT);
+                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_LEFT);
 			// increase index
 			index += iSS;
             // 2. ending DS Phase
@@ -166,7 +166,7 @@ void ZMPPreviewControl::computeReference()
                     _mReference.col(index+t)=end;
                 else
                     _mReference.col(index+t)=start+ ((10*(end-start))/pow(iDS,3)*pow(t,3)) + ((15*(start-end))/pow(iDS,4)*pow(t,4)) + ((6*(end-start))/pow(iDS,5)*pow(t,5));
-            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, SUPPORT_BOTH);
+            std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, Kinematics::SUPPORT_BOTH);
 			// increase index
 			index += iDS;
 			break;

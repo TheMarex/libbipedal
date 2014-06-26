@@ -58,6 +58,7 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	comProjectionVisu = new SoSeparator();
 	comTargetVisu = new SoSeparator();
 	supportVisu = new SoSeparator();
+    groundFrameVisu = new SoSeparator();
 
 	_vFootstepPlaner = new SoSeparator();
 	_vFootstepPlaner->ref();
@@ -75,6 +76,7 @@ PatternGeneratorWindow::PatternGeneratorWindow(std::string &sRobotFile, Qt::WFla
 	sceneSep->addChild(supportVisu);
 	sceneSep->addChild(_vFootstepPlaner);
 	sceneSep->addChild(_vZMPTrajectory);
+	sceneSep->addChild(groundFrameVisu);
 	_vFootstepPlaner->addChild(pFootVisu->getVisualization());
 	//std::cout << "Foostep Planer: [" << pFootStepPlaner.get() << "], visualization: [" << pFootStepPlaner->getVisualization() << "]" << std::endl;
 	_vZMPTrajectory->addChild(pZMPVisu->getVisualization());
@@ -349,6 +351,7 @@ void PatternGeneratorWindow::updateSupportVisu()
 	supportVisu->removeAllChildren();
 	MathTools::Plane p =  MathTools::getFloorPlane();
 
+
 	if (UI.checkBoxSupportPolygon->isChecked())
 	{
 		std::vector< CollisionModelPtr > colModels =  robot->getCollisionModels();
@@ -478,26 +481,67 @@ void PatternGeneratorWindow::exportTrajectory()
 	const Eigen::Matrix3Xf comAcc = pZMPPreviewControl->getCoMAcceleration();
 	const Eigen::Matrix2Xf zmpTrajectory = pZMPPreviewControl->getComputedZMPTrajectory();
 	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
-	const std::vector<ZMPPlaner::SupportPhase> phase = pZMPPreviewControl->getSupportPhases();
+	const std::vector<Kinematics::SupportPhase>& phase = pZMPPreviewControl->getSupportPhases();
 
 	Eigen::Matrix3Xf relCom;
-    Kinematics::computeRelativeCoMTrajectory(robot,
+    Kinematics::transformTrajectoryToGroundFrame(robot,
         leftFootTrajectory,
-        robot->getRobotNode("Waist"),
+        robot->getRobotNode("LeftLeg_TCP"),
+        robot->getRobotNode("RightLeg_TCP"),
         robot->getRobotNodeSet("Left2RightLeg"),
         trajectoy,
         comTrajectory,
+        phase,
         relCom
     );
+	Eigen::Matrix3Xf relComVel;
+    Kinematics::transformTrajectoryToGroundFrame(robot,
+        leftFootTrajectory,
+        robot->getRobotNode("LeftLeg_TCP"),
+        robot->getRobotNode("RightLeg_TCP"),
+        robot->getRobotNodeSet("Left2RightLeg"),
+        trajectoy,
+        comVel,
+        phase,
+        relComVel
+    );
+	Eigen::Matrix3Xf relComAcc;
+    Kinematics::transformTrajectoryToGroundFrame(robot,
+        leftFootTrajectory,
+        robot->getRobotNode("LeftLeg_TCP"),
+        robot->getRobotNode("RightLeg_TCP"),
+        robot->getRobotNodeSet("Left2RightLeg"),
+        trajectoy,
+        comAcc,
+        phase,
+        relComAcc
+    );
+
+	Eigen::Matrix3Xf zmpTrajectory3D;
+    zmpTrajectory3D.resize(3, zmpTrajectory.cols());
+    zmpTrajectory3D.fill(0);
+    zmpTrajectory3D.block(0, 0, 2, zmpTrajectory.cols()) = zmpTrajectory;
+	Eigen::Matrix3Xf relZMP3D;
+    Kinematics::transformTrajectoryToGroundFrame(robot,
+        leftFootTrajectory,
+        robot->getRobotNode("LeftLeg_TCP"),
+        robot->getRobotNode("RightLeg_TCP"),
+        robot->getRobotNodeSet("Left2RightLeg"),
+        trajectoy,
+        zmpTrajectory3D,
+        phase,
+        relZMP3D
+    );
+	Eigen::Matrix2Xf relZMP = relZMP3D.block(0, 0, 2, relZMP3D.cols());
 
 	TrajectoryExporter exporter(robot,
 		robotFile,
 		trajectoy,
 		leftFootTrajectory,
 		relCom,
-        comVel,
-        comAcc,
-		zmpTrajectory,
+        relComVel,
+        relComAcc,
+		relZMP,
 		refZMPTrajectory,
         phase,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
@@ -619,6 +663,25 @@ void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
     robot->setGlobalPose(leftFootPose);
 
     nodeSet->setJointValues(trajectoy.col(value));
+
+    const std::vector<Kinematics::SupportPhase>& phase = pZMPPreviewControl->getSupportPhases();
+    Eigen::Matrix4f frame = Kinematics::computeGroundFrame(
+                            robot->getRobotNode("LeftLeg_TCP"),
+                            robot->getRobotNode("RightLeg_TCP"),
+                            phase[value]);
+
+    groundFrameVisu->removeAllChildren();
+    SoSeparator* cc = CoinVisualizationFactory::CreateCoordSystemVisualization(3.0f);
+	SoMatrixTransform *m = new SoMatrixTransform();
+    SbMatrix ma(reinterpret_cast<SbMat*>(frame.data()));
+    // mm -> m
+    ma[3][0] *= 0.001f;
+    ma[3][1] *= 0.001f;
+    ma[3][2] *= 0.001f;
+    m->matrix.setValue(ma);
+    groundFrameVisu->addChild(m);
+    groundFrameVisu->addChild(cc);
+
     updateCoM();
 	updateSupportVisu();
 }

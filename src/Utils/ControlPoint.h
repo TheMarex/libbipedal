@@ -59,6 +59,7 @@ public:
         boost::shared_ptr<ControlValueEntry<ScalarT>> entry(
             new ControlValueEntry<ScalarT>(tagName, value)
         );
+
         return motionFrame->addEntry(tagName, entry);
     }
 

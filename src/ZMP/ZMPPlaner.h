@@ -4,18 +4,13 @@
 #include <VirtualRobot/VirtualRobot.h>
 #include <boost/shared_ptr.hpp>
 
+#include "../Utils/Kinematics.h"
+
 #include "FootstepPlaner.h"
 
 class ZMPPlaner
 {
 public:
-    enum SupportPhase
-    {
-        SUPPORT_NONE  = 0,
-        SUPPORT_LEFT  = 1,
-        SUPPORT_RIGHT = 2,
-        SUPPORT_BOTH  = 3
-    };
 
 	ZMPPlaner()
 	: _bComputed(false)
@@ -36,17 +31,17 @@ public:
     Eigen::Matrix3Xf getCoMAcceleration() { return _mCoMAcc; }
     Eigen::Matrix2Xf getReferenceZMPTrajectory() { return _mReference; }
     Eigen::Matrix2Xf getComputedZMPTrajectory() { return _mZMP; }
-    std::vector<SupportPhase> getSupportPhases() { return _mPhase; }
+    std::vector<Kinematics::SupportPhase> getSupportPhases() { return _mPhase; }
 
 protected:
 	FootstepPlanerPtr _pPlaner;
 	bool _bComputed;
-    Eigen::Matrix2Xf _mReference;      // ZMPReference
-    Eigen::Matrix3Xf _mCoM;            // computed CoM
-    Eigen::Matrix3Xf _mCoMVel;         // computed CoM velocity
-    Eigen::Matrix3Xf _mCoMAcc;         // computed CoM acceleration
-    Eigen::Matrix2Xf _mZMP;            // computed "real" ZMP (resulting from CoM)
-    std::vector<SupportPhase> _mPhase; // contains information about which leg should be in contact with the floor
+    Eigen::Matrix2Xf _mReference;                  // ZMPReference
+    Eigen::Matrix3Xf _mCoM;                        // computed CoM
+    Eigen::Matrix3Xf _mCoMVel;                     // computed CoM velocity
+    Eigen::Matrix3Xf _mCoMAcc;                     // computed CoM acceleration
+    Eigen::Matrix2Xf _mZMP;                        // computed "real" ZMP (resulting from CoM)
+    std::vector<Kinematics::SupportPhase> _mPhase; // contains information about which leg should be in contact with the floor
 
 	int _nSamplesDS;
 	int _nSamplesSS;
