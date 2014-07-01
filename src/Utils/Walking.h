@@ -15,10 +15,8 @@ namespace Walking
  *
  * All units are in mm.
  */
-VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(VirtualRobot::RobotPtr robot, const std::string& footName, Eigen::Vector2f& footCenter)
+VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::RobotNodePtr& foot, Eigen::Vector2f* footCenter)
 {
-    // get the Robot Nodes for the Feet
-    VirtualRobot::RobotNodePtr foot = robot->getRobotNode(footName);
     if (!foot)
     {
         std::cout << "Cannot compute foot shape, because foot was not found!" << std::endl;
@@ -50,11 +48,12 @@ VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(VirtualRobot::RobotP
 
     // calculate the convex hulls and the appropriate centers
     VirtualRobot::MathTools::ConvexHull2DPtr hull = VirtualRobot::MathTools::createConvexHull2D(points2D);
-    footCenter = VirtualRobot::MathTools::getConvexHullCenter(hull);
+    if (footCenter)
+        *footCenter = VirtualRobot::MathTools::getConvexHullCenter(hull);
 
     // translate points of FootShape so, that center of convex hull is (0|0)
     for (int i =  0; i < hull->vertices.size(); i++)
-        hull->vertices[i] -= footCenter;
+        hull->vertices[i] -= *footCenter;
 
     return hull;
 }
