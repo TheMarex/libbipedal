@@ -118,7 +118,7 @@ protected:
     ZMPPlanerPtr         pZMPPreviewControl;
 	ZMPVisualizationPtr  pZMPVisu;
 	FootVisualizationPtr pFootVisu;
-	Eigen::MatrixXf      trajectoy;
+	Eigen::MatrixXf      trajectory;
 };
 
 #endif // __PatternGeneratorScene_WINDOW_H_

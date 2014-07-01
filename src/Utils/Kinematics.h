@@ -19,6 +19,31 @@ enum SupportPhase
     SUPPORT_BOTH  = 3
 };
 
+/**
+ * Extract a vector of poses of the given node as the robot follows the given
+ * angle trajectories.
+ */
+inline void extractControlFrames(VirtualRobot::RobotPtr robot,
+                                const Eigen::Matrix3Xf& leftFootTrajectory,
+                                const Eigen::MatrixXf&  bodyTrajectory,
+                                VirtualRobot::RobotNodeSetPtr bodyJoints,
+                                VirtualRobot::RobotNodePtr node,
+                                std::vector<Eigen::Matrix4f>& controlFrames)
+{
+    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
+    int N = leftFootTrajectory.cols();
+    for(int i = 0; i < N; i++)
+    {
+        // Move basis along with the left foot
+        Eigen::Matrix4f leftFootPose = leftInitialPose;
+        leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(i);
+        robot->setGlobalPose(leftFootPose);
+        bodyJoints->setJointValues(bodyTrajectory.col(i));
+
+        controlFrames.push_back(node->getGlobalPose());
+    }
+}
+
 /*
  * Return pose of ground frame.
  *

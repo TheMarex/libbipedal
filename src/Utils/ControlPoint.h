@@ -35,7 +35,7 @@ public:
     virtual std::string toXML()
     {
         std::stringstream ss;
-        ss << "\t\t\t\t<" << tagName << "rows='" << matrix.rows() << "' cols='" << matrix.cols() << "'>";
+        ss << "\t\t\t\t<" << tagName << " rows='" << matrix.rows() << "' cols='" << matrix.cols() << "'>";
         writeMatrix(ss, matrix);
         ss << "</" << tagName << ">" << std::endl;
 
@@ -82,11 +82,9 @@ public:
         MatrixT m;
         unsigned rows, cols;
         std::stringstream ss;
-        ss << attr_rows->value();
+        ss << attr_rows->value() << " " << attr_cols->value() << " " << tag->value();
         ss >> rows;
-        ss << attr_cols->value();
         ss >> cols;
-        ss << tag->value();
         parseMatrix(ss, rows, cols, m);
 
         boost::shared_ptr<ControlMatrixEntry<MatrixT>> entry(
@@ -325,6 +323,8 @@ typedef ControlPointEntry<Eigen::Vector2f>  ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f> ControlPointParser2f;
 typedef ControlPointEntry<Eigen::Vector3f>  ControlPointEntry3f;
 typedef ControlPointParser<Eigen::Vector3f> ControlPointParser3f;
+typedef ControlMatrixEntry<Eigen::Matrix4f> ControlMatrixEntry4f;
+typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
 template<typename VectorT>
 bool GetControlPointPosition(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& pos)

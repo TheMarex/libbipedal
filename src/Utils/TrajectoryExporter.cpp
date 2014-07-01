@@ -44,7 +44,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
 	for (int i = 0; i < size; i++)
 	{
 		// we need rootPos in mm
-		Eigen::Vector3f rootPos = 1000 * leftFootTrajectory.col(i);
+		Eigen::Vector3f rootPos = 1000 * leftFootTrajectory[i].block(0, 3, 3, 1);
 		MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
 		frame->setRootPose(rootPose);
 		frame->setRootPos(rootPos);
@@ -58,11 +58,6 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
                             comAcceleration.col(i)
                         )
         );
-        frame->addEntry("LeftFoot",
-                        boost::make_shared<ControlPointEntry3f>("LeftFoot",
-                            leftFootTrajectory.col(i)
-                        )
-        );
         frame->addEntry("ZMP",
                         boost::make_shared<ControlPointEntry2f>("ZMP",
                             computedZMPTrajectory.col(i)
@@ -71,6 +66,26 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
         frame->addEntry("ReferenceZMP",
                         boost::make_shared<ControlPointEntry2f>("ReferenceZMP",
                             referenceZMPTrajectory.col(i)
+                        )
+        );
+        frame->addEntry("LeftFoot",
+                        boost::make_shared<ControlMatrixEntry4f>("LeftFoot",
+                            leftFootTrajectory[i]
+                        )
+        );
+        frame->addEntry("RightFoot",
+                        boost::make_shared<ControlMatrixEntry4f>("RightFoot",
+                            rightFootTrajectory[i]
+                        )
+        );
+        frame->addEntry("Chest",
+                        boost::make_shared<ControlMatrixEntry4f>("Chest",
+                            chestTrajectory[i]
+                        )
+        );
+        frame->addEntry("Pelvis",
+                        boost::make_shared<ControlMatrixEntry4f>("Pelvis",
+                            pelvisTrajectory[i]
                         )
         );
         frame->addEntry("SupportPhase",

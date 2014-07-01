@@ -280,7 +280,7 @@ void PatternGeneratorWindow::getUIParameters()
 		pZMPPreviewControl->getCoMTrajectory(),
 		pFootStepPlaner->getRightFootTrajectory(),
 		pFootStepPlaner->getLeftFootTrajectory(),
-		trajectoy);
+		trajectory);
 
 	pZMPVisu->buildCoMVisualization();
 	pZMPVisu->buildComputedZMPVisualization();
@@ -288,7 +288,7 @@ void PatternGeneratorWindow::getUIParameters()
 	pFootVisu->buildVisualization();
 
     // Update slider
-    int numSteps = trajectoy.cols();
+    int numSteps = trajectory.cols();
     std::cout << "Walking trajectory has " << numSteps << " steps" << std::endl;
     UI.frameSlider->setRange(0, numSteps - 1);
     UI.frameSlider->setEnabled(true);
@@ -475,7 +475,7 @@ void PatternGeneratorWindow::exportTrajectory()
 			tr("Save MMM Motion"), "",
 			tr("MMM motion XML file (*.xml)"));
 
-	const Eigen::Matrix3Xf leftFootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
+	const Eigen::Matrix3Xf rootTrajectory = pFootStepPlaner->getLeftFootTrajectory();
 	const Eigen::Matrix3Xf comTrajectory = pZMPPreviewControl->getCoMTrajectory();
 	const Eigen::Matrix3Xf comVel = pZMPPreviewControl->getCoMVelocity();
 	const Eigen::Matrix3Xf comAcc = pZMPPreviewControl->getCoMAcceleration();
@@ -483,35 +483,64 @@ void PatternGeneratorWindow::exportTrajectory()
 	const Eigen::Matrix2Xf refZMPTrajectory = pZMPPreviewControl->getReferenceZMPTrajectory();
 	const std::vector<Kinematics::SupportPhase>& phase = pZMPPreviewControl->getSupportPhases();
 
+    std::vector<Eigen::Matrix4f> chestTrajectory;
+    Kinematics::extractControlFrames(robot,
+                                rootTrajectory,
+                                trajectory,
+                                robot->getRobotNodeSet("Left2RightLeg"),
+                                robot->getRobotNode("TorsoCenter"),
+                                chestTrajectory);
+    std::vector<Eigen::Matrix4f> pelvisTrajectory;
+    Kinematics::extractControlFrames(robot,
+                                rootTrajectory,
+                                trajectory,
+                                robot->getRobotNodeSet("Left2RightLeg"),
+                                robot->getRobotNode("Waist"),
+                                pelvisTrajectory);
+    std::vector<Eigen::Matrix4f> leftFootTrajectory;
+    Kinematics::extractControlFrames(robot,
+                                rootTrajectory,
+                                trajectory,
+                                robot->getRobotNodeSet("Left2RightLeg"),
+                                robot->getRobotNode("LeftLeg_TCP"),
+                                leftFootTrajectory);
+    std::vector<Eigen::Matrix4f> rightFootTrajectory;
+    Kinematics::extractControlFrames(robot,
+                                rootTrajectory,
+                                trajectory,
+                                robot->getRobotNodeSet("Left2RightLeg"),
+                                robot->getRobotNode("RightLeg_TCP"),
+                                rightFootTrajectory);
+
 	Eigen::Matrix3Xf relCom;
     Kinematics::transformTrajectoryToGroundFrame(robot,
-        leftFootTrajectory,
+        rootTrajectory,
         robot->getRobotNode("LeftLeg_TCP"),
         robot->getRobotNode("RightLeg_TCP"),
         robot->getRobotNodeSet("Left2RightLeg"),
-        trajectoy,
+        trajectory,
         comTrajectory,
         phase,
         relCom
     );
 	Eigen::Matrix3Xf relComVel;
     Kinematics::transformTrajectoryToGroundFrame(robot,
-        leftFootTrajectory,
+        rootTrajectory,
         robot->getRobotNode("LeftLeg_TCP"),
         robot->getRobotNode("RightLeg_TCP"),
         robot->getRobotNodeSet("Left2RightLeg"),
-        trajectoy,
+        trajectory,
         comVel,
         phase,
         relComVel
     );
 	Eigen::Matrix3Xf relComAcc;
     Kinematics::transformTrajectoryToGroundFrame(robot,
-        leftFootTrajectory,
+        rootTrajectory,
         robot->getRobotNode("LeftLeg_TCP"),
         robot->getRobotNode("RightLeg_TCP"),
         robot->getRobotNodeSet("Left2RightLeg"),
-        trajectoy,
+        trajectory,
         comAcc,
         phase,
         relComAcc
@@ -523,11 +552,11 @@ void PatternGeneratorWindow::exportTrajectory()
     zmpTrajectory3D.block(0, 0, 2, zmpTrajectory.cols()) = zmpTrajectory;
 	Eigen::Matrix3Xf relZMP3D;
     Kinematics::transformTrajectoryToGroundFrame(robot,
-        leftFootTrajectory,
+        rootTrajectory,
         robot->getRobotNode("LeftLeg_TCP"),
         robot->getRobotNode("RightLeg_TCP"),
         robot->getRobotNodeSet("Left2RightLeg"),
-        trajectoy,
+        trajectory,
         zmpTrajectory3D,
         phase,
         relZMP3D
@@ -536,13 +565,16 @@ void PatternGeneratorWindow::exportTrajectory()
 
 	TrajectoryExporter exporter(robot,
 		robotFile,
-		trajectoy,
-		leftFootTrajectory,
+		trajectory,
 		relCom,
         relComVel,
         relComAcc,
 		relZMP,
 		refZMPTrajectory,
+		leftFootTrajectory,
+		rightFootTrajectory,
+        chestTrajectory,
+        pelvisTrajectory,
         phase,
 		1.0f / pFootStepPlaner->getSamplesPerSecond()
 	);
@@ -662,7 +694,7 @@ void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
     leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(value);
     robot->setGlobalPose(leftFootPose);
 
-    nodeSet->setJointValues(trajectoy.col(value));
+    nodeSet->setJointValues(trajectory.col(value));
 
     const std::vector<Kinematics::SupportPhase>& phase = pZMPPreviewControl->getSupportPhases();
     Eigen::Matrix4f frame = Kinematics::computeGroundFrame(
