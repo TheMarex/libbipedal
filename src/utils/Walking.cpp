@@ -6,13 +6,11 @@
 #include <VirtualRobot/MathTools.h>
 #include "VirtualRobot/CollisionDetection/CollisionChecker.h"
 
+#include "Walking.h"
+
 namespace Walking
 {
-    /*
-     * Returns the convex hull of the contact points in global coordinates.
-     *
-     * All units are in mm.
-     */
+
     VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::CollisionModelPtr& colModel)
     {
         // let the feet collide with the floor and get the collision points
@@ -37,8 +35,6 @@ namespace Walking
         return hull;
     }
 
-    // Shift convex hull to origin
-    // and return old center in global coordinates
     Eigen::Vector2f CenterConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull)
     {
         Eigen::Vector2f center = VirtualRobot::MathTools::getConvexHullCenter(hull);
@@ -52,8 +48,6 @@ namespace Walking
         return center;
     }
 
-    // Get walking direction as 2D oriantation
-    // Units: mm
     Eigen::Matrix2f ComputeWalkingDirection(const Eigen::Vector2f& leftFootCenter, const Eigen::Vector2f& rightFootCenter)
     {
         Eigen::Vector2f center = (leftFootCenter + rightFootCenter) * 0.5;
@@ -68,6 +62,7 @@ namespace Walking
 
         return pose;
     }
-}
+
+};
 
 #endif
