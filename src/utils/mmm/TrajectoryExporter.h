@@ -3,7 +3,6 @@
 
 #include <sstream>
 #include <Eigen/Dense>
-#include <VirtualRobot/Robot.h>
 #include <MMM/Motion/Motion.h>
 
 #include "Kinematics.h"
@@ -11,8 +10,8 @@
 class TrajectoryExporter
 {
 public:
-    TrajectoryExporter(VirtualRobot::RobotPtr robot,
-                       const std::string& pathToRobot,
+    TrajectoryExporter(const std::string& pathToRobot,
+                       const std::vector<std::string> jointNames,
                        const Eigen::MatrixXf& bodyTrajectory,
                        const Eigen::Matrix3Xf& comTrajectory,
                        const Eigen::Matrix3Xf& comVelocity,
@@ -25,8 +24,8 @@ public:
                        const std::vector<Eigen::Matrix4f>& pelvisTrajectory,
                        const std::vector<Kinematics::SupportPhase>& phase,
                        float timestep)
-        : robot(robot)
-        , pathToRobot(pathToRobot)
+        : pathToRobot(pathToRobot)
+        , jointNames(jointNames)
         , bodyTrajectory(bodyTrajectory)
         , comTrajectory(comTrajectory)
         , comVelocity(comVelocity)
@@ -46,7 +45,7 @@ public:
 
 private:
 
-    VirtualRobot::RobotPtr robot;
+    const std::vector<std::string> jointNames;
     const Eigen::MatrixXf& bodyTrajectory;
     const Eigen::Matrix3Xf& comTrajectory;
     const Eigen::Matrix3Xf& comVelocity;

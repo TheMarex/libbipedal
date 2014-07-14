@@ -21,21 +21,11 @@
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
-    VirtualRobot::RobotNodeSetPtr nodeSet = robot->getRobotNodeSet("Left2RightLeg");
-    Eigen::Matrix4f rootPose = nodeSet->getKinematicRoot()->getGlobalPose();
-
     boost::filesystem::path targetPath(path);
     boost::filesystem::path baseDir = targetPath.parent_path();
     std::string relRobotPath = MMM::XML::make_relative(baseDir.string(), pathToRobot);
 
     MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
-
-    std::vector<std::string> jointNames;
-
-    for (int i = 0; i < nodeSet->getSize(); i++)
-    {
-        jointNames.push_back((*nodeSet)[i]->getName());
-    }
 
     motion->setJointOrder(jointNames);
 
@@ -47,10 +37,10 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
     for (int i = 0; i < size; i++)
     {
         // we need rootPos in mm
-        Eigen::Vector3f rootPos = 1000 * leftFootTrajectory[i].block(0, 3, 3, 1);
         MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
+        Eigen::Matrix4f rootPose = leftFootTrajectory[i];
         frame->setRootPose(rootPose);
-        frame->setRootPos(rootPos);
+        frame->setRootPos((Eigen::Vector3f) (1000 * rootPose.block(0, 3, 3, 1)));
         frame->joint = bodyTrajectory.col(i);
         frame->joint_vel = bodyVelocity.col(i);
         frame->timestep = timestep * i;
