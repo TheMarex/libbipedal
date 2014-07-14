@@ -44,30 +44,41 @@ inline void extractControlFrames(VirtualRobot::RobotPtr robot,
     }
 }
 
+inline Eigen::Matrix2f projectPoseToGround(const Eigen::Matrix4f& pose)
+{
+    Eigen::Matrix2f projected = pose.block(0, 0, 2, 2);
+    // norm x axsis
+    projected.block(0, 0, 2, 1) /= projected.block(0, 0, 2, 1).norm();
+    // norm y axsis
+    projected.block(0, 1, 2, 1) /= projected.block(0, 1, 2, 1).norm();
+
+    return projected;
+}
+
 /*
  * Return pose of ground frame.
  *
  * Warning: Since the frame comes form simox it is in mm!
  */
-inline Eigen::Matrix4f computeGroundFrame(VirtualRobot::RobotNodePtr leftFoot,
-                                    VirtualRobot::RobotNodePtr rightFoot,
-                                    SupportPhase phase)
+inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
+                                          const Eigen::Matrix4f& rightFootPose,
+                                          SupportPhase phase)
 {
     Eigen::Matrix4f refToWorld = Eigen::Matrix4f::Identity();
     switch (phase)
     {
         case SUPPORT_LEFT:
-            refToWorld = leftFoot->getGlobalPose();
+            refToWorld.block(0, 3, 2, 1) = leftFootPose.block(0, 3, 2, 1);
+            refToWorld.block(0, 0, 2, 2) = projectPoseToGround(leftFootPose);
             break;
         case SUPPORT_RIGHT:
-            refToWorld = rightFoot->getGlobalPose();
+            refToWorld.block(0, 3, 2, 1) = rightFootPose.block(0, 3, 2, 1);
+            refToWorld.block(0, 0, 2, 2) = projectPoseToGround(rightFootPose);
             break;
         case SUPPORT_BOTH:
-            Eigen::Matrix4f rightPose = rightFoot->getGlobalPose();
-            Eigen::Matrix4f leftPose  = leftFoot->getGlobalPose();
-            refToWorld.block(0, 3, 3, 1) = (rightPose.block(0, 3, 3, 1) + leftPose.block(0, 3, 3, 1)) / 2.0;
+            refToWorld.block(0, 3, 3, 1) = (rightFootPose.block(0, 3, 3, 1) + leftFootPose.block(0, 3, 3, 1)) / 2.0;
             Eigen::Vector3f zAxis(0, 0, 1);
-            Eigen::Vector3f xAxis = (rightPose.block(0, 0, 3, 1) + leftPose.block(0, 0, 3, 1)) / 2.0;
+            Eigen::Vector3f xAxis = (rightFootPose.block(0, 0, 3, 1) + leftFootPose.block(0, 0, 3, 1)) / 2.0;
             xAxis /= xAxis.norm();
             Eigen::Vector3f yAxis = zAxis.cross(xAxis);
             yAxis /= yAxis.norm();
@@ -105,7 +116,7 @@ inline void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
         leftFootPose.block(0,3,3,1) = 1000 * leftFootTrajectory.col(i);
         robot->setGlobalPose(leftFootPose);
         bodyJoints->setJointValues(bodyTrajectory.col(i));
-        Eigen::Matrix4f worldToRef = computeGroundFrame(leftFoot, rightFoot, phase[i]);
+        Eigen::Matrix4f worldToRef = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase[i]);
         Eigen::Vector4f homVec;
         homVec(3, 0) = 1;
         homVec.block(0, 0, 3, 1) = trajectory.col(i) * 1000;
@@ -124,7 +135,7 @@ inline void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints
                               const Eigen::Matrix4f &initialRightFootPose,
                               Eigen::VectorXf &result)
 {
-    const float ikPrec = 0.1;
+    const float ikPrec = 0.01;
 
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
 
@@ -158,7 +169,7 @@ inline void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints
     VirtualRobot::HierarchicalIK hIK(nodeSetJoints);
 
     float lastErrorLength = 1000.0f;
-    for(int i = 0; i < 30; i++)
+    for(int i = 0; i < 50; i++)
     {
         float e = 0;
         for(int j = 0; j < jacobiDefinitions.size(); j++)
@@ -254,6 +265,6 @@ inline void computeWalkingTrajectory(VirtualRobot::RobotPtr robot,
     }
 }
 
-}
+};
 
 #endif

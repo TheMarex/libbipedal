@@ -48,8 +48,10 @@ void FootstepPlaner::setRobotModel(VirtualRobot::RobotPtr pRobot, std::string na
 void FootstepPlaner::computeFeetShape() {
     Eigen::Vector2f vRightCenter;
     Eigen::Vector2f vLeftCenter;
-    cvRight = Walking::ComputeFootContact(_pRobot->getRobotNode(_sRightFootName), &vRightCenter);
-    cvLeft  = Walking::ComputeFootContact(_pRobot->getRobotNode(_sLeftFootName), &vLeftCenter);
+    cvRight = Walking::ComputeFootContact(_pRobot->getRobotNode(_sRightFootName)->getCollisionModel());
+    cvLeft  = Walking::ComputeFootContact(_pRobot->getRobotNode(_sLeftFootName)->getCollisionModel());
+    vRightCenter = Walking::CenterConvexHull(cvRight);
+    vLeftCenter  = Walking::CenterConvexHull(cvLeft);
     _vRightFootCenter = vRightCenter / 1000.0f;
     _vLeftFootCenter  = vLeftCenter / 1000.0f;
     _mRotateWalking = Walking::ComputeWalkingDirection(vLeftCenter, vRightCenter);

@@ -698,8 +698,8 @@ void PatternGeneratorWindow::trajectorySliderValueChanged(int value)
 
     const std::vector<Kinematics::SupportPhase>& phase = pZMPPreviewControl->getSupportPhases();
     Eigen::Matrix4f frame = Kinematics::computeGroundFrame(
-                            robot->getRobotNode("LeftLeg_TCP"),
-                            robot->getRobotNode("RightLeg_TCP"),
+                            robot->getRobotNode("LeftLeg_TCP")->getGlobalPose(),
+                            robot->getRobotNode("RightLeg_TCP")->getGlobalPose(),
                             phase[value]);
 
     groundFrameVisu->removeAllChildren();

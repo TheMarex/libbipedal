@@ -9,28 +9,12 @@
 namespace Walking
 {
 /*
- * Returns the convex hull of the contact points centered at (0, 0).
- *
- * Center of the convex hull in the global space is returned in footCenter.
+ * Returns the convex hull of the contact points in global coordinates.
  *
  * All units are in mm.
  */
-VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::RobotNodePtr& foot, Eigen::Vector2f* footCenter)
+VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::CollisionModelPtr& colModel)
 {
-    if (!foot)
-    {
-        std::cout << "Cannot compute foot shape, because foot was not found!" << std::endl;
-        return VirtualRobot::MathTools::ConvexHull2DPtr();
-    }
-
-    // get collision model of the feet
-    VirtualRobot::CollisionModelPtr colModel = foot->getCollisionModel();
-    if (!colModel)
-    {
-        std::cout << "Cannot compute foot shape, because the collision shape could not be retrieved!" << std::endl;
-        return VirtualRobot::MathTools::ConvexHull2DPtr();
-    }
-
     // let the feet collide with the floor and get the collision points
     VirtualRobot::MathTools::Plane plane =  VirtualRobot::MathTools::getFloorPlane();
     VirtualRobot::CollisionCheckerPtr colChecker = VirtualRobot::CollisionChecker::getGlobalCollisionChecker();
@@ -48,14 +32,20 @@ VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::
 
     // calculate the convex hulls and the appropriate centers
     VirtualRobot::MathTools::ConvexHull2DPtr hull = VirtualRobot::MathTools::createConvexHull2D(points2D);
-    if (footCenter)
-        *footCenter = VirtualRobot::MathTools::getConvexHullCenter(hull);
-
-    // translate points of FootShape so, that center of convex hull is (0|0)
-    for (int i =  0; i < hull->vertices.size(); i++)
-        hull->vertices[i] -= *footCenter;
 
     return hull;
+}
+
+// Shift convex hull to origin
+// and return old center in global coordinates
+Eigen::Vector2f CenterConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull)
+{
+    Eigen::Vector2f center = VirtualRobot::MathTools::getConvexHullCenter(hull);
+    // translate points of FootShape so, that center of convex hull is (0|0)
+    for (int i =  0; i < hull->vertices.size(); i++)
+        hull->vertices[i] -= center;
+
+    return center;
 }
 
 // Get walking direction as 2D oriantation
@@ -67,10 +57,11 @@ Eigen::Matrix2f ComputeWalkingDirection(const Eigen::Vector2f& leftFootCenter, c
     centerToLeft.normalize();
     Eigen::Matrix2f rotNinety;
     rotNinety << 0, 1, -1, 0;
-    Eigen::Vector2f walkingDirection =  rotNinety * centerToLeft;
+    Eigen::Vector2f walkingDirection = rotNinety * centerToLeft;
 
     Eigen::Matrix2f pose;
     pose << walkingDirection.x(), centerToLeft.x(), walkingDirection.y(), centerToLeft.y();
+
     return pose;
 }
 }
