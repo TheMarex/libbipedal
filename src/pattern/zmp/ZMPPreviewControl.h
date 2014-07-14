@@ -6,15 +6,15 @@
 class ZMPPreviewControl : public ZMPPlaner
 {
 public:
-	ZMPPreviewControl();
-	~ZMPPreviewControl();
+    ZMPPreviewControl();
+    ~ZMPPreviewControl();
 
-	virtual void computeReference();
-	void setPreview(int N);
-	void computeCoM();
+    virtual void computeReference();
+    void setPreview(int N);
+    void computeCoM();
 
 protected:
-	int _nPreviewCount;
+    int _nPreviewCount;
 };
 
 #endif

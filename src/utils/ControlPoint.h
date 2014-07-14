@@ -17,18 +17,19 @@ class ControlMatrixEntry : public MMM::MotionFrameEntry
 {
 public:
     ControlMatrixEntry(const std::string& name, const MatrixT& matrix)
-    : MMM::MotionFrameEntry(name)
-    , matrix(matrix)
+        : MMM::MotionFrameEntry(name)
+        , matrix(matrix)
     {
     }
 
     // stores the matrix in column major format
     void writeMatrix(std::stringstream& ss, const MatrixT& m)
     {
-        for (int i = 0; i < m.size()-1; i++)
+        for (int i = 0; i < m.size() - 1; i++)
         {
             ss << m.data()[i] << " ";
         }
+
         ss << m.data()[m.size() - 1];
     }
 
@@ -50,14 +51,15 @@ class ControlMatrixParser : public MMM::XMLMotionFrameTagProcessor
 {
 public:
     ControlMatrixParser(const std::string& tagName)
-    : XMLMotionFrameTagProcessor()
-    , tagName(tagName)
+        : XMLMotionFrameTagProcessor()
+        , tagName(tagName)
     {
     }
 
     void parseMatrix(std::stringstream& ss, unsigned rows, unsigned cols, MatrixT& m)
     {
         m.resize(rows, cols);
+
         for (unsigned i = 0; i < m.size(); i++)
         {
             ss >> m.data()[i];
@@ -68,16 +70,28 @@ public:
                                           MMM::MotionFramePtr motionFrame)
     {
         if (!tag)
+        {
             return false;
+        }
 
         if (tag->name() != tagName)
+        {
             return false;
+        }
+
         rapidxml::xml_attribute<>* attr_rows = tag->first_attribute("rows", 0, false);
+
         if (!attr_rows)
+        {
             return false;
+        }
+
         rapidxml::xml_attribute<>* attr_cols = tag->first_attribute("cols", 0, false);
+
         if (!attr_cols)
+        {
             return false;
+        }
 
         MatrixT m;
         unsigned rows, cols;
@@ -88,8 +102,8 @@ public:
         parseMatrix(ss, rows, cols, m);
 
         boost::shared_ptr<ControlMatrixEntry<MatrixT>> entry(
-            new ControlMatrixEntry<MatrixT>(tagName, m)
-        );
+                    new ControlMatrixEntry<MatrixT>(tagName, m)
+                );
 
         return motionFrame->addEntry(tagName, entry);
     }
@@ -105,8 +119,8 @@ class ControlValueEntry : public MMM::MotionFrameEntry
 {
 public:
     ControlValueEntry(const std::string& name, ScalarT value)
-    : MMM::MotionFrameEntry(name)
-    , value(value)
+        : MMM::MotionFrameEntry(name)
+        , value(value)
     {
     }
 
@@ -126,8 +140,8 @@ class ControlValueParser : public MMM::XMLMotionFrameTagProcessor
 {
 public:
     ControlValueParser(const std::string& tagName)
-    : XMLMotionFrameTagProcessor()
-    , tagName(tagName)
+        : XMLMotionFrameTagProcessor()
+        , tagName(tagName)
     {
     }
 
@@ -135,10 +149,14 @@ public:
                                           MMM::MotionFramePtr motionFrame)
     {
         if (!tag)
+        {
             return false;
+        }
 
         if (tag->name() != tagName)
+        {
             return false;
+        }
 
         ScalarT value;
         std::stringstream ss;
@@ -146,8 +164,8 @@ public:
         ss >> value;
 
         boost::shared_ptr<ControlValueEntry<ScalarT>> entry(
-            new ControlValueEntry<ScalarT>(tagName, value)
-        );
+                    new ControlValueEntry<ScalarT>(tagName, value)
+                );
 
         return motionFrame->addEntry(tagName, entry);
     }
@@ -174,19 +192,19 @@ public:
 
     ControlPointEntry(const std::string& name,
                       const VectorT& pos)
-    : MMM::MotionFrameEntry(name)
-    , position(pos)
-    , type(TYPE_POSITION)
+        : MMM::MotionFrameEntry(name)
+        , position(pos)
+        , type(TYPE_POSITION)
     {
     }
 
     ControlPointEntry(const std::string& name,
                       const VectorT& pos,
                       const VectorT& vel)
-    : MMM::MotionFrameEntry(name)
-    , position(pos)
-    , velocity(vel)
-    , type(static_cast<ControlType>(TYPE_POSITION | TYPE_VELOCITY))
+        : MMM::MotionFrameEntry(name)
+        , position(pos)
+        , velocity(vel)
+        , type(static_cast<ControlType>(TYPE_POSITION | TYPE_VELOCITY))
     {
     }
 
@@ -194,11 +212,11 @@ public:
                       const VectorT& pos,
                       const VectorT& vel,
                       const VectorT& acc)
-    : MMM::MotionFrameEntry(name)
-    , position(pos)
-    , velocity(vel)
-    , acceleration(acc)
-    , type(static_cast<ControlType>(TYPE_POSITION | TYPE_VELOCITY | TYPE_ACCELERATION))
+        : MMM::MotionFrameEntry(name)
+        , position(pos)
+        , velocity(vel)
+        , acceleration(acc)
+        , type(static_cast<ControlType>(TYPE_POSITION | TYPE_VELOCITY | TYPE_ACCELERATION))
     {
     }
 
@@ -207,19 +225,23 @@ public:
                       const VectorT& pos,
                       const VectorT& vel,
                       const VectorT& acc)
-    : MMM::MotionFrameEntry(name)
-    , position(pos)
-    , velocity(vel)
-    , acceleration(acc)
-    , type(type)
+        : MMM::MotionFrameEntry(name)
+        , position(pos)
+        , velocity(vel)
+        , acceleration(acc)
+        , type(type)
     {
     }
 
     void printVector(const std::string& name, const VectorT& vec, std::stringstream& ss)
     {
         ss << "\t\t\t\t\t<" << name << ">";
+
         for (int i = 0; i < vec.rows(); i++)
+        {
             ss << vec(i, 0) << " ";
+        }
+
         ss << "</" << name  << ">" << std::endl;
     }
 
@@ -227,18 +249,22 @@ public:
     {
         std::stringstream ss;
         ss << "\t\t\t\t<" << tagName << ">" << std::endl;
+
         if (type & TYPE_POSITION)
         {
             printVector("Position", position, ss);
         }
+
         if (type & TYPE_VELOCITY)
         {
             printVector("Velocity", velocity, ss);
         }
+
         if (type & TYPE_ACCELERATION)
         {
             printVector("Acceleration", acceleration, ss);
         }
+
         ss << "\t\t\t\t</" << tagName << ">" << std::endl;
 
         return ss.str();
@@ -255,8 +281,8 @@ class ControlPointParser : public MMM::XMLMotionFrameTagProcessor
 {
 public:
     ControlPointParser(const std::string& tagName)
-    : XMLMotionFrameTagProcessor()
-    , tagName(tagName)
+        : XMLMotionFrameTagProcessor()
+        , tagName(tagName)
     {
     }
 
@@ -264,10 +290,14 @@ public:
                                           MMM::MotionFramePtr motionFrame)
     {
         if (!tag)
+        {
             return false;
+        }
 
         if (tag->name() != tagName)
+        {
             return false;
+        }
 
         int type = 0;
         VectorT pos;
@@ -275,18 +305,23 @@ public:
         VectorT acc;
 
         rapidxml::xml_node<>* node = tag->first_node("Position", 0, false);
+
         if (node)
         {
             type |= ControlPointEntry<VectorT>::TYPE_POSITION;
             parseVector(node, pos);
         }
+
         node = tag->first_node("Velocity", 0, false);
+
         if (node)
         {
             type |= ControlPointEntry<VectorT>::TYPE_VELOCITY;
             parseVector(node, vel);
         }
+
         node = tag->first_node("Acceleration", 0, false);
+
         if (node)
         {
             type |= ControlPointEntry<VectorT>::TYPE_ACCELERATION;
@@ -294,12 +329,12 @@ public:
         }
 
         boost::shared_ptr<ControlPointEntry<VectorT>> entry(
-            new ControlPointEntry<VectorT>(tagName,
-                                           static_cast<typename ControlPointEntry<VectorT>::ControlType>(type),
-                                           pos,
-                                           vel,
-                                           acc)
-        );
+                    new ControlPointEntry<VectorT>(tagName,
+                            static_cast<typename ControlPointEntry<VectorT>::ControlType>(type),
+                            pos,
+                            vel,
+                            acc)
+                );
         return motionFrame->addEntry(tagName, entry);
     }
 
@@ -308,6 +343,7 @@ public:
         std::string value = node->value();
         std::stringstream ss;
         ss << value;
+
         for (int i = 0; i < vector.rows(); i++)
         {
             float val;
@@ -330,12 +366,17 @@ template<typename VectorT>
 bool GetControlPointPosition(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& pos)
 {
     if (!frame->hasEntry(name))
+    {
         return false;
+    }
 
     MMM::MotionFrameEntryPtr e = frame->getEntry(name);
     boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+
     if (!r)
+    {
         return false;
+    }
 
     pos = r->position;
     return true;
@@ -345,12 +386,17 @@ template<typename VectorT>
 bool GetControlPointVelocity(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& vel)
 {
     if (!frame->hasEntry(name))
+    {
         return false;
+    }
 
     MMM::MotionFrameEntryPtr e = frame->getEntry(name);
     boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+
     if (!r)
+    {
         return false;
+    }
 
     vel = r->velocity;
     return true;
@@ -360,12 +406,17 @@ template<typename VectorT>
 bool GetControlPointAcceleration(const MMM::MotionFramePtr& frame, const std::string& name, VectorT& acc)
 {
     if (!frame->hasEntry(name))
+    {
         return false;
+    }
 
     MMM::MotionFrameEntryPtr e = frame->getEntry(name);
     boost::shared_ptr<ControlPointEntry<VectorT>> r = boost::dynamic_pointer_cast<ControlPointEntry<VectorT>>(e);
+
     if (!r)
+    {
         return false;
+    }
 
     acc = r->acceleration;
     return true;
@@ -375,12 +426,17 @@ template<typename ScalarT>
 bool GetControlValue(const MMM::MotionFramePtr& frame, const std::string& name, ScalarT& value)
 {
     if (!frame->hasEntry(name))
+    {
         return false;
+    }
 
     MMM::MotionFrameEntryPtr e = frame->getEntry(name);
     boost::shared_ptr<ControlValueEntry<ScalarT>> r = boost::dynamic_pointer_cast<ControlValueEntry<ScalarT>>(e);
+
     if (!r)
+    {
         return false;
+    }
 
     value = r->value;
     return true;
@@ -390,12 +446,17 @@ template<typename MatrixT>
 bool GetControlMatrix(const MMM::MotionFramePtr& frame, const std::string& name, MatrixT& value)
 {
     if (!frame->hasEntry(name))
+    {
         return false;
+    }
 
     MMM::MotionFrameEntryPtr e = frame->getEntry(name);
     boost::shared_ptr<ControlMatrixEntry<MatrixT>> r = boost::dynamic_pointer_cast<ControlMatrixEntry<MatrixT>>(e);
+
     if (!r)
+    {
         return false;
+    }
 
     value = r->matrix;
     return true;

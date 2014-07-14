@@ -1,0 +1,48 @@
+# http://astyle.sourceforge.net/astyle.html
+#
+#
+
+# Predefined style option -A3
+--style=allman
+
+# Indent using 4 spaces per indent. Don't use tab -s4
+--indent=spaces=4
+
+# Indent 'switch' blocks so that the 'case X:' statement are 
+# indented in the switch block. -S
+--indent-switches
+
+# Indent multi-line preprocessor definitions ending with a backslash -w
+--indent-preprocessor
+
+# Pad empty lines around header blocks (eg. 'if', 'while' ...) -f
+--break-blocks
+
+# Delete empty lines within a function or method. -x
+#--delete-empty-lines
+
+# Insert space padding around operators. -p
+--pad-oper
+--pad-header
+
+# Remove extra space padding around parenthesis on the inside and outside -U
+--unpad-paren
+
+# Converts tabs into spaces in the non-indentation part of the line -c
+--convert-tabs
+
+# Do not retain a backup of the origional file
+--suffix=none
+
+--indent-namespaces
+--indent-col1-comments
+--min-conditional-indent=0
+
+--align-pointer=type
+#--align-reference=type
+
+--add-brackets
+
+#--break-after-logical
+
+--lineend=linux

@@ -22,88 +22,91 @@
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
     VirtualRobot::RobotNodeSetPtr nodeSet = robot->getRobotNodeSet("Left2RightLeg");
-	Eigen::Matrix4f rootPose = nodeSet->getKinematicRoot()->getGlobalPose();
+    Eigen::Matrix4f rootPose = nodeSet->getKinematicRoot()->getGlobalPose();
 
-	boost::filesystem::path targetPath(path);
-	boost::filesystem::path baseDir = targetPath.parent_path();
-	std::string relRobotPath = MMM::XML::make_relative(baseDir.string(), pathToRobot);
+    boost::filesystem::path targetPath(path);
+    boost::filesystem::path baseDir = targetPath.parent_path();
+    std::string relRobotPath = MMM::XML::make_relative(baseDir.string(), pathToRobot);
 
-	MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
+    MMM::MotionPtr motion(new MMM::Motion("Walking pattern"));
 
-	std::vector<std::string> jointNames;
-	for(int i = 0; i < nodeSet->getSize(); i++)
-		jointNames.push_back((*nodeSet)[i]->getName());
+    std::vector<std::string> jointNames;
 
-	motion->setJointOrder(jointNames);
+    for (int i = 0; i < nodeSet->getSize(); i++)
+    {
+        jointNames.push_back((*nodeSet)[i]->getName());
+    }
 
-	int size = bodyTrajectory.cols();
-	int ndof = bodyTrajectory.rows();
+    motion->setJointOrder(jointNames);
 
-	Eigen::MatrixXf bodyVelocity = VelocityEstimation::simpleDiff(bodyTrajectory, timestep);
+    int size = bodyTrajectory.cols();
+    int ndof = bodyTrajectory.rows();
 
-	for (int i = 0; i < size; i++)
-	{
-		// we need rootPos in mm
-		Eigen::Vector3f rootPos = 1000 * leftFootTrajectory[i].block(0, 3, 3, 1);
-		MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
-		frame->setRootPose(rootPose);
-		frame->setRootPos(rootPos);
-		frame->joint = bodyTrajectory.col(i);
-		frame->joint_vel = bodyVelocity.col(i);
-		frame->timestep = timestep*i;
+    Eigen::MatrixXf bodyVelocity = VelocityEstimation::simpleDiff(bodyTrajectory, timestep);
+
+    for (int i = 0; i < size; i++)
+    {
+        // we need rootPos in mm
+        Eigen::Vector3f rootPos = 1000 * leftFootTrajectory[i].block(0, 3, 3, 1);
+        MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
+        frame->setRootPose(rootPose);
+        frame->setRootPos(rootPos);
+        frame->joint = bodyTrajectory.col(i);
+        frame->joint_vel = bodyVelocity.col(i);
+        frame->timestep = timestep * i;
         frame->addEntry("CoM",
                         boost::make_shared<ControlPointEntry3f>("CoM",
-                            comTrajectory.col(i),
-                            comVelocity.col(i),
-                            comAcceleration.col(i)
-                        )
-        );
+                                comTrajectory.col(i),
+                                comVelocity.col(i),
+                                comAcceleration.col(i)
+                                                               )
+                       );
         frame->addEntry("ZMP",
                         boost::make_shared<ControlPointEntry2f>("ZMP",
-                            computedZMPTrajectory.col(i)
-                        )
-        );
+                                computedZMPTrajectory.col(i)
+                                                               )
+                       );
         frame->addEntry("ReferenceZMP",
                         boost::make_shared<ControlPointEntry2f>("ReferenceZMP",
-                            referenceZMPTrajectory.col(i)
-                        )
-        );
+                                referenceZMPTrajectory.col(i)
+                                                               )
+                       );
         frame->addEntry("LeftFoot",
                         boost::make_shared<ControlMatrixEntry4f>("LeftFoot",
-                            leftFootTrajectory[i]
-                        )
-        );
+                                leftFootTrajectory[i]
+                                                                )
+                       );
         frame->addEntry("RightFoot",
                         boost::make_shared<ControlMatrixEntry4f>("RightFoot",
-                            rightFootTrajectory[i]
-                        )
-        );
+                                rightFootTrajectory[i]
+                                                                )
+                       );
         frame->addEntry("Chest",
                         boost::make_shared<ControlMatrixEntry4f>("Chest",
-                            chestTrajectory[i]
-                        )
-        );
+                                chestTrajectory[i]
+                                                                )
+                       );
         frame->addEntry("Pelvis",
                         boost::make_shared<ControlMatrixEntry4f>("Pelvis",
-                            pelvisTrajectory[i]
-                        )
-        );
+                                pelvisTrajectory[i]
+                                                                )
+                       );
         frame->addEntry("SupportPhase",
                         boost::make_shared<ControlValueEntry<int>>("SupportPhase",
-                            phase[i]
-                        )
-        );
+                                phase[i]
+                                                                  )
+                       );
 
-		motion->addMotionFrame(frame);
-	}
+        motion->addMotionFrame(frame);
+    }
 
-	MMM::ModelPtr model(new MMM::Model());
-	model->filename = relRobotPath;
-	motion->setModel(model);
+    MMM::ModelPtr model(new MMM::Model());
+    model->filename = relRobotPath;
+    motion->setModel(model);
 
-	std::ofstream out(path.c_str());
-	out << "<MMM>"
-	<< motion->toXML()
-	<< "</MMM>";
+    std::ofstream out(path.c_str());
+    out << "<MMM>"
+        << motion->toXML()
+        << "</MMM>";
 }
 
