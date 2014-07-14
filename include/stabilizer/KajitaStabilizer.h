@@ -1,8 +1,6 @@
 #ifndef __KAJITA_STABILIZER_H__
 #define __KAJITA_STABILIZER_H__
 
-#include "../TrajectoryController.h"
-
 class FootForceController;
 class FootTorqueController;
 class ChestPostureController;
@@ -19,14 +17,14 @@ typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
 typedef boost::shared_ptr<ForceSensor> ForceSensorPtr;
 typedef boost::shared_ptr<ReferenceIK> ReferenceIKPtr;
 
-class Stabilizer : public TrajectoryController
+class KajitaStabilizer
 {
 public:
-    Stabilizer(SimDynamics::DynamicsRobotPtr robot,
-               const ForceSensorPtr& leftAnkleSensor,
-               const ForceSensorPtr& rightAnkleSensor,
-               const std::string& motionPath,
-               const std::string& goalMotionName);
+    KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
+                     const ForceSensorPtr& leftAnkleSensor,
+                     const ForceSensorPtr& rightAnkleSensor,
+                     const std::string& motionPath,
+                     const std::string& goalMotionName);
 
     const Eigen::Matrix4f& getChestPose() { return chestPose; }
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }
@@ -35,11 +33,7 @@ public:
     const Eigen::VectorXf& getResultAngles() { return resultAngles; }
     const Eigen::Matrix4f& getRootPose() { return rootPose; }
 
-    virtual void enableLogging(const std::string& path);
-
-protected:
-    virtual void control(float dt) override;
-    virtual void log(float dt) override;
+    void update(float dt);
 
 private:
     void adaptFrame(Eigen::Matrix4f& frame);
@@ -79,6 +73,6 @@ private:
     Eigen::VectorXf resultAngles;
 };
 
-typedef boost::shared_ptr<Stabilizer> StabilizerPtr;
+typedef boost::shared_ptr<KajitaStabilizer> KajitaStabilizerPtr;
 
 #endif

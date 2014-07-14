@@ -1,19 +1,15 @@
-#include "Stabilizer.h"
-
 #include <Eigen/Dense>
 #include <VirtualRobot/MathTools.h>
 
 #include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
 
-#include "ChestPostureController.h"
-#include "FootForceController.h"
-#include "FootTorqueController.h"
-#include "ForceDistributor.h"
+#include "kajita/ChestPostureController.h"
+#include "kajita/FootForceController.h"
+#include "kajita/FootTorqueController.h"
+#include "kajita/ForceDistributor.h"
 
-#include "../../Sensors/ForceSensor.h"
-#include "../../IK/HierarchicalReferenceIK.h"
-#include "../../Utils/CSVLogger.h"
+#include "stabilizer/KajitaStabilizer.h"
 
 /*
  * These controller needs a trajectory with the following control features:
@@ -30,8 +26,7 @@
  * Points:
  *  - Reference ZMP
  */
-
-Stabilizer::Stabilizer(SimDynamics::DynamicsRobotPtr robot,
+KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
                const ForceSensorPtr& leftAnkleSensor,
                const ForceSensorPtr& rightAnkleSensor,
                const std::string& motionPath,
@@ -66,45 +61,16 @@ Stabilizer::Stabilizer(SimDynamics::DynamicsRobotPtr robot,
     double hipJointDistance = (leftHipPos - rightHipPos).norm();
     footForceController = FootForceControllerPtr(new FootForceController(hipJointDistance));
 
-    for (auto& name : motion->getJointNames())
-    {
-        trajectoryNodes.push_back(robot->getRobot()->getRobotNode(name));
-    }
 }
 
-void Stabilizer::control(float dt)
+void KajitaStabilizer::update(float dt,
+                              Kinematics::SupportPhase phase,
+                              const Eigen::Vector3f& zmp,
+                              const Eigen::Matrix4f& chestPoseRef,
+                              const Eigen::Matrix4f& pelvisPoseRef,
+                              const Eigen::Matrix4f& leftFootPoseRef,
+                              const Eigen::Matrix4f& rightFootPoseRef)
 {
-    if (!currentFrame)
-        return;
-
-    Kinematics::SupportPhase phase;
-    int value = 0;
-    if(GetControlValue(currentFrame, "SupportPhase", value))
-    {
-        phase = static_cast<Kinematics::SupportPhase>(value);
-    }
-
-    Eigen::Vector2f zmp2D;
-    if (!GetControlPointPosition(currentFrame, "ZMP", zmp2D))
-        return;
-    Eigen::Vector3f zmp = Eigen::Vector3f::Zero();
-    zmp.head(2) = zmp2D;
-
-    Eigen::Matrix4f chestPoseRef;
-    if (!GetControlMatrix(currentFrame, "Chest", chestPoseRef))
-        return;
-
-    Eigen::Matrix4f pelvisPoseRef;
-    if (!GetControlMatrix(currentFrame, "Pelvis", pelvisPoseRef))
-        return;
-
-    Eigen::Matrix4f leftFootPoseRef;
-    if (!GetControlMatrix(currentFrame, "LeftFoot", leftFootPoseRef))
-        return;
-
-    Eigen::Matrix4f rightFootPoseRef;
-    if (!GetControlMatrix(currentFrame, "RightFoot", rightFootPoseRef))
-        return;
 
     Eigen::Matrix4f stepAdaptionFrame =
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
@@ -154,12 +120,6 @@ void Stabilizer::control(float dt)
     pelvisPose = pelvisPoseRef;
 
 
-    /*
-    for (unsigned i = 0; i < trajectoryNodes.size(); i++)
-    {
-        trajectoryNodes[i]->setJointValue(currentFrame->joint[i]);
-    }*/
-
     rootPose = robot->getRobot()->getRootNode()->getGlobalPose();
     bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, phase, resultAngles);
 
@@ -172,29 +132,5 @@ void Stabilizer::control(float dt)
             robot->actuateNode((*nodes)[i], resultAngles(i, 0));
         }
 //    }
-}
-
-void Stabilizer::log(float dt)
-{
-    if (logger)
-    {
-        logger->log(dt, {
-            chestPostureController->currentRPY.x(),
-            chestPostureController->currentRPY.y(),
-            chestPostureController->refRPY.x(),
-            chestPostureController->refRPY.y(),
-            chestPostureController->phiDC.delta,
-            chestPostureController->thetaDC.delta
-        });
-    }
-}
-
-void Stabilizer::enableLogging(const std::string& path)
-{
-    std::vector<std::string> cols = {"ChestActualPhi", "ChestActualTheta",
-                                     "ChestTargetPhi", "ChestTargetTheta",
-                                     "ChestDeltaPhi", "ChestDeltaTheta"
-                                     };
-    logger = boost::make_shared<CSVLogger<double>>(path, cols);
 }
 
