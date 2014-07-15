@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <MMM/Motion/Motion.h>
 
-#include "Kinematics.h"
+#include "utils/Kinematics.h"
 
 class TrajectoryExporter
 {

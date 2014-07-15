@@ -30,11 +30,6 @@ bool TrajectoryPlayer::update(float dt)
         }
     }
 
-    log(dt);
-
-    if (isRunning)
-        control(dt);
-
     return isRunning;
 }
 

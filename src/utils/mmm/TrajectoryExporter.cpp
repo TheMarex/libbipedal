@@ -15,9 +15,11 @@
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
 
-#include "TrajectoryExporter.h"
-#include "VelocityEstimation.h"
-#include "ControlPoint.h"
+#include "utils/mmm/TrajectoryExporter.h"
+#include "utils/mmm/ControlPoint.h"
+#include "utils/mmm/ControlMatrix.h"
+#include "utils/mmm/ControlValue.h"
+#include "utils/VelocityEstimation.h"
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {

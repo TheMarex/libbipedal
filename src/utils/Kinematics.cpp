@@ -9,10 +9,9 @@
 #include <VirtualRobot/IK/CoMIK.h>
 #include <Eigen/Dense>
 
-#include "Kinematics.h"
+#include "utils/Kinematics.h"
 
-namespace Kinematics
-{
+namespace Kinematics {
 
 void extractControlFrames(VirtualRobot::RobotPtr robot,
                           const Eigen::Matrix3Xf& leftFootTrajectory,
@@ -37,13 +36,13 @@ void extractControlFrames(VirtualRobot::RobotPtr robot,
 }
 
 void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
-                                      const Eigen::Matrix3Xf& leftFootTrajectory,
-                                      VirtualRobot::RobotNodePtr leftFoot,
-                                      VirtualRobot::RobotNodePtr rightFoot,
-                                      VirtualRobot::RobotNodeSetPtr bodyJoints,
-                                      const Eigen::MatrixXf& bodyTrajectory,
-                                      const Eigen::Matrix3Xf& trajectory,
-                                      const std::vector<SupportPhase>& phase,
+                                                  const Eigen::Matrix3Xf& leftFootTrajectory,
+                                                  VirtualRobot::RobotNodePtr leftFoot,
+                                                  VirtualRobot::RobotNodePtr rightFoot,
+                                                  VirtualRobot::RobotNodeSetPtr bodyJoints,
+                                                  const Eigen::MatrixXf& bodyTrajectory,
+                                                  const Eigen::Matrix3Xf& trajectory,
+                                                  const std::vector<SupportPhase>& phase,
                                       Eigen::Matrix3Xf& relativeTrajectory)
 {
     Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
@@ -66,12 +65,12 @@ void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
 }
 
 inline void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints,
-                                     VirtualRobot::RobotNodeSetPtr nodeSetBodies,
-                                     VirtualRobot::RobotNodePtr waist,
-                                     const Eigen::Vector3f& targetCoM,
-                                     const Eigen::Vector3f& targetRightFoot,
-                                     const Eigen::Matrix4f& initialRightFootPose,
-                                     Eigen::VectorXf& result)
+                                                 VirtualRobot::RobotNodeSetPtr nodeSetBodies,
+                                                 VirtualRobot::RobotNodePtr waist,
+                                                 const Eigen::Vector3f& targetCoM,
+                                                 const Eigen::Vector3f& targetRightFoot,
+                                                 const Eigen::Matrix4f& initialRightFootPose,
+                                                 Eigen::VectorXf& result)
 {
     const float ikPrec = 0.01;
 
@@ -158,13 +157,13 @@ inline void computeStepConfiguration(VirtualRobot::RobotNodeSetPtr nodeSetJoints
 }
 
 void computeWalkingTrajectory(const VirtualRobot::RobotPtr& robot,
-                              const VirtualRobot::RobotNodeSetPtr& nodeSet,
-                              const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
-                              const VirtualRobot::RobotNodePtr& waist,
-                              const Eigen::Matrix3Xf& comTrajectory,
-                              const Eigen::Matrix3Xf& rightFootTrajectory,
-                              const Eigen::Matrix3Xf& leftFootTrajectory,
-                              Eigen::MatrixXf& trajectory)
+                                          const VirtualRobot::RobotNodeSetPtr& nodeSet,
+                                          const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
+                                          const VirtualRobot::RobotNodePtr& waist,
+                                          const Eigen::Matrix3Xf& comTrajectory,
+                                          const Eigen::Matrix3Xf& rightFootTrajectory,
+                                          const Eigen::Matrix3Xf& leftFootTrajectory,
+                                          Eigen::MatrixXf& trajectory)
 {
     int rows = nodeSet->getSize();
 
@@ -198,6 +197,6 @@ void computeWalkingTrajectory(const VirtualRobot::RobotPtr& robot,
     }
 }
 
-};
+}
 
 #endif

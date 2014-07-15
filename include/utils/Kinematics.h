@@ -110,7 +110,7 @@ void computeWalkingTrajectory(const VirtualRobot::RobotPtr& robot,
                               const Eigen::Matrix3Xf& comTrajectory,
                               const Eigen::Matrix3Xf& rightFootTrajectory,
                               const Eigen::Matrix3Xf& leftFootTrajectory,
-                              Eigen::MatrixXf& trajectory)
+                              Eigen::MatrixXf& trajectory);
 
 };
 

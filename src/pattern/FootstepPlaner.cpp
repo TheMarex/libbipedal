@@ -1,6 +1,6 @@
-#include "FootstepPlaner.h"
+#include "pattern/FootstepPlaner.h"
 
-#include "Utils/Walking.h"
+#include "utils/Walking.h"
 
 #include <VirtualRobot/Robot.h>
 #include <Inventor/nodes/SoTranslation.h>

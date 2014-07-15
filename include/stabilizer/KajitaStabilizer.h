@@ -1,11 +1,17 @@
 #ifndef __KAJITA_STABILIZER_H__
 #define __KAJITA_STABILIZER_H__
 
+#include <SimDynamics/SimDynamics.h>
+#include <SimDynamics/DynamicsEngine/DynamicsRobot.h>
+#include <VirtualRobot/VirtualRobot.h>
+
+#include <boost/shared_ptr.hpp>
+#include <string>
+
 class FootForceController;
 class FootTorqueController;
 class ChestPostureController;
 class ForceDistributor;
-class ForceSensor;
 class ReferenceIK;
 template<typename T>
 class CSVLogger;
@@ -14,15 +20,12 @@ typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
 typedef boost::shared_ptr<ChestPostureController> ChestPostureControllerPtr;
 typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
-typedef boost::shared_ptr<ForceSensor> ForceSensorPtr;
 typedef boost::shared_ptr<ReferenceIK> ReferenceIKPtr;
 
 class KajitaStabilizer
 {
 public:
     KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
-                     const ForceSensorPtr& leftAnkleSensor,
-                     const ForceSensorPtr& rightAnkleSensor,
                      const std::string& motionPath,
                      const std::string& goalMotionName);
 
@@ -33,7 +36,13 @@ public:
     const Eigen::VectorXf& getResultAngles() { return resultAngles; }
     const Eigen::Matrix4f& getRootPose() { return rootPose; }
 
-    void update(float dt);
+    void update(float dt,
+                Kinematics::SupportPhase phase,
+                const Eigen::Vector3f& zmp,
+                const Eigen::Matrix4f& chestPoseRef,
+                const Eigen::Matrix4f& pelvisPoseRef,
+                const Eigen::Matrix4f& leftFootPoseRef,
+                const Eigen::Matrix4f& rightFootPoseRef);
 
 private:
     void adaptFrame(Eigen::Matrix4f& frame);
@@ -55,12 +64,12 @@ private:
 
     boost::shared_ptr<CSVLogger<double>> logger;
 
-    FootForceControllerPtr    footForceController;
-    FootTorqueControllerPtr   footTorqueController;
-    ChestPostureControllerPtr chestPostureController;
-    ForceDistributorPtr       forceDistributor;
-    ForceSensorPtr            leftAnkleSensor;
-    ForceSensorPtr            rightAnkleSensor;
+    FootForceControllerPtr             footForceController;
+    FootTorqueControllerPtr            footTorqueController;
+    ChestPostureControllerPtr          chestPostureController;
+    ForceDistributorPtr                forceDistributor;
+    VirtualRobot::FroceTorqueSensorPtr leftAnkleSensor;
+    VirtualRobot::FroceTorqueSensorPtr rightAnkleSensor;
     ReferenceIKPtr            referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;

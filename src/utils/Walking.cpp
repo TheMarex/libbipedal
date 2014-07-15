@@ -6,7 +6,7 @@
 #include <VirtualRobot/MathTools.h>
 #include "VirtualRobot/CollisionDetection/CollisionChecker.h"
 
-#include "Walking.h"
+#include "utils/Walking.h"
 
 namespace Walking
 {

@@ -4,9 +4,8 @@
 #include <VirtualRobot/VirtualRobot.h>
 #include <boost/shared_ptr.hpp>
 
-#include "../Utils/Kinematics.h"
-
-#include "FootstepPlaner.h"
+#include "../../utils/Kinematics.h"
+#include "../FootstepPlaner.h"
 
 class ZMPPlaner
 {

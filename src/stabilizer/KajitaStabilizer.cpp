@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <VirtualRobot/MathTools.h>
+#include <SimDynamics/SimDynamics.h>
 
 #include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
@@ -27,13 +28,12 @@
  *  - Reference ZMP
  */
 KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
-               const ForceSensorPtr& leftAnkleSensor,
-               const ForceSensorPtr& rightAnkleSensor,
+               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
+               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor;
                const std::string& motionPath,
                const std::string& goalMotionName)
-: TrajectoryController(robot, motionPath, goalMotionName)
 // Names specific to ARMAR 4
-, chest(robot->getRobot()->getRobotNode("TorsoCenter"))
+: chest(robot->getRobot()->getRobotNode("TorsoCenter"))
 , leftFoot(robot->getRobot()->getRobotNode("LeftLeg_TCP"))
 , rightFoot(robot->getRobot()->getRobotNode("RightLeg_TCP"))
 , leftAnkle(robot->getRobot()->getRobotNode("LeftLeg_BodyAnkle2"))
