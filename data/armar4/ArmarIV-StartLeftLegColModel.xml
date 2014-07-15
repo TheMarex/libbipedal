@@ -1,0 +1,638 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- Armar4 convex hull model, root node == LeftFootTCP -->
+
+<Robot Type="ArmarIV" RootNode="Root">
+
+	<RobotNode name="Root">
+		<Child name="LeftLeg_TCP"/>
+	</RobotNode>
+
+
+	<RobotNode name="LeftLeg_TCP">
+		<Visualization>
+			<CoordinateAxis type="Inventor" enable="true"/>
+		</Visualization>
+		<Child name="LeftLeg_TCP_trafo1"/>
+	</RobotNode>
+
+
+	<RobotNode name="LeftLeg_TCP_trafo1">
+    	<Transform>
+    			<rollpitchyaw roll="90" pitch="150" yaw="-90" unitsAngle="degree"/>
+    	</Transform>
+    	<Child name="LeftLeg_TCP_trafo2"/>
+	</RobotNode> 
+      
+	<RobotNode name="LeftLeg_TCP_trafo2">
+    	<Transform>
+    			<Translation x="90" y="-65" z="-32"/>
+    	</Transform>
+		<Child name="LeftLeg_BodyAnkle2"/>
+	</RobotNode> 
+
+    <RobotNode name="LeftLeg_BodyAnkle2">
+		<Visualization>
+			<File type="Inventor">iv_reduced/colmodel_lfoot.wrl</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_lfoot.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="8.4756797e-01" unitsWeight="kg"/>
+			<!--CoM unitsLength="mm" x="-5.1146005e+01" y="2.6084766e+01" z="9.1396030e-01"/>
+			<InertiaMatrix unitsWeight="kg" unitsLength="mm">
+				<row1 c1="1.8614763e+03" c2="-1.7523285e+02" c3="-1.0705572e+01"/>
+				<row2 c1="-1.7523285e+02" c2="5.6651656e+02" c3="-3.2143720e+01"/>
+				<row3 c1="-1.0705572e+01" c2="-3.2143720e+01" c3="1.5442392e+03"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="LeftLeg_BodyToe"/>
+		</Physics> 
+		<Child name="LeftLeg_Joint6tmp"/>
+	</RobotNode> 
+	
+    
+
+	<RobotNode name="LeftLeg_Joint6tmp">
+      <Transform>
+			  <DH alpha="180" a="-150.707"  unitsAngle="degree"/>
+      </Transform>
+      <Child name="LeftLeg_Joint6"/>
+	</RobotNode>    
+
+	<RobotNode name="LeftLeg_Joint6">
+    <Transform>
+      <DH a="0" d="0" theta="109.174" alpha="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+      <axis x="0" y="0" z="1"/>
+      <!--DH theta="109.174" d="-32.5008" unitsAngle="degree"/-->
+			<!--Limits lo="-25" hi="45" unitsAngle="degree"/-->
+			<Limits lo="-45" hi="65" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="LeftLeg_BodyAnkle1"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_BodyAnkle1">
+    <Transform>
+      <DH a="0" d="-32.5008" theta="0" alpha="0" units="degree"/>
+    </Transform>
+    <!-- No info from proE software    -->
+		<CollisionModel>
+            <File type="Inventor">iv_primitives/cyl1.wrl</File>
+        </CollisionModel> 
+        <Physics>
+			<Mass value="0.5" unitsWeight="kg"/>
+			<IgnoreCollision name="LeftLeg_BodyAnkle2"/>
+        </Physics>			
+		<Child name="LeftLeg_Joint5tmp"/>
+	</RobotNode> 
+     
+	
+	<RobotNode name="LeftLeg_Joint5tmp">
+    <Transform>
+			<DH alpha="-90" a="0" unitsAngle="degree"/>
+    </Transform>
+		<Child name="LeftLeg_Joint5"/>
+	</RobotNode>
+
+	<RobotNode name="LeftLeg_Joint5">
+    <Transform>
+      <DH a="0" d="0" theta="-180" alpha="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+      <axis x="0" y="0" z="1"/>
+      <!--DH theta="-180" d="0" unitsAngle="degree"/-->
+			<!--Limits lo="-35" hi="35" unitsAngle="degree"/-->
+			<Limits lo="-55" hi="55" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="LeftLeg_BodyKnee"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_BodyKnee">
+		<Visualization>
+			<File type="Inventor">iv_reduced/colmodel_lleg4_inv.wrl</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_lleg4_inv.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="5.1474196e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="1.4409339e+02" y="1.7503660e+02" z="9.3528411e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="3.3514402e+01" c2="-2.0697059e+01" c3="-6.4251923e-02"/>
+				<row2 c1="-2.0697059e+01" c2="2.3996849e+01" c3="-7.6424519e-02"/>
+				<row3 c1="-6.4251923e-02" c2="-7.6424519e-02" c3="5.0133000e+01"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="LeftLeg_BodyAnkle1"/>
+			<IgnoreCollision name="LeftLeg_BodyAnkle2"/>
+		</Physics> 
+		<Child name="LeftLeg_Joint4tmp"/>
+	</RobotNode>    
+	
+	<RobotNode name="LeftLeg_Joint4tmp">
+    <Transform>
+			<DH alpha="-90" a="-408.5" unitsAngle="degree"/>
+    </Transform>
+    <!--Joint type="fixed">
+			<DH alpha="-90" a="-408.5" unitsAngle="degree"/>
+			<Limits lo="-20" hi="120" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint-->
+		<Child name="LeftLeg_Joint4"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_Joint4">
+    <Transform>
+      <DH a="0" d="0" theta="49.9949" alpha="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+      <axis x="0" y="0" z="1"/>
+			<!--DH theta="49.9949" alpha="90" a="408.5" d="93.5136" unitsAngle="degree"/-->
+      <!--DH theta="49.9949" d="93.5136" unitsAngle="degree"/-->
+			<Limits lo="-20" hi="120" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="LeftLeg_BodyHip3"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_BodyHip3">
+   <Transform>
+      <DH a="0" d="93.5136" theta="0" alpha="0" units="degree"/>
+    </Transform>
+		<Visualization>
+			<File type="Inventor">iv_reduced/colmodel_lleg3_inv.wrl</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_lleg3_inv.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="2.9444401e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="7.7808637e+01" y="8.3251213e+01" z="5.7273612e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="9.9635073e+00" c2="-3.7855048e+00" c3="9.5185752e-01"/>
+				<row2 c1="-3.7855048e+00" c2="9.1218580e+00" c3="8.8115390e-01"/>
+				<row3 c1="9.5185752e-01" c2="8.8115390e-01" c3="1.3934034e+01"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="LeftLeg_BodyKnee"/>
+		</Physics> 
+		<Child name="LeftLeg_Joint3tmp1"/>
+	</RobotNode>     
+    
+	
+	<RobotNode name="LeftLeg_Joint3tmp1">
+    <Transform>
+      <DH alpha="180"  a="-353.753" units="degree"/>
+    </Transform>
+    <!--Joint type="fixed">
+			<DH theta="0" alpha="180"  a="-353.753" unitsAngle="degree"/>
+			<Limits lo="-45" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 		
+		</Joint-->
+		<Child name="LeftLeg_Joint3tmp"/>
+	</RobotNode>
+
+	<RobotNode name="LeftLeg_Joint3tmp">
+    <Transform>
+      <DH a="0" d="0" theta="0" alpha="55" units="degree"/>
+    </Transform>
+    <!--Joint type="fixed">
+			<DH alpha="55" unitsAngle="degree"/>
+			<Limits lo="-45" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 		
+		</Joint-->
+		<Child name="LeftLeg_Joint3"/>
+	</RobotNode>
+	
+	
+	<RobotNode name="LeftLeg_Joint3">
+    <Transform>
+      <DH a="0" d="0" theta="51.6591" alpha="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+      <axis x="0" y="0" z="1"/>
+      <!--DH theta="51.6591" d="229.334" unitsAngle="degree"/-->
+			<Limits lo="-45" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 		
+		</Joint>
+		<Child name="LeftLeg_BodyHip2"/>
+        <!--Child name="LeftLeg_KneeTCP"/-->
+	</RobotNode>
+		
+	<!--RobotNode name="LeftLeg_KneeTCP">
+		<Joint type="fixed">
+			<DH theta="50" alpha="0" a="0" d="93.5136" unitsAngle="degree"/>
+		</Joint>
+	    <Visualization>
+			<CoordinateAxis type="Inventor" enable="true"/>
+		</Visualization>
+	</RobotNode-->  
+		
+	<RobotNode name="LeftLeg_BodyHip2">
+    <Transform>
+      <DH a="0" d="229.334" theta="0" alpha="0" units="degree"/>
+    </Transform>
+    <Physics>
+			<Mass value="3.0434193e-04" unitsWeight="ton"/>	
+			<!--CoM unitsLength="mm" x="2.5446830e+01" y="2.6250834e+00" z="-1.7550518e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.6444542e-01" c2="-1.8747441e-02" c3="-5.5860829e-02"/>
+				<row2 c1="-1.8747441e-02" c2="3.4481628e-01" c3="-5.7243718e-03"/>
+				<row3 c1="-5.5860829e-02" c2="-5.7243718e-03" c3="4.0279049e-01"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="LeftLeg_BodyHip3"/>
+		</Physics> 
+		<CollisionModel>
+            <File type="Inventor">iv_primitives/cyl1.wrl</File>
+        </CollisionModel> 
+		<Child name="LeftLeg_Joint2tmp"/>
+	</RobotNode>    
+	
+	<RobotNode name="LeftLeg_Joint2tmp">
+    <Transform>
+      <DH theta="0" alpha="-90" a="0" d="0" units="degree"/>
+    </Transform>
+    <!--Joint type="fixed">
+			<!- DH theta="95.88" alpha="90" a="0" d="-2.3" unitsAngle="degree"/- ->
+			<DH alpha="-90" a="0" unitsAngle="degree"/>
+			<Limits lo="-30" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 		
+		</Joint-->
+		<Child name="LeftLeg_Joint2"/>
+	</RobotNode>
+	<RobotNode name="LeftLeg_Joint2">
+    <Transform>
+      <DH theta="95.88" alpha="0" a="0" d="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+      <axis x="0" y="0" z="1"/>
+			<!--DH theta="95.88" alpha="90" a="0" d="-2.3" unitsAngle="degree"/-->
+      <!--DH theta="95.88" d="-2.3" unitsAngle="degree"/-->
+			<Limits lo="-30" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 		
+		</Joint>
+		<Child name="LeftLeg_BodyHip1"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_BodyHip1">
+    <Transform>
+      <DH theta="0" alpha="0" a="0" d="-2.3" units="degree"/>
+    </Transform> 	
+    <!--Visualization> 
+ 		    <File type="Inventor">iv/lleg1_inv.iv</File>
+ 		    <!- -File type="Inventor">iv_primitives/cyl1.wrl</File- ->
+ 		</Visualization-->
+		<CollisionModel>
+            <!--File type="Inventor">iv_reduced/colmodel_lleg1.wrl</File-->
+            <File type="Inventor">iv_primitives/cyl1.wrl</File>
+        </CollisionModel> 
+        <Physics>
+ 		    <Mass value="1.7644710e-03" unitsWeight="ton"/>
+ 		    <!--CoM unitsLength="mm" x="-6.6044785e-01" y="-8.4121292e-01" z="-3.5019288e+00"/>
+ 		    <InertiaMatrix unitsWeight="ton" unitsLength="mm">
+ 		        <row1 c1="2.6765830e+00" c2="2.0193744e-01" c3="-1.5282050e-01"/>
+ 		        <row2 c1="2.0193744e-01" c2="2.5774285e+00" c3="-1.4255054e-01"/>
+ 		        <row3 c1="-1.5282050e-01" c2="-1.4255054e-01" c3="2.1538452e+00"/>
+ 		    </InertiaMatrix--> 
+ 		    <IgnoreCollision name="LeftLeg_BodyHip2"/>
+ 		    <IgnoreCollision name="LeftLeg_BodyHip3"/>
+		</Physics>
+		<Child name="LeftLeg_Joint1tmp"/>
+	</RobotNode>
+
+
+	<RobotNode name="LeftLeg_Joint1tmp">
+    <Transform>
+      <DH theta="0" alpha="-90" a="0" d="0" units="degree"/>
+    </Transform>
+    <!--Joint type="fixed"> 
+	        <!- -DH theta="130.67" alpha="90" a="0" d="217.382" unitsAngle="degree"/ ->
+	        <DH alpha="-90" a="0" unitsAngle="degree"/>
+	        <Limits lo="-45" hi="50" unitsAngle="degree"/>
+	        <MaxVelocity value="180" unitsAngle="degree"/>
+	        <MaxAcceleration value="180" unitsAngle="degree"/>
+	        <MaxTorque value="100"/>
+	    </Joint--> 
+	    <Child name="LeftLeg_Joint1"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_Joint1">
+    <Transform>
+      <DH theta="130.67" alpha="0" a="0" d="0" units="degree"/>
+    </Transform>
+    <Joint type="revolute">
+        <axis x="0" y="0" z="1"/>
+	        <!--DH theta="130.67" alpha="90" a="0" d="217.382" unitsAngle="degree"/-->
+      <!--DH theta="130.67" d="217.382" unitsAngle="degree"/-->
+	        <Limits lo="-45" hi="50" unitsAngle="degree"/>
+	        <MaxVelocity value="180" unitsAngle="degree"/>
+	        <MaxAcceleration value="180" unitsAngle="degree"/>
+	        <MaxTorque value="100"/>
+	    </Joint> 
+	    <Child name="LeftLeg_BodyHip0"/>
+	</RobotNode>
+	
+	<RobotNode name="LeftLeg_BodyHip0">
+    <Transform>
+      <DH theta="0" alpha="0" a="0" d="217.382" units="degree"/>
+    </Transform>
+    <!-- virtual body    -->
+		<!--Visualization> 
+ 		    <File type="Inventor">iv_primitives/cyl1.wrl</File>
+ 		</Visualization-->
+    <!--Joint type="fixed">
+ 		    <DH alpha="180" a="0" unitsAngle="degree"/>
+ 		</Joint-->
+ 		<Child name="LeftLeg_Basea"/>
+ 	</RobotNode>
+
+
+    <RobotNode name="LeftLeg_Basea">
+      <Transform>
+        <DH theta="0" alpha="180" a="0" d="0" units="degree"/>
+      </Transform>
+      <!--Joint type="fixed">
+ 		    <! --DH theta="-90" alpha="-144.74" a="0" d="0" unitsAngle="degree"/-- >
+ 		    <DH alpha="144.74" a="0" unitsAngle="degree"/>
+ 		    <Limits lo="-180" hi="180" unitsAngle="degree"/> 
+ 		    <MaxVelocity value="180" unitsAngle="degree"/>
+ 		    <MaxAcceleration value="180" unitsAngle="degree"/>
+ 		    <MaxTorque value="100"/> 
+ 		</Joint-->
+ 		<Child name="LeftLeg_Baseb"/>
+    </RobotNode>
+
+    <RobotNode name="LeftLeg_Baseb">
+      <Transform>
+        <DH theta="0" alpha="144.74" a="0" d="0" units="degree"/>
+        <DH theta="90" alpha="0" a="0" d="0" units="degree"/>
+      </Transform>
+      <!--Joint type="fixed">
+ 		    <!- -DH theta="-90" alpha="-144.74" a="0" d="0" unitsAngle="degree"/- ->
+ 		    <DH theta="90" d="0" unitsAngle="degree"/>
+ 		    <Limits lo="-180" hi="180" unitsAngle="degree"/> 
+ 		    <MaxVelocity value="180" unitsAngle="degree"/>
+ 		    <MaxAcceleration value="180" unitsAngle="degree"/>
+ 		    <MaxTorque value="100"/> 
+ 		</Joint-->
+ 		<Child name="LeftLeg_Base"/>
+    </RobotNode>
+
+
+    <RobotNode name="LeftLeg_Base">
+
+      <!--Visualization>
+			<CoordinateAxis type="Inventor" enable="true"/>
+		</Visualization-->
+        <Child name="TorsoRest"/>
+    </RobotNode>
+    
+    <RobotNode name="TorsoRest">
+      <ChildFromRobot>
+		    <File>ArmarIV-TorsoColModel.xml</File>
+		</ChildFromRobot>
+	</RobotNode>
+	
+    <!--*************************************** RobotNodeSets/KinematicChains *****************************************-->      
+
+
+	<RobotNodeSet name="LeftLeg" tcp="LeftLeg_TCP" kinematicRoot="LeftLeg_TCP">
+        <Node name="LeftLeg_Joint1"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint6"/>
+        <!--Node name="LeftLeg_Joint7"/-->
+    </RobotNodeSet>      
+	
+	<RobotNodeSet name="Left2RightLeg" tcp="RightLeg_TCP" kinematicRoot="LeftLeg_TCP">
+        <Node name="LeftLeg_Joint6"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint1"/>
+        <Node name="RightLeg_Joint1"/>
+        <Node name="RightLeg_Joint2"/>
+        <Node name="RightLeg_Joint3"/>
+        <Node name="RightLeg_Joint4"/>
+        <Node name="RightLeg_Joint5"/>
+        <Node name="RightLeg_Joint6"/>
+    </RobotNodeSet>      
+	
+	<RobotNodeSet name="LeftLeg2LeftTCP" tcp="LeftTCP" kinematicRoot="LeftLeg_TCP">
+        <Node name="LeftLeg_Joint6"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint1"/>
+        <Node name="Torso_Joint1"/>
+        <Node name="Torso_Joint2"/>
+        <Node name="LeftArm_Joint1"/>
+        <Node name="LeftArm_Joint2"/>
+        <Node name="LeftArm_Joint3"/>
+        <Node name="LeftArm_Joint4"/>
+        <Node name="LeftArm_Joint5"/>
+        <Node name="LeftArm_Joint6"/>
+        <Node name="LeftArm_Joint7"/>
+        <Node name="LeftArm_Joint8"/>
+    </RobotNodeSet>      
+	
+	<RobotNodeSet name="ColModelLeftLeg" kinematicRoot="LeftLeg_TCP">
+        <Node name="LeftLeg_BodyHip3"/>
+        <Node name="LeftLeg_BodyKnee"/>
+        <Node name="LeftLeg_BodyAnkle2"/>
+    </RobotNodeSet>
+
+    <RobotNodeSet name="TorsoLeftArm" tcp="LeftTCP" kinematicRoot="LeftLeg_TCP">
+        <Node name="Torso_Joint1"/>
+        <Node name="Torso_Joint2"/>
+        <Node name="LeftArm_Joint1"/>
+        <Node name="LeftArm_Joint2"/>
+        <Node name="LeftArm_Joint3"/>
+        <Node name="LeftArm_Joint4"/>
+        <Node name="LeftArm_Joint5"/>
+        <Node name="LeftArm_Joint6"/>
+        <Node name="LeftArm_Joint7"/>
+        <Node name="LeftArm_Joint8"/>
+    </RobotNodeSet>
+
+	<RobotNodeSet name="TorsoRightArm" tcp="RightTCP" kinematicRoot="Torso">
+		<Node name="Torso_Joint1"/>
+		<Node name="Torso_Joint2"/>
+		<Node name="RightArm_Joint1"/>
+		<Node name="RightArm_Joint2"/>
+		<Node name="RightArm_Joint3"/>
+		<Node name="RightArm_Joint4"/>
+		<Node name="RightArm_Joint5"/>
+		<Node name="RightArm_Joint6"/>
+		<Node name="RightArm_Joint7"/>
+		<Node name="RightArm_Joint8"/>
+	</RobotNodeSet>
+
+
+	<RobotNodeSet name="TorsoBothArms" kinematicRoot="Torso">
+		<Node name="Torso_Joint1"/>
+		<Node name="Torso_Joint2"/>
+		<Node name="LeftArm_Joint1"/>
+		<Node name="LeftArm_Joint2"/>
+		<Node name="LeftArm_Joint3"/>
+		<Node name="LeftArm_Joint4"/>
+		<Node name="LeftArm_Joint5"/>
+		<Node name="LeftArm_Joint6"/>
+		<Node name="LeftArm_Joint7"/>
+		<Node name="LeftArm_Joint8"/>
+		<Node name="RightArm_Joint1"/>
+		<Node name="RightArm_Joint2"/>
+		<Node name="RightArm_Joint3"/>
+		<Node name="RightArm_Joint4"/>
+		<Node name="RightArm_Joint5"/>
+		<Node name="RightArm_Joint6"/>
+		<Node name="RightArm_Joint7"/>
+		<Node name="RightArm_Joint8"/>
+	</RobotNodeSet>
+
+	<RobotNodeSet name="ColModelHeadTorsoLegs" kinematicRoot="Root">
+        <Node name="Torso_Body1"/>
+        <Node name="Torso_Body2a"/>
+        <Node name="Torso_Body2b"/>
+        <Node name="Head_Body"/>
+        <Node name="Waist"/>
+        <Node name="LeftLeg_BodyHip3"/>
+        <Node name="LeftLeg_BodyKnee"/>
+        <Node name="LeftLeg_BodyAnkle2"/>
+        <Node name="RightLeg_BodyHip3"/>
+        <Node name="RightLeg_BodyKnee"/>
+        <Node name="RightLeg_BodyAnkle2"/>
+    </RobotNodeSet>
+
+	<RobotNodeSet name="ColModelTorsoBothArms" kinematicRoot="Root">
+		<Node name="Torso_Body1"/>
+		<Node name="Torso_Body2a"/>
+		<Node name="Torso_Body2b"/>
+		<Node name="Waist"/>
+		<Node name="LeftArm_Body1"/>
+		<Node name="LeftArm_Body2"/>
+		<Node name="LeftArm_Body3"/>
+		<Node name="LeftArm_Body4"/>
+		<Node name="LeftArm_Body5"/>
+		<Node name="LeftArm_Body6"/>
+		<Node name="LeftArm_Body7"/>
+		<Node name="Left Hand"/>
+		<Node name="RightArm_Body1"/>
+		<Node name="RightArm_Body2"/>
+		<Node name="RightArm_Body3"/>
+		<Node name="RightArm_Body4"/>
+		<Node name="RightArm_Body5"/>
+		<Node name="RightArm_Body6"/>
+		<Node name="RightArm_Body7"/>
+		<Node name="Right Hand"/>
+	</RobotNodeSet>
+
+	<RobotNodeSet name="ColModelAll" kinematicRoot="Root">
+		<Node name="Torso_Body1"/>
+		<Node name="Torso_Body2a"/>
+		<Node name="Torso_Body2b"/>
+		<Node name="Waist"/>
+		<Node name="LeftArm_Body1"/>
+		<Node name="LeftArm_Body2"/>
+		<Node name="LeftArm_Body3"/>
+		<Node name="LeftArm_Body4"/>
+		<Node name="LeftArm_Body5"/>
+		<Node name="LeftArm_Body6"/>
+		<Node name="LeftArm_Body7"/>
+		<Node name="Left Hand"/>
+		<Node name="RightArm_Body1"/>
+		<Node name="RightArm_Body2"/>
+		<Node name="RightArm_Body3"/>
+		<Node name="RightArm_Body4"/>
+		<Node name="RightArm_Body5"/>
+		<Node name="RightArm_Body6"/>
+		<Node name="RightArm_Body7"/>
+		<Node name="Right Hand"/>
+		<Node name="LeftLeg_BodyAnkle2"/>
+		<Node name="LeftLeg_BodyAnkle1"/>
+		<Node name="LeftLeg_BodyKnee"/>
+		<Node name="LeftLeg_BodyHip3"/>
+		<Node name="LeftLeg_BodyHip2"/>
+		<Node name="LeftLeg_BodyHip1"/>
+		<Node name="RightLeg_BodyAnkle2"/>
+		<Node name="RightLeg_BodyAnkle1"/>
+		<Node name="RightLeg_BodyKnee"/>
+		<Node name="RightLeg_BodyHip3"/>
+		<Node name="RightLeg_BodyHip2"/>
+		<Node name="RightLeg_BodyHip1"/>
+	</RobotNodeSet>
+
+	<RobotNodeSet name="BothFeet" kinematicRoot="LeftLeg_TCP">
+        <Node name="LeftLeg_BodyAnkle2"/>
+        <Node name="RightLeg_BodyAnkle2"/>
+    </RobotNodeSet>
+
+	 <RobotNodeSet name="Robot" kinematicRoot="Root">
+        <Node name="LeftLeg_Joint1"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint6"/>
+        <!--Node name="LeftLeg_Joint7"/-->
+        <Node name="RightLeg_Joint1"/>
+        <Node name="RightLeg_Joint2"/>
+        <Node name="RightLeg_Joint3"/>
+        <Node name="RightLeg_Joint4"/>
+        <Node name="RightLeg_Joint5"/>
+        <Node name="RightLeg_Joint6"/>
+        <!--Node name="RightLeg_Joint7"/-->
+        <Node name="Torso_Joint1"/>
+        <Node name="Torso_Joint2"/>
+        <Node name="HeadNeck_Joint1"/>
+        <Node name="HeadNeck_Joint2"/>
+        <Node name="HeadNeck_Joint3"/>
+        <Node name="HeadNeck_Joint4"/>
+        <Node name="HeadNeck_Joint5"/>
+        <Node name="HeadEyeLeft_Joint1"/>
+        <Node name="HeadEyeLeft_Joint2"/>
+        <Node name="HeadEyeRight_Joint1"/>
+        <Node name="HeadEyeRight_Joint2"/>
+        <Node name="LeftArm_Joint1"/>
+        <Node name="LeftArm_Joint2"/>
+        <Node name="LeftArm_Joint3"/>
+        <Node name="LeftArm_Joint4"/>
+        <Node name="LeftArm_Joint5"/>
+        <Node name="LeftArm_Joint6"/>
+        <Node name="LeftArm_Joint7"/>
+        <Node name="LeftArm_Joint8"/>
+        <Node name="RightArm_Joint1"/>
+        <Node name="RightArm_Joint2"/>
+        <Node name="RightArm_Joint3"/>
+        <Node name="RightArm_Joint4"/>
+        <Node name="RightArm_Joint5"/>
+        <Node name="RightArm_Joint6"/>
+        <Node name="RightArm_Joint7"/>
+        <Node name="RightArm_Joint8"/>
+    </RobotNodeSet>   
+
+</Robot>

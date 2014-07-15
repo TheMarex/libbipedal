@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Robot Type="ArmarIV_RightArm" RootNode="RightArm_Base">
+    
+    <RobotNode name="RightArm_Base">
+		<Child name="RightArm_Joint1"/>
+	</RobotNode> 
+	
+	<RobotNode name="RightArm_Joint1">
+		<Joint type="revolute">
+			<!-- <DH theta="0" alpha="75" a="0" d="0" unitsAngle="degree"/> -->
+			<Limits lo="-10" hi="20" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 
+		</Joint>
+		<Child name="RightArm_Body1"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body1">
+		<Transform>
+			<DH alpha="75" a="0" d="0" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm1.iv</File>
+		</Visualization> 
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm1.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="1.1417720e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="1.9622172e+00" y="-1.0902261e+02" z="1.6426767e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.5971685e+00" c2="-1.0385480e-01" c3="8.6146717e-02"/>
+				<row2 c1="-1.0385480e-01" c2="2.0928865e+00" c3="4.0389348e-01"/>
+				<row3 c1="8.6146717e-02" c2="4.0389348e-01" c3="1.7093957e+00"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="RightArm_Body3"/>
+		</Physics> 
+		<Child name="RightArm_Joint2"/>	   
+	</RobotNode>   
+	
+	<RobotNode name="RightArm_Joint2">
+		<Transform>
+			<DH theta="90" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="revolute">
+			<!-- <DH theta="90" alpha="90" a="0" d="207.055" unitsAngle="degree"/> -->
+			<Limits lo="-60" hi="160" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body2"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body2">
+		<Transform>
+			<DH alpha="90" a="0" d="207.055" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm2.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm2.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="8.2183368e-04" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-3.7191278e-01" y="-3.5483626e-01" z="1.9510454e+02"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="6.0816461e-01" c2="-3.1223637e-03" c3="-2.0483806e-03"/>
+				<row2 c1="-3.1223637e-03" c2="7.3713544e-01" c3="-4.4839586e-05"/>
+				<row3 c1="-2.0483806e-03" c2="-4.4839586e-05" c3="4.4759768e-01"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightArm_Joint3"/>	   
+	</RobotNode>       
+	
+	<RobotNode name="RightArm_Joint3">
+		<Transform>
+			<DH theta="-75" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="revolute">
+			<!-- <DH theta="-75" alpha="90" a="0" d="-4.82776" unitsAngle="degree"/> -->
+			<Limits lo="-115" hi="20" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body3"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body3">
+		<Transform>
+			<DH alpha="90" a="0" d="-4.82776" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm3.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm3.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="8.8173922e-04" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-1.2638578e-02" y="1.4244337e+00" z="7.8873193e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="7.1440264e-01" c2="2.4201776e-03" c3="9.7922329e-04"/>
+				<row2 c1="2.4201776e-03" c2="6.1331859e-01" c3="-6.6076568e-02"/>
+				<row3 c1="9.7922329e-04" c2="-6.6076568e-02" c3="5.1107012e-01"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightArm_Joint4"/>	   
+	</RobotNode>       
+	
+	<RobotNode name="RightArm_Joint4">
+		<Transform>
+			<DH theta="90" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="revolute">
+			<!-- <DH theta="90" alpha="90" a="14.8278" d="300" unitsAngle="degree"/> -->
+			<Limits lo="-35" hi="35" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body4"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body4">
+		<Transform>
+			<DH alpha="90" a="14.8278" d="300" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm4.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm4.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="9.0320270e-04" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-3.1475437e+00" y="6.2681072e+00" z="2.0453238e+02"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="3.3078782e+00" c2="2.2128745e-02" c3="2.4234665e-01"/>
+				<row2 c1="2.2128745e-02" c2="3.3500571e+00" c3="-1.1954440e-01"/>
+				<row3 c1="2.4234665e-01" c2="-1.1954440e-01" c3="5.4867944e-01"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightArm_Joint5"/>
+	</RobotNode>           
+	
+	<RobotNode name="RightArm_Joint5">
+		<Joint type="revolute">
+			<!-- <DH theta="0" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
+			<Limits lo="-115" hi="5" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body5"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body5">
+		<Transform>
+			<DH alpha="-90" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm5.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm5.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="9.6686654e-04" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="2.1835723e+01" y="2.6180199e+01" z="3.9424593e-01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.0104098e+00" c2="-4.8897339e-01" c3="2.2996500e-02"/>
+				<row2 c1="-4.8897339e-01" c2="8.2787326e-01" c3="2.7300893e-02"/>
+				<row3 c1="2.2996500e-02" c2="2.7300893e-02" c3="1.4052471e+00"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightArm_Joint6"/>
+	</RobotNode>     
+	
+	<RobotNode name="RightArm_Joint6">
+		<Transform>
+			<DH theta="-90" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="revolute">
+			<!-- <DH theta="-90" alpha="90" a="0" d="250" unitsAngle="degree"/> -->
+            <Limits lo="0" hi="180" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body6"/>
+	</RobotNode>      
+	
+	<RobotNode name="RightArm_Body6">
+		<Transform>
+			<DH alpha="90" a="0" d="250" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm6.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm6.wrl</File>
+        </CollisionModel> 
+		<Physics> 
+			<Mass value="1.0304478e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="1.5851310e+00" y="5.6077975e-01" z="1.4640985e+02"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.6851085e+00" c2="-2.2009849e-02" c3="6.7165329e-03"/>
+				<row2 c1="-2.2009849e-02" c2="1.0889275e+00" c3="-1.9434700e-02"/>
+				<row3 c1="6.7165329e-03" c2="-1.9434700e-02" c3="9.0027124e-01"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="Right Hand"/>
+		</Physics> 
+		<Child name="RightArm_Joint7"/>
+	</RobotNode>       
+	
+	<RobotNode name="RightArm_Joint7">
+		<Transform>
+			<DH theta="-90" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="revolute">
+			<!-- <DH theta="-90" alpha="90" a="0" d="0" unitsAngle="degree"/> -->
+			<Limits lo="-35" hi="35" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="RightArm_Body7"/>
+	</RobotNode>
+	
+	<RobotNode name="RightArm_Body7">
+		<Transform>
+			<DH alpha="0" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/rarm7.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rarm7.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="9.5567987e-05" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-1.7317863e-04" y="-2.0157505e+01" z="3.9343093e-04"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="3.6115751e-02" c2="3.2145228e-07" c3="5.5221108e-05"/>
+				<row2 c1="3.2145228e-07" c2="8.7907233e-02" c3="0.0000000e+00"/>
+				<row3 c1="5.5221108e-05" c2="0.0000000e+00" c3="8.1407985e-02"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightArm_Joint8"/>
+	</RobotNode>        
+	
+	<RobotNode name="RightArm_Joint8">
+		<Joint type="revolute">
+			<!-- <DH theta="0" alpha="0" a="0" d="0" unitsAngle="degree"/> -->
+			<Limits lo="-90" hi="90" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 
+		</Joint>
+		<Child name="Right Hand Start"/>
+	</RobotNode>    
+	
+	<RobotNode name="Right Hand Start">
+		<ChildFromRobot>
+		    <File>ArmarIV-RightHand_dummy.xml</File>
+		</ChildFromRobot>
+		<!--Visualization>
+			<File type="Inventor">iv/rhand.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rhand.wrl</File>
+        </CollisionModel> 
+		<Physics>
+			<Mass value="5.2821320e-04" unitsWeight="ton"/>
+			<CoM unitsLength="mm" x="-4.4195316e+01" y="8.3941483e-01" z="9.2404609e-01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="3.3986460e-01" c2="3.3999053e-02" c3="5.3637317e-02"/>
+				<row2 c1="3.3999053e-02" c2="1.3408875e+00" c3="7.7258884e-03"/>
+				<row3 c1="5.3637317e-02" c2="7.7258884e-03" c3="1.0895569e+00"/>
+			</InertiaMatrix> 
+		</Physics> 
+		<Child name="RightTCP"/-->
+	</RobotNode>
+
+	
+	 <RobotNodeSet name="RightArm" tcp="RightTCP" kinematicRoot="RightArm_Base">
+        <Node name="RightArm_Joint1"/>
+        <Node name="RightArm_Joint2"/>
+        <Node name="RightArm_Joint3"/>
+        <Node name="RightArm_Joint4"/>
+        <Node name="RightArm_Joint5"/>
+        <Node name="RightArm_Joint6"/>
+        <Node name="RightArm_Joint7"/>
+        <Node name="RightArm_Joint8"/>
+    </RobotNodeSet>  
+
+	 <RobotNodeSet name="RightArmColModel" tcp="RightTCP" kinematicRoot="RightArm_Base">
+        <!--Node name="RightArm_Body1"/-->
+        <!--Node name="RightArm_Body2"/-->
+        <Node name="RightArm_Body3"/>
+        <Node name="RightArm_Body4"/>
+        <Node name="RightArm_Body5"/>
+        <Node name="RightArm_Body6"/>
+        <Node name="RightArm_Body7"/>
+        <Node name="Right Hand"/>
+    </RobotNodeSet>  
+     
+</Robot>

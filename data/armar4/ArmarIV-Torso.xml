@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Robot Type="ArmarIV-Torso" RootNode="Waist">
+
+
+	<RobotNode name="Waist">
+		<Visualization>
+			<File type="Inventor">iv/waist.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_waist.wrl</File>
+        </CollisionModel>     
+		<Physics> 
+			<Mass value="4.3314905e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x=" -1.3672074e-02 " y="3.4954127e+00" z="-8.8474944e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="7.7686923e+00" c2="-4.0493717e-02" c3="7.6157406e-03"/>
+				<row2 c1="-4.0493717e-02" c2="1.9706462e+01" c3="-1.8991942e-02"/>
+				<row3 c1="7.6157406e-03" c2="-1.8991942e-02" c3="2.2365945e+01"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<!--Child name="LeftLeg"/-->
+		<Child name="RightLeg"/>
+		<Child name="Torso"/>
+	</RobotNode>
+
+
+    <!--*************************************** LEFT LEG ****************************************-->   
+    <!--RobotNode name="LeftLeg">
+        <ChildFromRobot>
+		    <File>ArmarIV-LeftLeg.xml</File>
+		</ChildFromRobot>
+	</RobotNode-->
+
+
+    <!--*************************************** RIGHT LEG ****************************************-->   
+    <RobotNode name="RightLeg">
+        <ChildFromRobot>
+		    <File>ArmarIV-RightLeg.xml</File>
+		</ChildFromRobot>
+	</RobotNode>
+
+
+    <!--*************************************** Torso *****************************************-->
+	<RobotNode name="Torso">
+		<Transform>
+			<DH theta="-90" unitsAngle="degree"/>
+		</Transform>
+		<Joint type="fixed">
+			<!-- <DH theta="-90" alpha="-0" a="0" d="25.1693" unitsAngle="degree"/> -->
+			<Limits lo="-170" hi="170" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="Torso_Body0"/>
+	</RobotNode>
+
+	<RobotNode name="Torso_Body0">
+		<Transform>
+			<DH alpha="-0" a="0" d="25.1693" unitsAngle="degree"/>
+		</Transform>
+		<Child name="Torso_Joint1"/>
+	</RobotNode>   
+
+	<RobotNode name="Torso_Joint1">
+		<Joint type="revolute">
+			<!-- <DH theta="0" alpha="-90" a="0" d="27" unitsAngle="degree"/> -->
+			<Limits lo="-70" hi="70" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="Torso_Body1"/>
+	</RobotNode>
+
+	<RobotNode name="Torso_Body1">
+		<Transform>
+			<DH alpha="-90" a="0" d="27" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/torso1.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_torso1.wrl</File>
+        </CollisionModel>     
+		<Physics>
+			<Mass value="2.4981647e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="2.7904174e+00" y="1.7370833e-01" z="-2.9118167e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="4.9247507e+00" c2="-1.2882017e-03" c3="-2.7165710e-01"/>
+				<row2 c1="-1.2882017e-03" c2="3.4783125e+00" c3="-8.7119344e-02"/>
+				<row3 c1="-2.7165710e-01" c2="-8.7119344e-02" c3="5.0869916e+00"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="Torso_Body2a"/>
+			<IgnoreCollision name="Torso_Body2b"/>
+		</Physics> 
+		<Child name="Torso_Joint2"/>
+	</RobotNode>   
+
+	<RobotNode name="Torso_Joint2">
+		<Joint type="revolute">
+			<!-- <DH theta="0" alpha="90" a="0" d="0" unitsAngle="degree"/> -->
+			<Limits lo="-10" hi="60" unitsAngle="degree"/>
+			<MaxVelocity value="180" unitsAngle="degree"/>
+			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxTorque value="100"/> 			
+		</Joint>
+		<Child name="Torso_Body2a"/>
+	</RobotNode>
+	
+	<RobotNode name="Torso_Body2a">
+		<Transform>
+			<DH alpha="90" a="0" d="0" unitsAngle="degree"/>
+		</Transform>
+		<Visualization>
+			<File type="Inventor">iv/torso2_part1.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_torso2_part1.wrl</File>
+        </CollisionModel>     
+		<Physics>
+			<Mass value="22.0666627e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-1.1231785e-02" y="-1.6664452e+00" z="-7.7602033e+00"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="2.0378480e+01" c2="1.7518707e-03" c3="6.3812289e-03"/>
+				<row2 c1="1.7518707e-03" c2="2.0277348e+01" c3="-3.8787286e-02"/>
+				<row3 c1="6.3812289e-03" c2="-3.8787286e-02" c3="3.0210812e+00"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="Torso_Body2b"/>
+		</Physics> 
+		<Child name="Torso_Body2b"/>
+	</RobotNode>     
+
+	<RobotNode name="Torso_Body2b">
+		<Visualization>
+			<File type="Inventor">iv/torso2_part2.iv</File>
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_torso2_part2.wrl</File>
+        </CollisionModel>     
+		<Physics>
+			<Mass value="1.3279916e-03" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="1.8603081e+01" y="-7.4469969e-01" z="1.3867719e+02"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.7334444e+02" c2="-3.4567526e+00" c3="-5.9568711e+00"/>
+				<row2 c1="-3.4567526e+00" c2="1.3650435e+02" c3="-4.4247284e+00"/>
+				<row3 c1="-5.9568711e+00" c2="-4.4247284e+00" c3="1.3985645e+02"/>
+			</InertiaMatrix--> 
+			<IgnoreCollision name="HeadNeck_Body2"/>
+		</Physics> 
+		<Child name="Torso_Body2N"/>
+		<Child name="Torso_Body2R"/>
+		<Child name="Torso_Body2L"/>
+	</RobotNode>     
+	
+	<RobotNode name="Torso_Body2R">
+		<!--Physics>
+			<Mass value="8.0297445e-04" unitsWeight="ton"/>
+			<CoM unitsLength="mm" x="4.2725031e+01" y="-1.1664691e+02" z="-7.0962027e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="9.9521067e-01" c2="1.5550724e-02" c3="1.9348292e-02"/>
+				<row2 c1="1.5550724e-02" c2="9.4936743e-01" c3="-6.2325581e-02"/>
+				<row3 c1="1.9348292e-02" c2="-6.2325581e-02" c3="3.1799472e-01"/>
+			</InertiaMatrix> 
+		</Physics--> 
+	</RobotNode>    
+	
+	<RobotNode name="Torso_Body2L">
+		<!--Physics>
+			<Mass value="8.0297445e-04" unitsWeight="ton"/>
+			<CoM unitsLength="mm" x="4.2725031e+01" y="1.1664691e+02" z="-7.0962027e+01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="9.9521067e-01" c2="-1.5550724e-02" c3="1.9348292e-02"/>
+				<row2 c1="-1.5550724e-02" c2="9.4936743e-01" c3="6.2325581e-02"/>
+				<row3 c1="1.9348292e-02" c2="6.2325581e-02" c3="3.1799472e-01"/>
+			</InertiaMatrix> 
+		</Physics--> 
+	</RobotNode>      
+
+	<RobotNode name="Torso_Body2N">
+		<!--Physics>
+			<Mass value="1.7240153e-04" unitsWeight="ton"/>
+			<CoM unitsLength="mm" x="-6.0667271e+00" y="-3.7851480e+01" z="3.0193559e+02"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="1.9021553e-01" c2="1.2605651e-03" c3="-1.4945267e-02"/>
+				<row2 c1="1.2605651e-03" c2="7.3595989e-02" c3="1.5449774e-02"/>
+				<row3 c1="-1.4945267e-02" c2="1.5449774e-02" c3="1.4617232e-01"/>
+			</InertiaMatrix> 
+		</Physics--> 
+		<Child name="Head"/>
+		<Child name="TorsoCenter"/>
+	</RobotNode>  
+	  
+	<RobotNode name="TorsoCenter">
+		<Joint type="fixed">
+			<!-- <DH theta="0" alpha="0" a="0" d="250.21" unitsAngle="degree"/> -->
+		</Joint>
+		<Child name="LeftArm"/>
+		<Child name="RightArm"/>
+	</RobotNode>   
+
+
+    <!--*************************************** Head *****************************************-->
+    <RobotNode name="Head">
+        <ChildFromRobot>
+		    <File>ArmarIV-Head.xml</File>
+		</ChildFromRobot>
+	</RobotNode>
+	
+	
+    <!--*************************************** Left Arm *****************************************-->      
+    <RobotNode name="LeftArm">
+    	<Transform>
+			<DH alpha="0" a="0" d="250.21" unitsAngle="degree"/>
+		</Transform>
+        <ChildFromRobot>
+		    <File importEEF="true">ArmarIV-LeftArm.xml</File>
+		</ChildFromRobot>
+	</RobotNode>
+	
+	
+    <!--*************************************** Right Arm *****************************************-->      
+    <RobotNode name="RightArm">
+    	<Transform>
+			<DH alpha="0" a="0" d="250.21" unitsAngle="degree"/>
+		</Transform>
+        <ChildFromRobot>
+		    <File importEEF="true">ArmarIV-RightArm.xml</File>
+		</ChildFromRobot>
+	</RobotNode>
+
+
+</Robot>

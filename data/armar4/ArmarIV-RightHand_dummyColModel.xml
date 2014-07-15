@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<Robot Type="ArmarIV_RightHand" RootNode="RightHand_Base">
+    
+  <RobotNode name="RightHand_Base">
+		<Child name="Right Hand"/>
+	</RobotNode> 
+	
+	<RobotNode name="Right Hand">
+		<Visualization>
+			<File type="Inventor">iv_reduced/colmodel_rhand.wrl</File>
+			<!--File type="Inventor">iv/rhand.iv</File-->
+		</Visualization>
+		<CollisionModel>
+            <File type="Inventor">iv_reduced/colmodel_rhand.wrl</File>
+        </CollisionModel>     
+		<Physics>
+			<Mass value="5.2821320e-04" unitsWeight="ton"/>
+			<!--CoM unitsLength="mm" x="-4.4195316e+01" y="8.3941483e-01" z="-9.2404609e-01"/>
+			<InertiaMatrix unitsWeight="ton" unitsLength="mm">
+				<row1 c1="3.3986460e-01" c2="3.3999053e-02" c3="-5.3637317e-02"/>
+				<row2 c1="3.3999053e-02" c2="1.3408875e+00" c3="-7.7258884e-03"/>
+				<row3 c1="-5.3637317e-02" c2="-7.7258884e-03" c3="1.0895569e+00"/>
+			</InertiaMatrix--> 
+		</Physics> 
+		<Child name="RightTCP"/>
+	</RobotNode>
+	
+	<RobotNode name="RightTCP">
+		<Transform>
+	  	<Translation x="-60" y="20" z="0"/>
+	    <rollpitchyaw roll="-90" pitch="90" yaw="0" units="degree"/>
+    </Transform>
+	  <Visualization>
+			<CoordinateAxis type="Inventor" enable="false"/>
+		</Visualization>
+	</RobotNode>
+	
+   
+    <RobotNodeSet name="ColModelRightHand" kinematicRoot="RightHand_Base">
+        <Node name="Right Hand"/>
+    </RobotNodeSet>
+
+
+
+	<Endeffector name="Hand R" base="RightHand_Base" tcp="RightTCP" gcp="RightTCP">
+	    <Preshape name="Grasp Preshape">	        
+	    </Preshape>
+		<Static>
+			<Node name="Right Hand"/>
+		</Static>
+	</Endeffector>
+	
+</Robot>
