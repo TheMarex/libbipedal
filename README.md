@@ -1,6 +1,6 @@
 # About
 
-This library contains algorithms for bipedal walking.
+This library contains algorithms for bipedal walking implemented in C++11.
 
 - ZMP pattern generator based on ZMP Preview Control [kajita03]
 
