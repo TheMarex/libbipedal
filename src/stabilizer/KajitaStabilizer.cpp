@@ -1,5 +1,6 @@
 #include <Eigen/Dense>
 #include <VirtualRobot/MathTools.h>
+#include <VirtualRobot/Nodes/ForceTorqueSensor.h>
 #include <SimDynamics/SimDynamics.h>
 
 #include <boost/assert.hpp>
@@ -11,6 +12,8 @@
 #include "kajita/ForceDistributor.h"
 
 #include "stabilizer/KajitaStabilizer.h"
+
+#include "ik/HierarchicalReferenceIK.h"
 
 /*
  * These controller needs a trajectory with the following control features:
@@ -29,7 +32,7 @@
  */
 KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
                const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
-               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor;
+               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor,
                const std::string& motionPath,
                const std::string& goalMotionName)
 // Names specific to ARMAR 4
@@ -66,20 +69,20 @@ KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
 void KajitaStabilizer::update(float dt,
                               Kinematics::SupportPhase phase,
                               const Eigen::Vector3f& zmp,
-                              const Eigen::Matrix4f& chestPoseRef,
-                              const Eigen::Matrix4f& pelvisPoseRef,
-                              const Eigen::Matrix4f& leftFootPoseRef,
-                              const Eigen::Matrix4f& rightFootPoseRef)
+                              const Eigen::Matrix4f& chestPoseRefWorld,
+                              const Eigen::Matrix4f& pelvisPoseRefWorld,
+                              const Eigen::Matrix4f& leftFootPoseRefWorld,
+                              const Eigen::Matrix4f& rightFootPoseRefWorld)
 {
 
     Eigen::Matrix4f stepAdaptionFrame =
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
-      * computeGroundFrame(leftFootPoseRef, rightFootPoseRef, phase).inverse();
+      * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
 
-    chestPoseRef = stepAdaptionFrame * chestPoseRef;
-    pelvisPoseRef = stepAdaptionFrame * pelvisPoseRef;
-    leftFootPoseRef = stepAdaptionFrame * leftFootPoseRef;
-    rightFootPoseRef = stepAdaptionFrame * rightFootPoseRef;
+    Eigen::Matrix4f chestPoseRef = stepAdaptionFrame * chestPoseRefWorld;
+    Eigen::Matrix4f pelvisPoseRef = stepAdaptionFrame * pelvisPoseRefWorld;
+    Eigen::Matrix4f leftFootPoseRef = stepAdaptionFrame * leftFootPoseRefWorld;
+    Eigen::Matrix4f rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
 
     ForceDistributor::ForceTorque ft = forceDistributor->distributeZMP(
         leftFoot->getGlobalPose(),
@@ -120,7 +123,6 @@ void KajitaStabilizer::update(float dt,
     pelvisPose = pelvisPoseRef;
 
 
-    rootPose = robot->getRobot()->getRootNode()->getGlobalPose();
     bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, phase, resultAngles);
 
     BOOST_ASSERT(!std::isnan(resultAngles[0]));

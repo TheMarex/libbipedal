@@ -8,6 +8,7 @@
 
 namespace Kinematics
 {
+
 enum SupportPhase
 {
     SUPPORT_NONE  = 0,

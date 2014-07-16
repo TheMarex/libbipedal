@@ -26,6 +26,8 @@ class KajitaStabilizer
 {
 public:
     KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
+                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
+                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor,
                      const std::string& motionPath,
                      const std::string& goalMotionName);
 
@@ -34,7 +36,6 @@ public:
     const Eigen::Matrix4f& getLeftFootPose() { return leftFootPose; }
     const Eigen::Matrix4f& getRightFootPose() { return rightFootPose; }
     const Eigen::VectorXf& getResultAngles() { return resultAngles; }
-    const Eigen::Matrix4f& getRootPose() { return rootPose; }
 
     void update(float dt,
                 Kinematics::SupportPhase phase,
@@ -68,8 +69,8 @@ private:
     FootTorqueControllerPtr            footTorqueController;
     ChestPostureControllerPtr          chestPostureController;
     ForceDistributorPtr                forceDistributor;
-    VirtualRobot::FroceTorqueSensorPtr leftAnkleSensor;
-    VirtualRobot::FroceTorqueSensorPtr rightAnkleSensor;
+    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensor;
+    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensor;
     ReferenceIKPtr            referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;

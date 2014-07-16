@@ -42,7 +42,7 @@ void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
                                                   VirtualRobot::RobotNodeSetPtr bodyJoints,
                                                   const Eigen::MatrixXf& bodyTrajectory,
                                                   const Eigen::Matrix3Xf& trajectory,
-                                                  const std::vector<SupportPhase>& phase,
+                                                  const std::vector<Kinematics::SupportPhase>& phase,
                                       Eigen::Matrix3Xf& relativeTrajectory)
 {
     Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
