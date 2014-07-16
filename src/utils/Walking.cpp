@@ -1,6 +1,3 @@
-#ifndef __WALKING_H__
-#define __WALKING_H__
-
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/Robot.h>
 #include <VirtualRobot/MathTools.h>
@@ -63,6 +60,4 @@ namespace Walking
         return pose;
     }
 
-};
-
-#endif
+}

@@ -4,7 +4,7 @@
 #include <VirtualRobot/MathTools.h>
 #include <Eigen/Dense>
 
-#include "../../../../humanoidlocomotion/PatternGenerator/src/Utils/Kinematics.h"
+#include "utils/Kinematics.h"
 
 #include "DampeningController.h"
 

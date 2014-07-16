@@ -122,17 +122,7 @@ void KajitaStabilizer::update(float dt,
     chestPose = chestPoseRef;
     pelvisPose = pelvisPoseRef;
 
-
     bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, phase, resultAngles);
-
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
-
-//    if (success)
-//    {
-        for (unsigned i = 0; i < nodes->getSize(); i++)
-        {
-            robot->actuateNode((*nodes)[i], resultAngles(i, 0));
-        }
-//    }
 }
 

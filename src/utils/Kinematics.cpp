@@ -1,6 +1,3 @@
-#ifndef __KINEMATICS_H__
-#define __KINEMATICS_H__
-
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/Robot.h>
 #include <VirtualRobot/RobotNodeSet.h>
@@ -198,5 +195,3 @@ void computeWalkingTrajectory(const VirtualRobot::RobotPtr& robot,
 }
 
 }
-
-#endif

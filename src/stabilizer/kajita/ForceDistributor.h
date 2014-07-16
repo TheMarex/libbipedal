@@ -3,7 +3,7 @@
 
 #include <VirtualRobot/MathTools.h>
 
-#include "../../humanoidlocomotion/PatternGenerator/src/Utils/Walking.h"
+#include "utils/Walking.h"
 
 /**
  * Implements the force distributor proposed by Kajita in his 2010 paper.
