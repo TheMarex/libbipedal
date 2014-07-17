@@ -3,9 +3,6 @@
 
 #include <Eigen/Dense>
 
-namespace Kinematics {
-    enum SupportPhase;
-};
 
 /* Interface to compute IK from reference frames */
 class ReferenceIK

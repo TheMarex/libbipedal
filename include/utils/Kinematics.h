@@ -9,7 +9,7 @@
 namespace Kinematics
 {
 
-enum SupportPhase
+enum SupportPhase : unsigned short
 {
     SUPPORT_NONE  = 0,
     SUPPORT_LEFT  = 1,

@@ -3,6 +3,8 @@
 
 #include <MMM/Motion/Motion.h>
 
+#include "../../bipedal.h"
+
 class TrajectoryException : std::exception
 {
 public:

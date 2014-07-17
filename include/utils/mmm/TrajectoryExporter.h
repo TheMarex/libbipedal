@@ -6,6 +6,7 @@
 #include <MMM/Motion/Motion.h>
 
 #include "utils/Kinematics.h"
+#include "../../bipedal.h"
 
 class TrajectoryExporter
 {

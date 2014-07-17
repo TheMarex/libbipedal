@@ -30,28 +30,26 @@
  * Points:
  *  - Reference ZMP
  */
-KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
+KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
-               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor,
-               const std::string& motionPath,
-               const std::string& goalMotionName)
+               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor)
 // Names specific to ARMAR 4
-: chest(robot->getRobot()->getRobotNode("TorsoCenter"))
-, leftFoot(robot->getRobot()->getRobotNode("LeftLeg_TCP"))
-, rightFoot(robot->getRobot()->getRobotNode("RightLeg_TCP"))
-, leftAnkle(robot->getRobot()->getRobotNode("LeftLeg_BodyAnkle2"))
-, rightAnkle(robot->getRobot()->getRobotNode("RightLeg_BodyAnkle2"))
-, pelvis(robot->getRobot()->getRobotNode("Waist"))
+: chest(robot->getRobotNode("TorsoCenter"))
+, leftFoot(robot->getRobotNode("LeftLeg_TCP"))
+, rightFoot(robot->getRobotNode("RightLeg_TCP"))
+, leftAnkle(robot->getRobotNode("LeftLeg_BodyAnkle2"))
+, rightAnkle(robot->getRobotNode("RightLeg_BodyAnkle2"))
+, pelvis(robot->getRobotNode("Waist"))
 , leftAnkleSensor(leftAnkleSensor)
 , rightAnkleSensor(rightAnkleSensor)
 , chestPostureController(new ChestPostureController())
-, forceDistributor(new ForceDistributor(robot->getRobot()->getMass(),
+, forceDistributor(new ForceDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftAnkle, rightAnkle, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
-, nodes(robot->getRobot()->getRobotNodeSet("Robot"))
+, nodes(robot->getRobotNodeSet("Robot"))
 , referenceIK(boost::dynamic_pointer_cast<ReferenceIK>(
-                boost::make_shared<HierarchicalReferenceIK>(nodes, robot->getRobot(), leftFoot, rightFoot, chest, pelvis)
+                boost::make_shared<HierarchicalReferenceIK>(nodes, robot, leftFoot, rightFoot, chest, pelvis)
               ))
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
@@ -59,8 +57,8 @@ KajitaStabilizer::KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
 , rightFootPose(Eigen::Matrix4f::Identity())
 , rootPose(Eigen::Matrix4f::Identity())
 {
-    Eigen::Vector3f leftHipPos  = robot->getRobot()->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
-    Eigen::Vector3f rightHipPos = robot->getRobot()->getRobotNode("RightLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
+    Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
+    Eigen::Vector3f rightHipPos = robot->getRobotNode("RightLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
     double hipJointDistance = (leftHipPos - rightHipPos).norm();
     footForceController = FootForceControllerPtr(new FootForceController(hipJointDistance));
 

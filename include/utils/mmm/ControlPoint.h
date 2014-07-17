@@ -248,9 +248,4 @@ bool GetControlPointAcceleration(const MMM::MotionFramePtr& frame, const std::st
     return true;
 }
 
-typedef ControlPointEntry<Eigen::Vector2f>  ControlPointEntry2f;
-typedef ControlPointParser<Eigen::Vector2f> ControlPointParser2f;
-typedef ControlPointEntry<Eigen::Vector3f>  ControlPointEntry3f;
-typedef ControlPointParser<Eigen::Vector3f> ControlPointParser3f;
-
 #endif

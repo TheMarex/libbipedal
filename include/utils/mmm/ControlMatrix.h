@@ -130,7 +130,5 @@ bool GetControlMatrix(const MMM::MotionFramePtr& frame, const std::string& name,
     return true;
 }
 
-typedef ControlMatrixEntry<Eigen::Matrix4f> ControlMatrixEntry4f;
-typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
 #endif

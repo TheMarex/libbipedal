@@ -8,34 +8,31 @@
 #include <boost/shared_ptr.hpp>
 #include <string>
 
+#include "../bipedal.h"
+
 class FootForceController;
 class FootTorqueController;
 class ChestPostureController;
 class ForceDistributor;
-class ReferenceIK;
-template<typename T>
-class CSVLogger;
 
 typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
 typedef boost::shared_ptr<ChestPostureController> ChestPostureControllerPtr;
 typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
-typedef boost::shared_ptr<ReferenceIK> ReferenceIKPtr;
 
 class KajitaStabilizer
 {
 public:
-    KajitaStabilizer(SimDynamics::DynamicsRobotPtr robot,
+    KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
-                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor,
-                     const std::string& motionPath,
-                     const std::string& goalMotionName);
+                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor);
 
     const Eigen::Matrix4f& getChestPose() { return chestPose; }
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }
     const Eigen::Matrix4f& getLeftFootPose() { return leftFootPose; }
     const Eigen::Matrix4f& getRightFootPose() { return rightFootPose; }
     const Eigen::VectorXf& getResultAngles() { return resultAngles; }
+    const VirtualRobot::RobotNodeSetPtr& getNodes() { return nodes; }
 
     void update(float dt,
                 Kinematics::SupportPhase phase,
@@ -63,15 +60,13 @@ private:
     // all nodes that are used for the IK
     VirtualRobot::RobotNodeSetPtr nodes;
 
-    boost::shared_ptr<CSVLogger<double>> logger;
-
     FootForceControllerPtr             footForceController;
     FootTorqueControllerPtr            footTorqueController;
     ChestPostureControllerPtr          chestPostureController;
     ForceDistributorPtr                forceDistributor;
     VirtualRobot::ForceTorqueSensorPtr leftAnkleSensor;
     VirtualRobot::ForceTorqueSensorPtr rightAnkleSensor;
-    ReferenceIKPtr            referenceIK;
+    ReferenceIKPtr                     referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;
 
@@ -83,6 +78,5 @@ private:
     Eigen::VectorXf resultAngles;
 };
 
-typedef boost::shared_ptr<KajitaStabilizer> KajitaStabilizerPtr;
 
 #endif
