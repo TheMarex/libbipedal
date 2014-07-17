@@ -5,7 +5,7 @@
 #include <Eigen/Dense>
 #include <MMM/Motion/Motion.h>
 
-#include "utils/Kinematics.h"
+#include "../Kinematics.h"
 #include "../../bipedal.h"
 
 class TrajectoryExporter
