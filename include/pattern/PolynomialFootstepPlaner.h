@@ -3,7 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "pattern/FootstepPlaner.h"
+#include "FootstepPlaner.h"
 
 
 class PolynomialFootstepPlaner :

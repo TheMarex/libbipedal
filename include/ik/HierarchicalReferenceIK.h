@@ -10,7 +10,7 @@
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <Eigen/Dense>
 
-#include "../../../humanoidlocomotion/PatternGenerator/src/Utils/Kinematics.h"
+#include "utils/Kinematics.h"
 
 class HierarchicalReferenceIK : public ReferenceIK
 {

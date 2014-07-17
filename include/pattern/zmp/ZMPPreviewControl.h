@@ -1,7 +1,7 @@
 #ifndef _ZMP_PREVIEW_CONTROL_
 #define _ZMP_PREVIEW_CONTROL_
 
-#include "pattern/zmp/ZMPPlaner.h"
+#include "ZMPPlaner.h"
 
 class ZMPPreviewControl : public ZMPPlaner
 {

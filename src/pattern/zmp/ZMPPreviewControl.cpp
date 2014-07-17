@@ -1,7 +1,8 @@
-#include "ZMPPreviewControl.h"
+#include "pattern/zmp/ZMPPreviewControl.h"
+
 #include <math.h>
 #include <Inventor/nodes/SoSphere.h>
-#include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
+#include <VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h>
 
 #include <VirtualRobot/Robot.h>
 #include <VirtualRobot/Nodes/RobotNode.h>

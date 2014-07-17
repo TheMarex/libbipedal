@@ -1,8 +1,8 @@
-#include "PolynomialFootstepPlaner.h"
-#include <VirtualRobot/Robot.h>
+#include "pattern/PolynomialFootstepPlaner.h"
 
-#include "VirtualRobot/CollisionDetection/CollisionChecker.h"
-#include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
+#include <VirtualRobot/Robot.h>
+#include <VirtualRobot/CollisionDetection/CollisionChecker.h>
+#include <VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h>
 
 PolynomialFootstepPlaner::PolynomialFootstepPlaner()
     : FootstepPlaner()

@@ -8,6 +8,10 @@ namespace Kinematics {
     enum SupportPhase : unsigned short;
 };
 
+class PolynominalFootstepPlaner;
+class ZMPPreviewControl;
+class FootstepPlaner;
+class ZMPPlaner;
 class TrajectorPlayer;
 class TrajectorExporter;
 class ReferenceIK;
@@ -26,9 +30,13 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
-typedef boost::shared_ptr<KajitaStabilizer>  KajitaStabilizerPtr;
-typedef boost::shared_ptr<TrajectorPlayer>   TrajectorPlayerPtr;
-typedef boost::shared_ptr<TrajectorExporter> TrajectorExporterPtr;
-typedef boost::shared_ptr<ReferenceIK>       ReferenceIKPtr;
+typedef boost::shared_ptr<KajitaStabilizer>          KajitaStabilizerPtr;
+typedef boost::shared_ptr<TrajectorPlayer>           TrajectorPlayerPtr;
+typedef boost::shared_ptr<TrajectorExporter>         TrajectorExporterPtr;
+typedef boost::shared_ptr<ReferenceIK>               ReferenceIKPtr;
+typedef boost::shared_ptr<FootstepPlaner>            FootstepPlanerPtr;
+typedef boost::shared_ptr<ZMPPlaner>                 ZMPPlanerPtr;
+typedef boost::shared_ptr<PolynominalFootstepPlaner> PolynominalFootstepPlanerPtr;
+typedef boost::shared_ptr<ZMPPreviewControl>         ZMPPreviewControlPtr;
 
 #endif
