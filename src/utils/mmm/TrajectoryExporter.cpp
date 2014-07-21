@@ -42,7 +42,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
         MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
         Eigen::Matrix4f rootPose = leftFootTrajectory[i];
         frame->setRootPose(rootPose);
-        frame->setRootPos((Eigen::Vector3f) (1000 * rootPose.block(0, 3, 3, 1)));
+        frame->setRootPos(rootPose.block(0, 3, 3, 1));
         frame->joint = bodyTrajectory.col(i);
         frame->joint_vel = bodyVelocity.col(i);
         frame->timestep = timestep * i;
