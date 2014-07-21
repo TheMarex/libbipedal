@@ -19,7 +19,7 @@
 #include "utils/mmm/ControlPoint.h"
 #include "utils/mmm/ControlMatrix.h"
 #include "utils/mmm/ControlValue.h"
-#include "utils/VelocityEstimation.h"
+#include "utils/Estimation.h"
 
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
@@ -34,7 +34,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
     int size = bodyTrajectory.cols();
     int ndof = bodyTrajectory.rows();
 
-    Eigen::MatrixXf bodyVelocity = VelocityEstimation::simpleDiff(bodyTrajectory, timestep);
+    Eigen::MatrixXf bodyVelocity = Bipedal::simpleDiffVelocityEstimation(bodyTrajectory, timestep);
 
     for (int i = 0; i < size; i++)
     {
