@@ -39,6 +39,7 @@ namespace Bipedal
             }
 
             estimation = (val - lastVal) / dt;
+            lastVal = val;
         }
     };
 
