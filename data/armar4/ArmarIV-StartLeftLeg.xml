@@ -48,9 +48,11 @@
 				<row2 c1="-1.7523285e+02" c2="5.6651656e+02" c3="-3.2143720e+01"/>
 				<row3 c1="-1.0705572e+01" c2="-3.2143720e+01" c3="1.5442392e+03"/>
 			</InertiaMatrix--> 
-			<IgnoreCollision name="LeftLeg_BodyToe"/>
+			<!--IgnoreCollision name="LeftLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="LeftLeg_Joint6tmp"/>
+
+        <Sensor name="LeftLeg_AnkleSensor" type="forcetorque"/>
 	</RobotNode> 
 	
     

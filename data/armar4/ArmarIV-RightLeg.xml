@@ -241,6 +241,7 @@
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="RightLeg_BodyAnkle2"/>
+        <Sensor name="RightLeg_AnkleSensor" type="forcetorque"/>
 	</RobotNode>
 
 	<RobotNode name="RightLeg_BodyAnkle2">
@@ -261,7 +262,7 @@
 				<row2 c1="-1.7523285e+02" c2="5.6651656e+02" c3="3.2143720e+01"/>
 				<row3 c1="1.0705572e+01" c2="3.2143720e+01" c3="1.5442392e+03"/>
 			</InertiaMatrix--> 
-			<IgnoreCollision name="RightLeg_BodyToe"/>
+			<!--IgnoreCollision name="RightLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="RightLeg_Joint7"/>
 		<Child name="RightLeg_TCP_trafo"/>
