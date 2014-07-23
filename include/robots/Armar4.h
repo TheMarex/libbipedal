@@ -3,7 +3,7 @@
 
 #include "RobotConfig.h"
 
-const Bipedal::RobotConfig config = {
+const Bipedal::RobotConfig ARMAR4_CONFIG = {
 "Armar4",
 "Waist",
 "ColModelAll",
@@ -14,7 +14,9 @@ const Bipedal::RobotConfig config = {
 "LeftLeg_TCP",
 "RightLeg_TCP",
 "LeftLeg_BodyAnkle2",
-"RightLeg_BodyAnkle2"
+"RightLeg_BodyAnkle2",
+"LeftLeg_AnkleSensor",
+"RightLeg_AnkleSensor"
 };
 
 #endif

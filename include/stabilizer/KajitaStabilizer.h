@@ -10,19 +10,21 @@
 
 #include "../bipedal.h"
 
+#include "kajita/ForceDistributor.h"
+
 class FootForceController;
 class FootTorqueController;
 class ChestPostureController;
-class ForceDistributor;
 
 typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
 typedef boost::shared_ptr<ChestPostureController> ChestPostureControllerPtr;
-typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
 
 class KajitaStabilizer
 {
 public:
+
+
     KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor);
@@ -31,6 +33,12 @@ public:
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }
     const Eigen::Matrix4f& getLeftFootPose() { return leftFootPose; }
     const Eigen::Matrix4f& getRightFootPose() { return rightFootPose; }
+
+    const Eigen::Vector3f& getLeftAnkleTorque() { return ft.leftTorque;}
+    const Eigen::Vector3f& getRightAnkleTorque() { return ft.rightTorque;}
+    const Eigen::Vector3f& getLeftAnkleForce() { return ft.leftForce;}
+    const Eigen::Vector3f& getRightAnkleForce() { return ft.rightForce;}
+
     const Eigen::VectorXf& getResultAngles() { return resultAngles; }
     const VirtualRobot::RobotNodeSetPtr& getNodes() { return nodes; }
 
@@ -76,6 +84,7 @@ private:
     Eigen::Matrix4f rightFootPose;
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
+    ForceDistributor::ForceTorque ft;
 };
 
 

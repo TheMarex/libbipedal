@@ -51,8 +51,6 @@
 			<!--IgnoreCollision name="LeftLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="LeftLeg_Joint6tmp"/>
-
-        <Sensor name="LeftLeg_AnkleSensor" type="forcetorque"/>
 	</RobotNode> 
 	
     
@@ -78,6 +76,7 @@
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftLeg_BodyAnkle1"/>
+        <Sensor name="LeftLeg_AnkleSensor" type="forcetorque"/>
 	</RobotNode>
 	
 	<RobotNode name="LeftLeg_BodyAnkle1">

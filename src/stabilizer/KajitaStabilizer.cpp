@@ -9,8 +9,8 @@
 #include "kajita/ChestPostureController.h"
 #include "kajita/FootForceController.h"
 #include "kajita/FootTorqueController.h"
-#include "kajita/ForceDistributor.h"
 
+#include "stabilizer/kajita/ForceDistributor.h"
 #include "stabilizer/KajitaStabilizer.h"
 
 #include "ik/HierarchicalReferenceIK.h"
@@ -56,6 +56,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , leftFootPose(Eigen::Matrix4f::Identity())
 , rightFootPose(Eigen::Matrix4f::Identity())
 , rootPose(Eigen::Matrix4f::Identity())
+, ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 {
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
     Eigen::Vector3f rightHipPos = robot->getRobotNode("RightLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
@@ -82,7 +83,7 @@ void KajitaStabilizer::update(float dt,
     Eigen::Matrix4f leftFootPoseRef = stepAdaptionFrame * leftFootPoseRefWorld;
     Eigen::Matrix4f rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
 
-    ForceDistributor::ForceTorque ft = forceDistributor->distributeZMP(
+    ft = forceDistributor->distributeZMP(
         leftFoot->getGlobalPose(),
         rightFoot->getGlobalPose(),
         zmp,
