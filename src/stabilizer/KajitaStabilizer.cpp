@@ -78,10 +78,10 @@ void KajitaStabilizer::update(float dt,
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
       * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
 
-    Eigen::Matrix4f chestPoseRef = stepAdaptionFrame * chestPoseRefWorld;
-    Eigen::Matrix4f pelvisPoseRef = stepAdaptionFrame * pelvisPoseRefWorld;
-    Eigen::Matrix4f leftFootPoseRef = stepAdaptionFrame * leftFootPoseRefWorld;
-    Eigen::Matrix4f rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
+    chestPoseRef = stepAdaptionFrame * chestPoseRefWorld;
+    pelvisPoseRef = stepAdaptionFrame * pelvisPoseRefWorld;
+    leftFootPoseRef = stepAdaptionFrame * leftFootPoseRefWorld;
+    rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
 
     ft = forceDistributor->distributeZMP(
         leftFoot->getGlobalPose(),

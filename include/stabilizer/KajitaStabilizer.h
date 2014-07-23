@@ -29,6 +29,11 @@ public:
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor);
 
+    const Eigen::Matrix4f& getChestPoseRef() { return chestPoseRef; }
+    const Eigen::Matrix4f& getPelvisPoseRef() { return pelvisPoseRef; }
+    const Eigen::Matrix4f& getLeftFootPoseRef() { return leftFootPoseRef; }
+    const Eigen::Matrix4f& getRightFootPoseRef() { return rightFootPoseRef; }
+
     const Eigen::Matrix4f& getChestPose() { return chestPose; }
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }
     const Eigen::Matrix4f& getLeftFootPose() { return leftFootPose; }
@@ -78,10 +83,16 @@ private:
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;
 
+    Eigen::Matrix4f chestPoseRef;
+    Eigen::Matrix4f pelvisPoseRef;
+    Eigen::Matrix4f leftFootPoseRef;
+    Eigen::Matrix4f rightFootPoseRef;
+
     Eigen::Matrix4f chestPose;
     Eigen::Matrix4f pelvisPose;
     Eigen::Matrix4f leftFootPose;
     Eigen::Matrix4f rightFootPose;
+
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
     ForceDistributor::ForceTorque ft;
