@@ -31,13 +31,16 @@ void extractControlFrames(VirtualRobot::RobotPtr robot,
 /**
  * Projects pose to ground (xy plane).
  */
-inline Eigen::Matrix2f projectPoseToGround(const Eigen::Matrix4f& pose)
+inline Eigen::Matrix4f projectPoseToGround(const Eigen::Matrix4f& pose)
 {
-    Eigen::Matrix2f projected = pose.block(0, 0, 2, 2);
+    Eigen::Matrix4f projected = Eigen::Matrix4f::Identity();
+    projected.block(0, 0, 2, 2) = pose.block(0, 0, 2, 2);
     // norm x axsis
     projected.block(0, 0, 2, 1) /= projected.block(0, 0, 2, 1).norm();
     // norm y axsis
     projected.block(0, 1, 2, 1) /= projected.block(0, 1, 2, 1).norm();
+
+    projected.block(0, 3, 2, 1) = pose.block(0, 3, 2, 1);
 
     return projected;
 }
@@ -52,23 +55,23 @@ inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
         SupportPhase phase)
 {
     Eigen::Matrix4f refToWorld = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f leftFootPoseProjected  = projectPoseToGround(leftFootPose);
+    Eigen::Matrix4f rightFootPoseProjected = projectPoseToGround(rightFootPose);
 
     switch (phase)
     {
         case SUPPORT_LEFT:
-            refToWorld.block(0, 3, 2, 1) = leftFootPose.block(0, 3, 2, 1);
-            refToWorld.block(0, 0, 2, 2) = projectPoseToGround(leftFootPose);
+            refToWorld = leftFootPoseProjected;
             break;
 
         case SUPPORT_RIGHT:
-            refToWorld.block(0, 3, 2, 1) = rightFootPose.block(0, 3, 2, 1);
-            refToWorld.block(0, 0, 2, 2) = projectPoseToGround(rightFootPose);
+            refToWorld = rightFootPoseProjected;
             break;
 
         case SUPPORT_BOTH:
-            refToWorld.block(0, 3, 3, 1) = (rightFootPose.block(0, 3, 3, 1) + leftFootPose.block(0, 3, 3, 1)) / 2.0;
+            refToWorld.block(0, 3, 3, 1) = (rightFootPoseProjected.block(0, 3, 3, 1) + leftFootPoseProjected.block(0, 3, 3, 1)) / 2.0;
             Eigen::Vector3f zAxis(0, 0, 1);
-            Eigen::Vector3f xAxis = (rightFootPose.block(0, 0, 3, 1) + leftFootPose.block(0, 0, 3, 1)) / 2.0;
+            Eigen::Vector3f xAxis = (rightFootPoseProjected.block(0, 0, 3, 1) + leftFootPoseProjected.block(0, 0, 3, 1)) / 2.0;
             xAxis /= xAxis.norm();
             Eigen::Vector3f yAxis = zAxis.cross(xAxis);
             yAxis /= yAxis.norm();
