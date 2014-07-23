@@ -56,8 +56,6 @@ public:
          * If the left foot is not the support foot we have to adapt
          * the target poses, since the left foot will not keep static.
          */
-        std::cout << "Pose:" << std::endl << pelvis->getGlobalPose() << std::endl;
-
         if (phase & Kinematics::SUPPORT_RIGHT)
         {
             Eigen::Matrix4f leftSwingAdaption = leftFootTCP->getGlobalPose() * leftFootPose.inverse();
@@ -71,6 +69,10 @@ public:
             chestIK->setGoal(chestPose,  chest, VirtualRobot::IKSolver::Orientation);
             pelvisIK->setGoal(pelvisPose, pelvis);
         }
+
+        // before we start the IK backup the current angles, since we will modify the model
+        Eigen::VectorXf origAngles;
+        nodes->getJointValues(origAngles);
 
 
         VirtualRobot::HierarchicalIK hIK(nodes);
@@ -155,6 +157,9 @@ public:
                 //correct = false;
             }
         }
+
+        // restore joint angles to not break the simox model
+        nodes->setJointValues(origAngles);
 
         return correct;
     }
