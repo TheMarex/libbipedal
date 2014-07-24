@@ -10,8 +10,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="0" alpha="-75" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-20" hi="10" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftArm_Body1"/>
@@ -47,8 +47,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="90" alpha="90" a="0" d="207.055" unitsAngle="degree"/> -->
 			<Limits lo="-160" hi="60" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body2"/>
@@ -83,8 +83,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="75" alpha="90" a="0" d="-4.82776" unitsAngle="degree"/> -->
 			<Limits lo="-20" hi="115" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body3"/>
@@ -119,8 +119,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="90" alpha="90" a="-14.8278" d="300" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body4"/>
@@ -155,8 +155,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="0" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
             <Limits lo="-115" hi="5" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 						
 			</Joint>
 		<Child name="LeftArm_Body5"/>
@@ -191,8 +191,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="-90" alpha="90" a="0" d="250" unitsAngle="degree"/> -->
             <Limits lo="-180" hi="0" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftArm_Body6"/>
@@ -228,8 +228,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="-90" alpha="90" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body7"/>
@@ -261,8 +261,8 @@
 		<Joint type="revolute">
 			<!-- <DH theta="0" alpha="0" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-90" hi="90" unitsAngle="degree"/>
-			<MaxVelocity value="180" unitsAngle="degree"/>
-			<MaxAcceleration value="180" unitsAngle="degree"/>
+			<MaxVelocity value="360" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="degree"/>
 			<MaxTorque value="100"/> 
 		</Joint>
 	 	<Child name="Left Hand Start"/>
