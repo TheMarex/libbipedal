@@ -12,6 +12,7 @@ public:
                              const Eigen::Matrix4f& rightFootPose,
                              const Eigen::Matrix4f& chestPose,
                              const Eigen::Matrix4f& pelvisPose,
+                             const Eigen::Vector3f& comPosition,
                              Kinematics::SupportPhase phase,
                              Eigen::VectorXf &result) = 0;
 };

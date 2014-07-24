@@ -49,13 +49,15 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , footTorqueController(new FootTorqueController())
 , nodes(robot->getRobotNodeSet("Robot"))
 , referenceIK(boost::dynamic_pointer_cast<ReferenceIK>(
-                boost::make_shared<HierarchicalReferenceIK>(nodes, robot, leftFoot, rightFoot, chest, pelvis)
+                boost::make_shared<HierarchicalReferenceIK>(nodes, robot, robot->getRobotNodeSet("ColModelAll"), leftFoot, rightFoot, chest, pelvis)
               ))
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
 , leftFootPose(Eigen::Matrix4f::Identity())
 , rightFootPose(Eigen::Matrix4f::Identity())
 , rootPose(Eigen::Matrix4f::Identity())
+, comPosition(Eigen::Vector3f::Zero())
+, comPositionRef(Eigen::Vector3f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 {
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
@@ -67,26 +69,33 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 
 void KajitaStabilizer::update(float dt,
                               Kinematics::SupportPhase phase,
-                              const Eigen::Vector3f& zmp,
+                              const Eigen::Vector3f& zmpRefWorld,
                               const Eigen::Matrix4f& chestPoseRefWorld,
                               const Eigen::Matrix4f& pelvisPoseRefWorld,
                               const Eigen::Matrix4f& leftFootPoseRefWorld,
-                              const Eigen::Matrix4f& rightFootPoseRefWorld)
+                              const Eigen::Matrix4f& rightFootPoseRefWorld,
+                              const Eigen::Vector3f& comRefWorld)
 {
 
     Eigen::Matrix4f stepAdaptionFrame =
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
       * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
 
-    chestPoseRef = stepAdaptionFrame * chestPoseRefWorld;
-    pelvisPoseRef = stepAdaptionFrame * pelvisPoseRefWorld;
-    leftFootPoseRef = stepAdaptionFrame * leftFootPoseRefWorld;
+    chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
+    pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
+    leftFootPoseRef  = stepAdaptionFrame * leftFootPoseRefWorld;
     rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
+    zmpPositionRef   = VirtualRobot::MathTools::transformPosition(zmpRefWorld, stepAdaptionFrame);
+    comPositionRef   = VirtualRobot::MathTools::transformPosition(comRefWorld, stepAdaptionFrame);
+    //chestPoseRef     = chestPoseRefWorld;
+    //pelvisPoseRef    = pelvisPoseRefWorld;
+    //leftFootPoseRef  = leftFootPoseRefWorld;
+    //rightFootPoseRef = rightFootPoseRefWorld;
 
     ft = forceDistributor->distributeZMP(
         leftFoot->getGlobalPose(),
         rightFoot->getGlobalPose(),
-        zmp,
+        zmpPositionRef,
         phase
     );
 
@@ -116,12 +125,13 @@ void KajitaStabilizer::update(float dt,
         chest->getGlobalPose()
     );
 
-    leftFootPose = leftFootPoseRef;
+    leftFootPose  = leftFootPoseRef;
     rightFootPose = rightFootPoseRef;
-    chestPose = chestPoseRef;
-    pelvisPose = pelvisPoseRef;
+    chestPose     = chestPoseRef;
+    pelvisPose    = pelvisPoseRef;
+    comPosition   = comPositionRef;
 
-    bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, phase, resultAngles);
+    bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, comPosition, phase, resultAngles);
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 

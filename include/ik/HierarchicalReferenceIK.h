@@ -4,10 +4,12 @@
 #include "ReferenceIK.h"
 
 #include <VirtualRobot/VirtualRobot.h>
+#include <VirtualRobot/MathTools.h>
 #include <VirtualRobot/Robot.h>
 #include <VirtualRobot/RobotNodeSet.h>
 #include <VirtualRobot/IK/HierarchicalIK.h>
 #include <VirtualRobot/IK/DifferentialIK.h>
+#include <VirtualRobot/IK/CoMIK.h>
 #include <Eigen/Dense>
 
 #include "utils/Kinematics.h"
@@ -17,6 +19,7 @@ class HierarchicalReferenceIK : public ReferenceIK
 public:
     HierarchicalReferenceIK(const VirtualRobot::RobotNodeSetPtr& nodes,
                             const VirtualRobot::RobotPtr& robot,
+                            const VirtualRobot::RobotNodeSetPtr& colModel,
                             const VirtualRobot::RobotNodePtr& leftFootTCP,
                             const VirtualRobot::RobotNodePtr& rightFootTCP,
                             const VirtualRobot::RobotNodePtr& chest,
@@ -30,6 +33,7 @@ public:
     , rightFootIK(new VirtualRobot::DifferentialIK(nodes))
     , chestIK(new VirtualRobot::DifferentialIK(nodes))
     , pelvisIK(new VirtualRobot::DifferentialIK(nodes))
+    , comIK(new VirtualRobot::CoMIK(nodes, colModel))
     , hIK(nodes)
     {
         VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
@@ -38,8 +42,11 @@ public:
         jChest.jacProvider = chestIK;
         VirtualRobot::HierarchicalIK::JacobiDefinition jPelvis;
         jPelvis.jacProvider = pelvisIK;
-        jacobiDefinitions.push_back(jPelvis);
+        VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
+        jCoM.jacProvider = comIK;
         jacobiDefinitions.push_back(jRightFoot);
+        jacobiDefinitions.push_back(jCoM);
+        jacobiDefinitions.push_back(jPelvis);
         jacobiDefinitions.push_back(jChest);
     }
 
@@ -47,6 +54,7 @@ public:
                              const Eigen::Matrix4f& rightFootPose,
                              const Eigen::Matrix4f& chestPose,
                              const Eigen::Matrix4f& pelvisPose,
+                             const Eigen::Vector3f& comPosition,
                              Kinematics::SupportPhase phase,
                              Eigen::VectorXf &result) override
     {
@@ -62,18 +70,19 @@ public:
             rightFootIK->setGoal((Eigen::Matrix4f) (leftSwingAdaption * rightFootPose), rightFootTCP);
             chestIK->setGoal((Eigen::Matrix4f) (leftSwingAdaption * chestPose),  chest, VirtualRobot::IKSolver::Orientation);
             pelvisIK->setGoal((Eigen::Matrix4f) (leftSwingAdaption * pelvisPose), pelvis);
+            comIK->setGoal((Eigen::Vector3f) VirtualRobot::MathTools::transformPosition(comPosition, leftSwingAdaption));
         }
         else
         {
             rightFootIK->setGoal(rightFootPose, rightFootTCP);
             chestIK->setGoal(chestPose,  chest, VirtualRobot::IKSolver::Orientation);
             pelvisIK->setGoal(pelvisPose, pelvis);
+            comIK->setGoal(comPosition);
         }
 
         // before we start the IK backup the current angles, since we will modify the model
         Eigen::VectorXf origAngles;
         nodes->getJointValues(origAngles);
-
 
         VirtualRobot::HierarchicalIK hIK(nodes);
 
@@ -133,8 +142,9 @@ public:
         {
             std::cout << "IK failed: Iteratoins " << i
                       << " RightFoot: " << jacobiDefinitions[0].jacProvider->getError().norm()
-                      << " Chest: " << jacobiDefinitions[1].jacProvider->getError().norm()
-                      << " Pelvis: " << jacobiDefinitions[1].jacProvider->getError().norm() << std::endl;
+                      << " CoM: " << jacobiDefinitions[1].jacProvider->getError().norm()
+                      << " Pelvis: " << jacobiDefinitions[2].jacProvider->getError().norm()
+                      << " Chest: " << jacobiDefinitions[3].jacProvider->getError().norm() << std::endl;
         }
 
         double angle;
@@ -185,6 +195,7 @@ private:
     VirtualRobot::DifferentialIKPtr rightFootIK;
     VirtualRobot::DifferentialIKPtr pelvisIK;
     VirtualRobot::DifferentialIKPtr chestIK;
+    VirtualRobot::CoMIKPtr comIK;
     VirtualRobot::HierarchicalIK hIK;
 };
 

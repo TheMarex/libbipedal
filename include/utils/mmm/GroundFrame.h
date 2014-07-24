@@ -3,6 +3,8 @@
 
 #include <boost/optional.hpp>
 
+#include <VirtualRobot/MathTools.h>
+
 #include "ControlPoint.h"
 #include "ControlValue.h"
 #include "ControlMatrix.h"
@@ -10,6 +12,9 @@
 
 namespace Bipedal
 {
+    /**
+     * Unit of vector must the the same as the reference points LeftFoot and RightFoot.
+     */
     inline boost::optional<Eigen::Vector3f> transformGroundFrameToGlobal(const MMM::MotionFramePtr& frame, const Eigen::Vector3f& inGroundFrame)
     {
         boost::optional<Eigen::Vector3f> ret;
@@ -29,8 +34,7 @@ namespace Bipedal
         phase = static_cast<Kinematics::SupportPhase>(val);
 
         Eigen::Matrix4f groundFrame = Kinematics::computeGroundFrame(leftFootPose, rightFootPose, phase);
-        Eigen::Vector4f homCom(inGroundFrame.x(), inGroundFrame.y(), inGroundFrame.z(), 1);
-        Eigen::Vector3f inGlobalFrame = (groundFrame * homCom).block(0, 0, 3, 1);
+        Eigen::Vector3f inGlobalFrame = VirtualRobot::MathTools::transformPosition(inGroundFrame, groundFrame);
         ret.reset(inGlobalFrame);
 
         return ret;

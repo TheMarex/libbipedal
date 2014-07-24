@@ -33,6 +33,7 @@ public:
     const Eigen::Matrix4f& getPelvisPoseRef() { return pelvisPoseRef; }
     const Eigen::Matrix4f& getLeftFootPoseRef() { return leftFootPoseRef; }
     const Eigen::Matrix4f& getRightFootPoseRef() { return rightFootPoseRef; }
+    const Eigen::Vector3f& getCoMPositionRef() { return comPositionRef; }
 
     const Eigen::Matrix4f& getChestPose() { return chestPose; }
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }
@@ -53,7 +54,8 @@ public:
                 const Eigen::Matrix4f& chestPoseRef,
                 const Eigen::Matrix4f& pelvisPoseRef,
                 const Eigen::Matrix4f& leftFootPoseRef,
-                const Eigen::Matrix4f& rightFootPoseRef);
+                const Eigen::Matrix4f& rightFootPoseRef,
+                const Eigen::Vector3f& comPositionRef);
 
 private:
     void adaptFrame(Eigen::Matrix4f& frame);
@@ -87,11 +89,15 @@ private:
     Eigen::Matrix4f pelvisPoseRef;
     Eigen::Matrix4f leftFootPoseRef;
     Eigen::Matrix4f rightFootPoseRef;
+    Eigen::Vector3f comPositionRef;
+    Eigen::Vector3f zmpPositionRef;
 
     Eigen::Matrix4f chestPose;
     Eigen::Matrix4f pelvisPose;
     Eigen::Matrix4f leftFootPose;
     Eigen::Matrix4f rightFootPose;
+    Eigen::Vector3f comPosition;
+    Eigen::Vector3f zmpPosition;
 
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
