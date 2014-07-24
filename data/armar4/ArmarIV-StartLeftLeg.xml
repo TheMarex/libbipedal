@@ -375,7 +375,7 @@
         <DH theta="0" alpha="180" a="0" d="0" units="degree"/>
       </Transform>
       <!--Joint type="fixed">
- 		    <! --DH theta="-90" alpha="-144.74" a="0" d="0" unitsAngle="degree"/-- >
+ 		    <DH theta="-90" alpha="-144.74" a="0" d="0" unitsAngle="degree"/>
  		    <DH alpha="144.74" a="0" unitsAngle="degree"/>
  		    <Limits lo="-180" hi="180" unitsAngle="degree"/> 
  		    <MaxVelocity value="180" unitsAngle="degree"/>
