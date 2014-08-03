@@ -34,7 +34,8 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
     int size = bodyTrajectory.cols();
     int ndof = bodyTrajectory.rows();
 
-    Eigen::MatrixXf bodyVelocity = Bipedal::simpleDiffVelocityEstimation(bodyTrajectory, timestep);
+    Eigen::MatrixXf bodyVelocity     = Bipedal::slopeEstimation(bodyTrajectory, timestep);
+    Eigen::MatrixXf bodyAcceleratoin = Bipedal::slopeEstimation(bodyVelocity, timestep);
 
     for (int i = 0; i < size; i++)
     {
@@ -45,6 +46,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
         frame->setRootPos(rootPose.block(0, 3, 3, 1));
         frame->joint = bodyTrajectory.col(i);
         frame->joint_vel = bodyVelocity.col(i);
+        frame->joint_acc = bodyAcceleratoin.col(i);
         frame->timestep = timestep * i;
         frame->addEntry("CoM",
                         boost::make_shared<ControlPointEntry3f>("CoM",

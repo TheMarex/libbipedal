@@ -5,20 +5,6 @@
 
 namespace Bipedal
 {
-    inline Eigen::MatrixXf simpleDiffVelocityEstimation(const Eigen::MatrixXf& trajectory, float timestep)
-    {
-        Eigen::MatrixXf velocity;
-        velocity.resize(trajectory.rows(), trajectory.cols());
-        velocity.fill(0);
-
-        for (int i = 0; i < trajectory.cols() - 1; i++)
-        {
-            velocity.col(i) = (trajectory.col(i + 1) - trajectory.col(i)) / timestep;
-        }
-
-        return velocity;
-    }
-
     template<typename ValueT>
     struct DerivationEstimator
     {
@@ -42,6 +28,27 @@ namespace Bipedal
             lastVal = val;
         }
     };
+
+    inline Eigen::MatrixXf slopeEstimation(const Eigen::MatrixXf& trajectory, float timestep)
+    {
+        Eigen::MatrixXf slope;
+        slope.resize(trajectory.rows(), trajectory.cols());
+        slope.fill(0);
+
+        Eigen::VectorXf start = trajectory.col(0);
+        Eigen::VectorXf initialEstimation(start.rows());
+        initialEstimation.fill(0);
+
+        DerivationEstimator<Eigen::VectorXf> estimator(start, initialEstimation);
+
+        for (int i = 0; i < trajectory.cols() - 1; i++)
+        {
+            slope.col(i) = estimator.estimation;
+            estimator.update(trajectory.col(i+1), timestep);
+        }
+
+        return slope;
+    }
 
 };
 
