@@ -10,7 +10,7 @@
 		<Joint type="fixed">
 			<Limits lo="-180" hi="180" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body0"/>
@@ -27,7 +27,7 @@
 		<Joint type="revolute">
 			<Limits lo="-50" hi="50" unitsAngle="degree"/><!-- was -20 to +20 -->
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body1"/>
@@ -63,7 +63,7 @@
 			<!-- <DH theta="-90" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-50" hi="50" unitsAngle="degree"/><!-- was -25 to +25 -->
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body2"/>
@@ -99,7 +99,7 @@
 			<!-- <DH theta="-90" alpha="-90" a="19.2" d="140" unitsAngle="degree"/> -->
 			<Limits lo="-50" hi="50" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body3"/>
@@ -134,7 +134,7 @@
 		<Joint type="revolute">
 			<Limits lo="-50" hi="50" unitsAngle="degree"/><!-- was -15 to +15 -->
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body4"/>
@@ -167,7 +167,7 @@
 			<!-- <DH theta="0" alpha="-90" a="72.6517" d="-77.7" unitsAngle="degree"/> -->
 			<Limits lo="-50" hi="50" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadNeck_Body5"/>
@@ -233,7 +233,7 @@
 			<!-- <DH theta="90" alpha="-90" a="0" d="46.5" unitsAngle="degree"/> -->
 			<Limits lo="-30" hi="60" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="HeadEyeLeft_Body1"/>
@@ -263,7 +263,7 @@
 			<!-- <DH theta="90" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="HeadEyeLeft_Body2"/>
@@ -295,7 +295,7 @@
 			<!-- <DH theta="90" alpha="-90" a="0" d="-46.5" unitsAngle="degree"/> -->
 			<Limits lo="-30" hi="60" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="HeadEyeRight_Body1"/>
@@ -325,7 +325,7 @@
 			<!-- <DH theta="90" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="HeadEyeRight_Body2"/>

@@ -11,7 +11,7 @@
 			<!-- <DH theta="0" alpha="-75" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-20" hi="10" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftArm_Body1"/>
@@ -48,7 +48,7 @@
 			<!-- <DH theta="90" alpha="90" a="0" d="207.055" unitsAngle="degree"/> -->
 			<Limits lo="-160" hi="60" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body2"/>
@@ -84,7 +84,7 @@
 			<!-- <DH theta="75" alpha="90" a="0" d="-4.82776" unitsAngle="degree"/> -->
 			<Limits lo="-20" hi="115" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body3"/>
@@ -120,7 +120,7 @@
 			<!-- <DH theta="90" alpha="90" a="-14.8278" d="300" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body4"/>
@@ -156,7 +156,7 @@
 			<!-- <DH theta="0" alpha="-90" a="0" d="0" unitsAngle="degree"/> -->
             <Limits lo="-115" hi="5" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 			</Joint>
 		<Child name="LeftArm_Body5"/>
@@ -192,7 +192,7 @@
 			<!-- <DH theta="-90" alpha="90" a="0" d="250" unitsAngle="degree"/> -->
             <Limits lo="-180" hi="0" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftArm_Body6"/>
@@ -229,7 +229,7 @@
 			<!-- <DH theta="-90" alpha="90" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-35" hi="35" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 						
 		</Joint>
 		<Child name="LeftArm_Body7"/>
@@ -262,7 +262,7 @@
 			<!-- <DH theta="0" alpha="0" a="0" d="0" unitsAngle="degree"/> -->
 			<Limits lo="-90" hi="90" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
-			<MaxAcceleration value="5000" unitsAngle="degree"/>
+			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 
 		</Joint>
 	 	<Child name="Left Hand Start"/>
