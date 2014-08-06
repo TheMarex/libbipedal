@@ -2,12 +2,7 @@
 
 <!-- Armar4 convex hull model, root node == LeftFootTCP -->
 
-<Robot Type="ArmarIV" RootNode="Root">
-
-	<RobotNode name="Root">
-		<Child name="LeftLeg_TCP"/>
-	</RobotNode>
-
+<Robot Type="ArmarIV" RootNode="LeftLeg_TCP">
 
 	<RobotNode name="LeftLeg_TCP">
                 <Transform>
@@ -670,6 +665,25 @@
         <Node name="RightArm_Joint6"/>
         <Node name="RightArm_Joint7"/>
         <Node name="RightArm_Joint8"/>
+    </RobotNodeSet>   
+
+    <RobotNodeSet name="CoMCompensation" kinematicRoot="Root">
+        <Node name="LeftLeg_Joint1"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint6"/>
+        <Node name="RightLeg_Joint1"/>
+        <Node name="RightLeg_Joint2"/>
+        <Node name="RightLeg_Joint3"/>
+        <Node name="RightLeg_Joint4"/>
+        <Node name="RightLeg_Joint5"/>
+        <Node name="RightLeg_Joint6"/>
+        <Node name="Torso_Joint1"/>
+        <Node name="Torso_Joint2"/>
+        <Node name="LeftArm_Joint3"/>
+        <Node name="RightArm_Joint3"/>
     </RobotNodeSet>   
 
 </Robot>
