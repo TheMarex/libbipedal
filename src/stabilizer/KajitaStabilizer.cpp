@@ -13,7 +13,7 @@
 #include "stabilizer/kajita/ForceDistributor.h"
 #include "stabilizer/KajitaStabilizer.h"
 
-#include "ik/HierarchicalReferenceIK.h"
+#include "ik/DifferentialReferenceIK.h"
 
 /*
  * These controller needs a trajectory with the following control features:
@@ -47,9 +47,9 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftAnkle, rightAnkle, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
-, nodes(robot->getRobotNodeSet("Robot"))
+, nodes(robot->getRobotNodeSet("CoMCompensation"))
 , referenceIK(boost::dynamic_pointer_cast<ReferenceIK>(
-                boost::make_shared<HierarchicalReferenceIK>(nodes, robot, robot->getRobotNodeSet("ColModelAll"), leftFoot, rightFoot, chest, pelvis)
+                boost::make_shared<DifferentialReferenceIK>(nodes, robot, robot->getRobotNodeSet("ColModelAll"), leftFoot, rightFoot, chest, pelvis)
               ))
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
@@ -76,10 +76,12 @@ void KajitaStabilizer::update(float dt,
                               const Eigen::Matrix4f& rightFootPoseRefWorld,
                               const Eigen::Vector3f& comRefWorld)
 {
-
+/*
     Eigen::Matrix4f stepAdaptionFrame =
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
       * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
+ */
+    Eigen::Matrix4f stepAdaptionFrame = Eigen::Matrix4f::Identity();
 
     chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
     pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
