@@ -137,3 +137,7 @@ void KajitaStabilizer::update(float dt,
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 
+VirtualRobot::RobotPtr KajitaStabilizer::getInvertedRobot()
+{
+    return boost::dynamic_pointer_cast<DifferentialReferenceIK>(referenceIK)->getInvertedRobot();
+}

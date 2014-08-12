@@ -24,6 +24,7 @@ class KajitaStabilizer
 {
 public:
 
+    VirtualRobot::RobotPtr getInvertedRobot();
 
     KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,

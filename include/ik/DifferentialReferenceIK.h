@@ -11,6 +11,8 @@
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <Eigen/Dense>
 
+#include "../utils/Kinematics.h"
+
 
 class DifferentialReferenceIK : public ReferenceIK
 {
@@ -115,6 +117,8 @@ public:
 
         return VirtualRobot::RobotNodeSet::createRobotNodeSet(reversedRobot, name, nodeNames);
     }
+
+    VirtualRobot::RobotPtr getInvertedRobot() { return robotReversed; }
 
     bool computeFootIK(const Eigen::Matrix4f& supportRootPose,
                        const Eigen::Matrix4f& supportTCPPose,
