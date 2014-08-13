@@ -131,18 +131,8 @@ public:
         BOOST_ASSERT(ikNodes.pelvis);
         BOOST_ASSERT(ikNodes.swingFoot);
 
-        std::cout << "############ Foot IK ###########" << std::endl;
-        std::cout << "Support: " << ikNodes.supportToPelvisNodes->getKinematicRoot()->getName()
-                  << " Pelvis: " << ikNodes.pelvis->getName()
-                  << " Swing: "  << ikNodes.swingFoot->getName() << std::endl;
-
-
         // we assume that the support foot is the root node
         ikNodes.robot->setGlobalPose(supportRootPose);
-
-        std::cout << "Global pose:\n" << ikNodes.robot->getGlobalPose() << std::endl;
-        std::cout << "Support pose:\n" << ikNodes.supportToPelvisNodes->getKinematicRoot()->getGlobalPose() << std::endl;
-        std::cout << "Reference pose:\n" << supportRootPose << std::endl;
 
         VirtualRobot::DifferentialIK supportToPelvisIK(ikNodes.supportToPelvisNodes);
         VirtualRobot::DifferentialIK pelvisToSwingIK(ikNodes.pelvisToSwingNodes);
@@ -153,35 +143,15 @@ public:
         BOOST_ASSERT(supportToPelvisIK.getJacobianMatrix().rows() > 0);
         BOOST_ASSERT(pelvisToSwingIK.getJacobianMatrix().rows() > 0);
 
-        //std::cout << "support2Pelvis:\n" << supportToPelvisIK.getPseudoInverseJacobianMatrix() << std::endl;
-        //std::cout << "pelvis2Swing:\n" << pelvisToSwingIK.getPseudoInverseJacobianMatrix() << std::endl;
-        //std::cout << "pelvisError:\n" << supportToPelvisIK.getError() << std::endl;
-        //std::cout << "swingError:\n" << pelvisToSwingIK.getError() << std::endl;
-
         const float ikPrec = 0.1;
         const float minChange = 0;
         const unsigned numSteps = 100;
-
-        //std::cout << "Before:\n"
-        //    << ikNodes.pelvis->getGlobalPose() << std::endl
-        //    << ikNodes.swingFoot->getGlobalPose() << std::endl;
 
         bool success = true;
         success = success && supportToPelvisIK.computeSteps(ikPrec, minChange, numSteps);
         success = success && pelvisToSwingIK.computeSteps(ikPrec, minChange, numSteps);
 
-        //std::cout << "After:\n"
-        //    << ikNodes.pelvis->getGlobalPose() << std::endl
-        //    << ikNodes.swingFoot->getGlobalPose() << std::endl;
-
         std::cout << "Errors: Pelvis: " << supportToPelvisIK.getError().norm() << " Swing foot: " << pelvisToSwingIK.getError().norm() << std::endl;
-
-        //std::cout << "Left to right: ";
-        //for (auto& n : ikNodes.leftToRightNodes)
-        //{
-        //    std::cout << n->getName() << " ";
-        //}
-        //std::cout << std::endl;
 
         return success;
     }
@@ -237,54 +207,42 @@ public:
     {
         syncRobotModels(robot, robotReversed);
 
+        Eigen::Matrix4f rootPose;
         Eigen::VectorXf legsResult;
         switch (phase)
         {
             case Kinematics::SUPPORT_LEFT:
-                std::cout << ">>>>>>>> Left support" << std::endl;
                 computeFootIK(leftFootPose, pelvisPose, rightFootPose, leftSupportIKNodes);
                 extractAngles(leftSupportIKNodes.leftToRightNodes, legsResult);
+                rootPose = leftSupportIKNodes.robot->getRobotNode(robot->getRootNode()->getName())->getGlobalPose();
                 break;
             case Kinematics::SUPPORT_RIGHT:
-                std::cout << ">>>>>>>> Right support" << std::endl;
                 computeFootIK(rightFootPose, pelvisPose, leftFootPose, rightSupportIKNodes);
                 extractAngles(rightSupportIKNodes.leftToRightNodes, legsResult);
-                legsResult *= -1;
+                rootPose = rightSupportIKNodes.robot->getRobotNode(robot->getRootNode()->getName())->getGlobalPose();
                 break;
             // as default use left support, even in dual support phase
             default:
-                std::cout << ">>>>>>>> Dual support" << std::endl;
                 computeFootIK(leftFootPose, pelvisPose, rightFootPose, leftSupportIKNodes);
                 extractAngles(leftSupportIKNodes.leftToRightNodes, legsResult);
+                rootPose = leftSupportIKNodes.robot->getRobotNode(robot->getRootNode()->getName())->getGlobalPose();
                 break;
         }
 
         auto leftToRightNodes = robot->getRobotNodeSet("Left2RightLeg");
 
         // sync values with original robot
-        //std::cout << "Setting: ";
         for (int i = 0; i < legsResult.size(); i++)
         {
-            //std::cout << (*leftToRightNodes)[i]->getName() << " ";
             (*leftToRightNodes)[i]->setJointValue(legsResult[i]);
         }
-        //std::cout << std::endl;
+        robot->setGlobalPose(rootPose);
 
         // now try to correct chest posture
         computeChestIK(chestPose);
 
         result.resize(nodes->getSize(), 1);
         nodes->getJointValues(result);
-
-        std::cout << "Normal root: " << robot->getRootNode()->getName() << " : " << robotReversed->getRootNode()->getName() << std::endl;
-
-/*
-        std::cout << "####### Robot - Inverted Robot ########" << std::endl;
-        for (auto& rn : robot->getRobotNodes())
-        {
-            std::cout << rn->getName() << ":\t\t" << rn->getJointValue() << "\t:\t" << robotReversed->getRobotNode(rn->getName())->getJointValue() << std::endl;
-        }
-*/
 
         return true;
     }

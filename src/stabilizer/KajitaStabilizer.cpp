@@ -76,12 +76,10 @@ void KajitaStabilizer::update(float dt,
                               const Eigen::Matrix4f& rightFootPoseRefWorld,
                               const Eigen::Vector3f& comRefWorld)
 {
-/*
     Eigen::Matrix4f stepAdaptionFrame =
         computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
       * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
- */
-    Eigen::Matrix4f stepAdaptionFrame = Eigen::Matrix4f::Identity();
+    //Eigen::Matrix4f stepAdaptionFrame = Eigen::Matrix4f::Identity();
 
     chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
     pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
