@@ -84,5 +84,7 @@ bool TrajectoryPlayer::loadMotion(const std::string& motionPath, const std::stri
         return false;
     }
     reset();
+
+    return true;
 }
 
