@@ -116,7 +116,7 @@ void KajitaStabilizer::update(float dt,
         pelvisPoseRef,
         ft.leftForce,
         ft.rightForce,
-        leftAnkleSensor->getForce(),
+        -leftAnkleSensor->getForce(),
         rightAnkleSensor->getForce()
     );
 
@@ -125,9 +125,9 @@ void KajitaStabilizer::update(float dt,
         chest->getGlobalPose()
     );
 
+/*
     leftFootPose  = leftFootPoseRef;
     rightFootPose = rightFootPoseRef;
-/*
     chestPose     = chestPoseRef;
     pelvisPose    = pelvisPoseRef;
 */

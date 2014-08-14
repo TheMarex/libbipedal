@@ -27,6 +27,12 @@ VirtualRobot::MathTools::ConvexHull2DPtr ForceDistributor::computeConvexHull(con
     return hull;
 }
 
+Eigen::Vector2f transform2D(const Eigen::Vector2f& pt, const Eigen::Matrix4f& pose)
+{
+    Eigen::Vector4f homWorldPt = pose * Eigen::Vector4f(pt.x(), pt.y(), 0, 1);
+    return homWorldPt.block(0, 0, 2, 1);
+}
+
 Eigen::Vector2f ForceDistributor::computeHullContact(const Eigen::Matrix4f& anklePose,
                                                      const Eigen::Vector3f& refZMP,
                                                      const VirtualRobot::MathTools::ConvexHull2DPtr& hull)
@@ -35,19 +41,18 @@ Eigen::Vector2f ForceDistributor::computeHullContact(const Eigen::Matrix4f& ankl
     Eigen::Vector4f homRelZMP = anklePose.inverse() * Eigen::Vector4f(refZMP.x(), refZMP.y(), refZMP.z(), 1);
     Eigen::Vector2f relZMP = homRelZMP.head(2);
     double min = std::numeric_limits<double>::max();
-    VirtualRobot::MathTools::Line2D min_line;
+    VirtualRobot::MathTools::Segment2D min_segment;
     for(const auto& segment : hull->segments)
     {
-        VirtualRobot::MathTools::Line2D l(hull->vertices[segment.id1],
-                                          hull->vertices[segment.id2]);
-        double dist = VirtualRobot::MathTools::distPointLine(l, relZMP);
+        double dist = VirtualRobot::MathTools::distPointSegment(hull->vertices[segment.id1],
+                                          hull->vertices[segment.id2], relZMP);
         if (dist < min)
         {
             min = dist;
-            min_line = l;
+            min_segment = segment;
         }
     }
-    return VirtualRobot::MathTools::nearestPointOnLine(min_line, relZMP);
+    return VirtualRobot::MathTools::nearestPointOnSegment(hull->vertices[min_segment.id1], hull->vertices[min_segment.id2], relZMP);
 }
 
 double ForceDistributor::computeAlpha(const Eigen::Matrix4f& leftAnklePose,
@@ -76,11 +81,11 @@ double ForceDistributor::computeAlpha(const Eigen::Matrix4f& leftAnklePose,
             leftContact  = (leftAnklePose  * hom).head(2);
             hom.head(2) = computeHullContact(rightAnklePose, refZMP, rightConvexHull);
             rightContact = (rightAnklePose * hom).head(2);
-            pAlpha = VirtualRobot::MathTools::nearestPointOnLine(
-                            VirtualRobot::MathTools::Line2D(leftContact, rightContact),
+            pAlpha = VirtualRobot::MathTools::nearestPointOnSegment(
+                            leftContact, rightContact,
                             Eigen::Vector2f(refZMP.head(2))
                      );
-            alpha = (pAlpha - leftContact).norm() / (leftContact - rightContact).norm();
+            alpha = (leftContact - pAlpha).norm() / (leftContact - rightContact).norm();
             break;
     }
     return alpha;
