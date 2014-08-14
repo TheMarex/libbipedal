@@ -35,6 +35,7 @@ public:
     const Eigen::Matrix4f& getLeftFootPoseRef() { return leftFootPoseRef; }
     const Eigen::Matrix4f& getRightFootPoseRef() { return rightFootPoseRef; }
     const Eigen::Vector3f& getCoMPositionRef() { return comPositionRef; }
+    const Eigen::Vector3f& getZMPPositionRef() { return zmpPositionRef; }
 
     const Eigen::Matrix4f& getChestPose() { return chestPose; }
     const Eigen::Matrix4f& getPelvisPose() { return pelvisPose; }

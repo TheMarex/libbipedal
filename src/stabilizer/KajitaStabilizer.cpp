@@ -58,6 +58,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , rootPose(Eigen::Matrix4f::Identity())
 , comPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
+, zmpPositionRef(Eigen::Vector3f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 {
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
