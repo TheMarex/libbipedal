@@ -59,6 +59,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , comPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
 , zmpPositionRef(Eigen::Vector3f::Zero())
+, stepAdaptionFrame(Eigen::Matrix4f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 {
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
@@ -82,9 +83,14 @@ void KajitaStabilizer::update(float dt,
                               const Eigen::Matrix4f& rightFootPoseRefWorld,
                               const Eigen::Vector3f& comRefWorld)
 {
-    Eigen::Matrix4f stepAdaptionFrame =
-        computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
-      * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
+    if (stepAdaptionFrame == Eigen::Matrix4f::Zero())
+    {
+        std::cout << "Initializing step adaption frame..." << std::endl;
+        stepAdaptionFrame =
+            computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
+          * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
+        std::cout << "Step adaption frame: " << stepAdaptionFrame << std::endl;
+    }
 
     chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
     pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
@@ -138,7 +144,12 @@ void KajitaStabilizer::update(float dt,
 */
     comPosition   = comPositionRef;
 
+    std::vector<float> angles;
+    auto originalRoot = nodes->getRobot()->getGlobalPose();
+    nodes->getJointValues(angles);
     bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, comPosition, phase, resultAngles);
+    nodes->setJointValues(angles);
+    nodes->getRobot()->setGlobalPose(originalRoot);
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 
