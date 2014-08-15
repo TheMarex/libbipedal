@@ -68,6 +68,11 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 
 }
 
+const DampeningController& KajitaStabilizer::getLeftAnkleTorqueXController() { return footTorqueController->leftPhiDC;}
+const DampeningController& KajitaStabilizer::getLeftAnkleTorqueYController() { return footTorqueController->leftThetaDC;}
+const DampeningController& KajitaStabilizer::getRightAnkleTorqueXController() { return footTorqueController->rightPhiDC;}
+const DampeningController& KajitaStabilizer::getRightAnkleTorqueYController() { return footTorqueController->rightThetaDC;}
+
 void KajitaStabilizer::update(float dt,
                               Kinematics::SupportPhase phase,
                               const Eigen::Vector3f& zmpRefWorld,

@@ -4,7 +4,7 @@
 #include <VirtualRobot/MathTools.h>
 #include <Eigen/Dense>
 
-#include "DampeningController.h"
+#include <bipedal/controller/DampeningController.h>
 
 /**
  * Implements the chest posture controller proposed by Kajita in his 2010 paper.
@@ -16,8 +16,8 @@
 struct ChestPostureController
 {
     ChestPostureController()
-    : phiDC(DampeningController {4, 5.0, 0})
-    , thetaDC(DampeningController {20, 5.0, 0})
+    : phiDC(DampeningController {4, 5.0, 0, 0})
+    , thetaDC(DampeningController {20, 5.0, 0, 0})
     , refRPY(Eigen::Vector3f::Zero())
     , currentRPY(Eigen::Vector3f::Zero())
     {

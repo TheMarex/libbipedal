@@ -42,6 +42,11 @@ public:
     const Eigen::Matrix4f& getLeftFootPose() { return leftFootPose; }
     const Eigen::Matrix4f& getRightFootPose() { return rightFootPose; }
 
+    const DampeningController& getLeftAnkleTorqueXController();
+    const DampeningController& getLeftAnkleTorqueYController();
+    const DampeningController& getRightAnkleTorqueXController();
+    const DampeningController& getRightAnkleTorqueYController();
+
     const Eigen::Vector3f& getLeftAnkleTorque() { return ft.leftTorque;}
     const Eigen::Vector3f& getRightAnkleTorque() { return ft.rightTorque;}
     const Eigen::Vector3f& getLeftAnkleForce() { return ft.leftForce;}

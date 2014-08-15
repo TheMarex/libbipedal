@@ -6,17 +6,17 @@
 
 #include "utils/Kinematics.h"
 
-#include "DampeningController.h"
+#include <bipedal/controller/DampeningController.h>
 
 class FootTorqueController
 {
 public:
     // FIXME values are only guessed
     FootTorqueController()
-    : leftPhiDC(DampeningController    {100000, 2.0, 0.0})
-    , leftThetaDC(DampeningController  {100000, 2.0, 0.0})
-    , rightPhiDC(DampeningController   {100000, 2.0, 0.0})
-    , rightThetaDC(DampeningController {100000, 2.0, 0.0})
+    : leftPhiDC(DampeningController    {100000, 2.0, 0.0, 0.0})
+    , leftThetaDC(DampeningController  {100000, 2.0, 0.0, 0.0})
+    , rightPhiDC(DampeningController   {100000, 2.0, 0.0, 0.0})
+    , rightThetaDC(DampeningController {100000, 2.0, 0.0, 0.0})
     {
     }
 
@@ -52,6 +52,7 @@ private:
         return correctionMatrix;
     }
 
+public:
     DampeningController leftPhiDC;
     DampeningController leftThetaDC;
     DampeningController rightPhiDC;

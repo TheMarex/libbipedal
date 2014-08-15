@@ -6,7 +6,7 @@
 
 #include <boost/assert.hpp>
 
-#include "DampeningController.h"
+#include <bipedal/controller/DampeningController.h>
 
 /**
  * Controlls the force difference in booth feet using the rotation of the pelvis link.
@@ -16,7 +16,7 @@ class FootForceController
 public:
     FootForceController(double hipJointDistance)
     : hipJointDistance(hipJointDistance)
-    , zCtrlDC(DampeningController {1000.0, 10.0, 0.0})
+    , zCtrlDC(DampeningController {1000.0, 10.0, 0.0, 0.0})
     {
         BOOST_ASSERT(hipJointDistance > 0);
     }
