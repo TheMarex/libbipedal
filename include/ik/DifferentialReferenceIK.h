@@ -193,7 +193,11 @@ public:
         //FIXME this is not really fast
         for (auto& rn : source->getRobotNodes())
         {
-            target->getRobotNode(rn->getName())->setJointValue(rn->getJointValue());
+            auto targetNode = target->getRobotNode(rn->getName());
+            targetNode->setJointValue(rn->getJointValue());
+
+            // Make sure we didn't hit a joint limit
+            BOOST_ASSERT(targetNode->getJointValue() == rn->getJointValue());
         }
     }
 
