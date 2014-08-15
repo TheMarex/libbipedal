@@ -103,12 +103,19 @@ void KajitaStabilizer::update(float dt,
     //leftFootPoseRef  = leftFootPoseRefWorld;
     //rightFootPoseRef = rightFootPoseRefWorld;
 
+    Eigen::Matrix4f leftToWorld  = leftFoot->getGlobalPose();
+    Eigen::Matrix4f rightToWorld = rightFoot->getGlobalPose();
     ft = forceDistributor->distributeZMP(
-        leftFoot->getGlobalPose(),
-        rightFoot->getGlobalPose(),
+        leftToWorld,
+        rightToWorld,
         zmpPositionRef,
         phase
     );
+
+    Eigen::Matrix3f worldToLeft  = leftToWorld.block(0, 0, 3, 3).inverse();
+    Eigen::Matrix3f worldToRight = rightToWorld.block(0, 0, 3, 3).inverse();
+    Eigen::Vector3f leftTorqueWorld  = leftAnkleSensor->getTorque();
+    Eigen::Vector3f rightTorqueWorld = rightAnkleSensor->getTorque();
 
     leftFootPose  = Eigen::Matrix4f::Identity();
     rightFootPose = Eigen::Matrix4f::Identity();
@@ -117,8 +124,8 @@ void KajitaStabilizer::update(float dt,
         rightFootPoseRef,
         ft.leftTorque,
         ft.rightTorque,
-        leftAnkleSensor->getTorque(),
-        rightAnkleSensor->getTorque(),
+        worldToLeft * leftTorqueWorld,
+        worldToRight * rightTorqueWorld,
         leftFootPose,
         rightFootPose
     );

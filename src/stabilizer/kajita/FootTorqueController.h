@@ -22,19 +22,19 @@ public:
 
     void correctFootOrientation(const Eigen::Matrix4f& leftOrientationRef,
                                 const Eigen::Matrix4f& rightOrientationRef,
-                                const Eigen::Vector3f& leftTorqueRef,
-                                const Eigen::Vector3f& rightTorqueRef,
-                                const Eigen::Vector3f& leftTorque,
-                                const Eigen::Vector3f& rightTorque,
+                                const Eigen::Vector3f& leftTorqueRefLocal,
+                                const Eigen::Vector3f& rightTorqueRefLocal,
+                                const Eigen::Vector3f& leftTorqueLocal,
+                                const Eigen::Vector3f& rightTorqueLocal,
                                 Eigen::Matrix4f& leftOrientation,
                                 Eigen::Matrix4f& rightOrientation)
     {
-        leftOrientation  = leftOrientationRef  * computeCorrectionMatrix(leftTorqueRef,
-                                                                         leftTorque,
+        leftOrientation  = leftOrientationRef  * computeCorrectionMatrix(leftTorqueRefLocal,
+                                                                         leftTorqueLocal,
                                                                          leftPhiDC,
                                                                          leftThetaDC);
-        rightOrientation = rightOrientationRef * computeCorrectionMatrix(rightTorqueRef,
-                                                                         rightTorque,
+        rightOrientation = rightOrientationRef * computeCorrectionMatrix(rightTorqueRefLocal,
+                                                                         rightTorqueLocal,
                                                                          rightPhiDC,
                                                                          rightThetaDC);
     }

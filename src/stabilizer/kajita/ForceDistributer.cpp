@@ -96,16 +96,27 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Matri
                                                               const Eigen::Vector3f& refZMP,
                                                               Kinematics::SupportPhase phase)
 {
+    // for some reason the sensors give a troque that is 10 times the expected value
+    const double torqueFactor = 10;
+
     double alpha = computeAlpha(leftAnklePose, rightAnklePose, refZMP, phase);
+
+    Eigen::Matrix3f leftToWorld  = leftAnklePose.block(0, 0, 3, 3);
+    Eigen::Matrix3f rightToWorld = rightAnklePose.block(0, 0, 3, 3);
+    Eigen::Matrix3f worldToLeft  = leftToWorld.inverse();
+    Eigen::Matrix3f worldToRight = rightToWorld.inverse();
+
     ForceTorque ft;
-    ft.rightForce = -alpha     * mass * gravity;
-    ft.leftForce  = -(1-alpha) * mass * gravity;
+    ft.leftForce  = -(1-alpha) * mass * worldToLeft * gravity;
+    ft.rightForce = -alpha     * mass * worldToRight * gravity;
+
     Eigen::Vector3f zmp;
     zmp << refZMP.x()/1000.0f, refZMP.y()/1000.0f, 0.0;
+
     Eigen::Vector3f ankle = leftAnklePose.block(0, 3, 3, 1) / 1000.0f;
-    ft.leftTorque  = (ankle - zmp).cross(ft.leftForce);
+    ft.leftTorque  = (ankle - zmp).cross(ft.leftForce) * torqueFactor;
     ankle = rightAnklePose.block(0, 3, 3, 1) / 1000.0f;
-    ft.rightTorque = (ankle - zmp).cross(ft.rightForce);
+    ft.rightTorque = (ankle - zmp).cross(ft.rightForce) * torqueFactor;
 
     return ft;
 }
