@@ -63,6 +63,7 @@ bool TrajectoryPlayer::loadMotion(const std::string& motionPath, const std::stri
 
     boost::shared_ptr<ControlPointParser3f> comParser (new ControlPointParser3f("CoM"));
     boost::shared_ptr<ControlPointParser2f> zmpParser (new ControlPointParser2f("ZMP"));
+    boost::shared_ptr<ControlPointParser2f> refZMPParser (new ControlPointParser2f("ReferenceZMP"));
     boost::shared_ptr<ControlMatrixParser4f> leftFootParser (new ControlMatrixParser4f("LeftFoot"));
     boost::shared_ptr<ControlMatrixParser4f> rightFootParser (new ControlMatrixParser4f("RightFoot"));
     boost::shared_ptr<ControlMatrixParser4f> chestParser (new ControlMatrixParser4f("Chest"));
@@ -71,6 +72,7 @@ bool TrajectoryPlayer::loadMotion(const std::string& motionPath, const std::stri
 
     reader->registerMotionFrameXMLTag("CoM", comParser);
     reader->registerMotionFrameXMLTag("ZMP", zmpParser);
+    reader->registerMotionFrameXMLTag("ReferenceZMP", refZMPParser);
     reader->registerMotionFrameXMLTag("LeftFoot", leftFootParser);
     reader->registerMotionFrameXMLTag("RightFoot", rightFootParser);
     reader->registerMotionFrameXMLTag("Chest", chestParser);
