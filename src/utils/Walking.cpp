@@ -60,4 +60,21 @@ namespace Walking
         return pose;
     }
 
+    Eigen::Vector2f computeHullContactPoint(const Eigen::Vector2f p, const VirtualRobot::MathTools::ConvexHull2DPtr& hull)
+    {
+        double min = std::numeric_limits<double>::max();
+        VirtualRobot::MathTools::Segment2D min_segment;
+        for(const auto& segment : hull->segments)
+        {
+            double dist = VirtualRobot::MathTools::distPointSegment(hull->vertices[segment.id1],
+                    hull->vertices[segment.id2], p);
+            if (dist < min)
+            {
+                min = dist;
+                min_segment = segment;
+            }
+        }
+        return VirtualRobot::MathTools::nearestPointOnSegment(hull->vertices[min_segment.id1], hull->vertices[min_segment.id2], p);
+    }
+
 }

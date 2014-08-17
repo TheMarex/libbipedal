@@ -27,37 +27,14 @@ VirtualRobot::MathTools::ConvexHull2DPtr ForceDistributor::computeConvexHull(con
     return hull;
 }
 
-Eigen::Vector2f transform2D(const Eigen::Vector2f& pt, const Eigen::Matrix4f& pose)
-{
-    Eigen::Vector4f homWorldPt = pose * Eigen::Vector4f(pt.x(), pt.y(), 0, 1);
-    return homWorldPt.block(0, 0, 2, 1);
-}
-
-Eigen::Vector2f ForceDistributor::computeHullContact(const Eigen::Matrix4f& anklePose,
-                                                     const Eigen::Vector3f& refZMP,
-                                                     const VirtualRobot::MathTools::ConvexHull2DPtr& hull)
-{
-    // FIXME don't use inverse - we need refZMP in local frame
-    Eigen::Vector4f homRelZMP = anklePose.inverse() * Eigen::Vector4f(refZMP.x(), refZMP.y(), refZMP.z(), 1);
-    Eigen::Vector2f relZMP = homRelZMP.head(2);
-    double min = std::numeric_limits<double>::max();
-    VirtualRobot::MathTools::Segment2D min_segment;
-    for(const auto& segment : hull->segments)
-    {
-        double dist = VirtualRobot::MathTools::distPointSegment(hull->vertices[segment.id1],
-                                          hull->vertices[segment.id2], relZMP);
-        if (dist < min)
-        {
-            min = dist;
-            min_segment = segment;
-        }
-    }
-    return VirtualRobot::MathTools::nearestPointOnSegment(hull->vertices[min_segment.id1], hull->vertices[min_segment.id2], relZMP);
-}
-
-double ForceDistributor::computeAlpha(const Eigen::Matrix4f& leftAnklePose,
-                                       const Eigen::Matrix4f& rightAnklePose,
+/**
+ * Warning: This only works if we have a position without a slope!
+ */
+double ForceDistributor::computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
+                                       const Eigen::Matrix4f& groundPoseRight,
                                        const Eigen::Vector3f& refZMP,
+                                       const Eigen::Vector2f& relZMPLeft,
+                                       const Eigen::Vector2f& relZMPRight,
                                        Kinematics::SupportPhase phase)
 {
     double alpha;
@@ -72,15 +49,9 @@ double ForceDistributor::computeAlpha(const Eigen::Matrix4f& leftAnklePose,
             alpha = 1.0;
             break;
         case Kinematics::SUPPORT_BOTH:
-            alpha = 0.5;
             // get contact points in world coordinates
-            Eigen::Vector4f hom;
-            hom(2, 0) = 0;
-            hom(3, 0) = 1;
-            hom.head(2) = computeHullContact(leftAnklePose, refZMP, leftConvexHull);
-            leftContact  = (leftAnklePose  * hom).head(2);
-            hom.head(2) = computeHullContact(rightAnklePose, refZMP, rightConvexHull);
-            rightContact = (rightAnklePose * hom).head(2);
+            leftContact  = VirtualRobot::MathTools::transformPosition(Walking::computeHullContactPoint(relZMPLeft, leftConvexHull), groundPoseLeft);
+            rightContact = VirtualRobot::MathTools::transformPosition(Walking::computeHullContactPoint(relZMPRight, rightConvexHull), groundPoseRight);
             pAlpha = VirtualRobot::MathTools::nearestPointOnSegment(
                             leftContact, rightContact,
                             Eigen::Vector2f(refZMP.head(2))
@@ -96,27 +67,27 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Matri
                                                               const Eigen::Vector3f& refZMP,
                                                               Kinematics::SupportPhase phase)
 {
+    Eigen::Matrix4f groundPoseLeft  = Kinematics::projectPoseToGround(leftAnklePose);
+    Eigen::Matrix4f groundPoseRight = Kinematics::projectPoseToGround(rightAnklePose);
+    Eigen::Vector2f relZMPLeft      = VirtualRobot::MathTools::transformPosition((Eigen::Vector2f) refZMP.head(2), groundPoseLeft.inverse());
+    Eigen::Vector2f relZMPRight     = VirtualRobot::MathTools::transformPosition((Eigen::Vector2f) refZMP.head(2), groundPoseRight.inverse());
+
     // for some reason the sensors give a troque that is 10 times the expected value
     const double torqueFactor = 10;
 
-    double alpha = computeAlpha(leftAnklePose, rightAnklePose, refZMP, phase);
-
-    Eigen::Matrix3f leftToWorld  = leftAnklePose.block(0, 0, 3, 3);
-    Eigen::Matrix3f rightToWorld = rightAnklePose.block(0, 0, 3, 3);
-    Eigen::Matrix3f worldToLeft  = leftToWorld.inverse();
-    Eigen::Matrix3f worldToRight = rightToWorld.inverse();
+    double alpha = computeAlpha(groundPoseLeft, groundPoseRight, refZMP, relZMPLeft, relZMPRight, phase);
 
     ForceTorque ft;
-    ft.leftForce  = -(1-alpha) * mass * worldToLeft * gravity;
-    ft.rightForce = -alpha     * mass * worldToRight * gravity;
+    ft.leftForce  = -(1-alpha) * mass * gravity;
+    ft.rightForce = -alpha     * mass * gravity;
 
-    Eigen::Vector3f zmp;
-    zmp << refZMP.x()/1000.0f, refZMP.y()/1000.0f, 0.0;
+    Eigen::Vector3f relZMP;
 
-    Eigen::Vector3f ankle = leftAnklePose.block(0, 3, 3, 1) / 1000.0f;
-    ft.leftTorque  = (ankle - zmp).cross(ft.leftForce) * torqueFactor;
-    ankle = rightAnklePose.block(0, 3, 3, 1) / 1000.0f;
-    ft.rightTorque = (ankle - zmp).cross(ft.rightForce) * torqueFactor;
+    // Note: torque is in **local** coordinate system: origin at the ankle.
+    relZMP << relZMPLeft.x()/1000.0f, relZMPLeft.y()/1000.0f, 0.0;
+    ft.leftTorque  = relZMP.cross(ft.leftForce) * torqueFactor;
+    relZMP << relZMPRight.x()/1000.0f, relZMPRight.y()/1000.0f, 0.0;
+    ft.rightTorque = relZMP.cross(ft.rightForce) * torqueFactor;
 
     return ft;
 }

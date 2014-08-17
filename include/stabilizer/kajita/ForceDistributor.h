@@ -34,9 +34,11 @@ public:
                                        const Eigen::Vector3f& refZMP,
                                        const VirtualRobot::MathTools::ConvexHull2DPtr& hull);
 
-    double computeAlpha(const Eigen::Matrix4f& leftAnklePose,
-                        const Eigen::Matrix4f& rightAnklePose,
+    double computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
+                        const Eigen::Matrix4f& groundPoseRight,
                         const Eigen::Vector3f& refZMP,
+                        const Eigen::Vector2f& refZMPLeft,
+                        const Eigen::Vector2f& refZMPRight,
                         Kinematics::SupportPhase phase);
 
     ForceTorque distributeZMP(const Eigen::Matrix4f& leftAnklePose,
