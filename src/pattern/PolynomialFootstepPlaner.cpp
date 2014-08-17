@@ -108,6 +108,8 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     // total number of samples for each phase
     int iSS = (int)(iSamplesPerStep * _dSS);
     int iDS = (int)(iSamplesPerStep * _dDS);
+    // first dual support phase needs to be *long* to warm up the preview control
+    int iFDS = iDS * 10;
 
     calculateStep(_dSingleSupportPhase, iSS, sampleDelta, _dStepLength, _dStepHeight, _footTrajectory);
 
@@ -135,7 +137,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     // ******************************************
     // initialise Matrices
     std::cout << "calculate Foot Positions for " << _iNumberOfSteps << " Steps: (iDS/iSS: [" << iDS << "|" << iSS << "])" << std::endl;
-    int iSamples = iSamplesPerStep * _iNumberOfSteps + iDS;
+    int iSamples = iSamplesPerStep * _iNumberOfSteps + iFDS;
     std::cout << "generating a total of " << iSamples << " samples. Using " << iSamplesPerStep << " samples per step and [" << iSS << "|" << iDS << "] samples for [SS|DS]-phase!" << std::endl;
     _mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
     _mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
@@ -157,7 +159,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     _mRFootPositions.col(stepCounter) = vRightFoot;
 
     // starting with full DS-Phase
-    for (int j = 0; j < iDS; j++)
+    for (int j = 0; j < iFDS; j++)
     {
         _mLFootTrajectory.col(index) = vLeftFoot;
         _mRFootTrajectory.col(index) = vRightFoot;

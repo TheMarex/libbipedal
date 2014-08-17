@@ -45,6 +45,7 @@ void ZMPPreviewControl::computeReference()
     double dDS = _pPlaner->getDSTime();
     int iSS = (int)(dSS * _pPlaner->getSamplesPerSecond());
     int iDS = (int)(dDS * _pPlaner->getSamplesPerSecond());
+    int iFDS = iDS*10;
     _nSamplesDS = iDS;
     _nSamplesSS = iSS;
     Eigen::Matrix3Xf mLeftFoot = _pPlaner->getLeftFootPositions();
@@ -59,7 +60,7 @@ void ZMPPreviewControl::computeReference()
     int size = mLeftFoot.cols();
     std::cout << "size: " << size << std::endl;
     //int mSize = (size+1)/2 * (iDS+iSS) + iDS;
-    int mSize = (size - 1) * (iDS + iSS) + iDS;
+    int mSize = (size - 1) * (iDS + iSS) + iFDS;
     std::cout << "Computed Vector Size for refZMP: " << mSize << std::endl;
     _mReference.resize(2, mSize);
     _mPhase.resize(mSize);
@@ -103,7 +104,7 @@ void ZMPPreviewControl::computeReference()
                 //std::cout << "0[DS-Start] Moving from center to standing foot!" << std::endl << start << std::endl << end << std::endl << std::flush;
                 std::cout << "0[DS-Start][ZMPPreview] index: " << index << "iDS: " << iDS << std::endl;
 
-                for (int t = 0; t < iDS; t++)
+                for (int t = 0; t < iFDS; t++)
                     if (iMethod == 0)
                         if (t < iDS / 2)
                         {
@@ -118,9 +119,9 @@ void ZMPPreviewControl::computeReference()
                         _mReference.col(index + t) = start + ((10 * (end - start)) / pow(iDS, 3) * pow(t, 3)) + ((15 * (start - end)) / pow(iDS, 4) * pow(t, 4)) + ((6 * (end - start)) / pow(iDS, 5) * pow(t, 5));
                     }
 
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, Kinematics::SUPPORT_BOTH);
+                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iFDS, Kinematics::SUPPORT_BOTH);
                 // increase index
-                index += iDS;
+                index += iFDS;
                 // next is swing-phase
                 state = 1;
                 break;
