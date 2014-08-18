@@ -46,6 +46,7 @@ public:
     const DampeningController& getLeftAnkleTorqueYController();
     const DampeningController& getRightAnkleTorqueXController();
     const DampeningController& getRightAnkleTorqueYController();
+    const DampeningController& getPelvisController();
 
     const Eigen::Vector3f& getLeftAnkleTorque() { return ft.leftTorque;}
     const Eigen::Vector3f& getRightAnkleTorque() { return ft.rightTorque;}

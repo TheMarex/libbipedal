@@ -73,6 +73,7 @@ const DampeningController& KajitaStabilizer::getLeftAnkleTorqueXController() { r
 const DampeningController& KajitaStabilizer::getLeftAnkleTorqueYController() { return footTorqueController->leftThetaDC;}
 const DampeningController& KajitaStabilizer::getRightAnkleTorqueXController() { return footTorqueController->rightPhiDC;}
 const DampeningController& KajitaStabilizer::getRightAnkleTorqueYController() { return footTorqueController->rightThetaDC;}
+const DampeningController& KajitaStabilizer::getPelvisController() { return footForceController->zCtrlDC;}
 
 void KajitaStabilizer::update(float dt,
                               Kinematics::SupportPhase phase,
