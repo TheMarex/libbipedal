@@ -265,13 +265,20 @@
 			<!--IgnoreCollision name="RightLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="RightLeg_Joint7"/>
-		<Child name="RightLeg_TCP_trafo"/>
+		<Child name="RightLeg_TCP_trafo0"/>
 	</RobotNode>       
 	
-	<RobotNode name="RightLeg_TCP_trafo">
+	<RobotNode name="RightLeg_TCP_trafo0">
 			<Transform>
 			    <Translation x="-90" y="65" z="-32"/>
 			    <rollpitchyaw roll="90" pitch="90" yaw="-30" unitsAngle="degree"/>
+			</Transform>
+		<Child name="RightLeg_TCP_trafo1"/>
+	</RobotNode> 
+
+	<RobotNode name="RightLeg_TCP_trafo1">
+			<Transform>
+			    <Translation x="0" y="-25" z="0"/>
 			</Transform>
 		<Child name="RightLeg_TCP"/>
 	</RobotNode> 
