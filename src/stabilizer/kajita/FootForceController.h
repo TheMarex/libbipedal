@@ -16,7 +16,7 @@ class FootForceController
 public:
     FootForceController(double hipJointDistance)
     : hipJointDistance(hipJointDistance)
-    , zCtrlDC(DampeningController {1000.0, 10.0, 0.0, 0.0})
+    , zCtrlDC(DampeningController {3000.0, 100.0, 0.0, 0.0})
     {
         BOOST_ASSERT(hipJointDistance > 0);
     }
@@ -30,11 +30,11 @@ public:
         zCtrlDC.update((leftFootForceRef.z() - rightFootForceRef.z()) - (leftFootForce.z() - rightFootForce.z()));
 
         Eigen::Matrix4f correctionMatrix = Eigen::Matrix4f::Zero();
-        VirtualRobot::MathTools::rpy2eigen4f(zCtrlDC.delta / hipJointDistance, 0, 0, correctionMatrix);
+        VirtualRobot::MathTools::rpy2eigen4f(0, zCtrlDC.delta / hipJointDistance, 0, correctionMatrix);
         return orientationRef * correctionMatrix;
     }
 
-private:
+public:
     double hipJointDistance;
     DampeningController zCtrlDC;
 };

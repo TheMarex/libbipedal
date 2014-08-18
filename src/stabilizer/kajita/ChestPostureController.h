@@ -16,8 +16,8 @@
 struct ChestPostureController
 {
     ChestPostureController()
-    : phiDC(DampeningController {4, 5.0, 0, 0})
-    , thetaDC(DampeningController {20, 5.0, 0, 0})
+    : phiDC(DampeningController {40, 5.0, 0, 0})
+    , thetaDC(DampeningController {80, 5.0, 0, 0})
     , refRPY(Eigen::Vector3f::Zero())
     , currentRPY(Eigen::Vector3f::Zero())
     {

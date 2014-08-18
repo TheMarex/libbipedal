@@ -13,10 +13,10 @@ class FootTorqueController
 public:
     // FIXME values are only guessed
     FootTorqueController()
-    : leftPhiDC(DampeningController    {100000, 2.0, 0.0, 0.0})
-    , leftThetaDC(DampeningController  {100000, 2.0, 0.0, 0.0})
-    , rightPhiDC(DampeningController   {100000, 2.0, 0.0, 0.0})
-    , rightThetaDC(DampeningController {100000, 2.0, 0.0, 0.0})
+    : leftPhiDC(DampeningController    {900000, 20.0, 0.0, 0.0})
+    , leftThetaDC(DampeningController  {900000, 20.0, 0.0, 0.0})
+    , rightPhiDC(DampeningController   {900000, 20.0, 0.0, 0.0})
+    , rightThetaDC(DampeningController {900000, 20.0, 0.0, 0.0})
     {
     }
 
