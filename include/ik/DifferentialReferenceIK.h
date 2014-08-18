@@ -137,15 +137,15 @@ public:
         VirtualRobot::DifferentialIK supportToPelvisIK(ikNodes.supportToPelvisNodes);
         VirtualRobot::DifferentialIK pelvisToSwingIK(ikNodes.pelvisToSwingNodes);
 
-        supportToPelvisIK.setGoal(supportTCPPose, ikNodes.pelvis);
-        pelvisToSwingIK.setGoal(swingTCPPose, ikNodes.swingFoot);
+        const float ikPrec = 1.0;
+        const float minChange = 0;
+        const unsigned numSteps = 100;
+
+        supportToPelvisIK.setGoal(supportTCPPose, ikNodes.pelvis, VirtualRobot::IKSolver::All, ikPrec);
+        pelvisToSwingIK.setGoal(swingTCPPose, ikNodes.swingFoot, VirtualRobot::IKSolver::All, ikPrec);
 
         BOOST_ASSERT(supportToPelvisIK.getJacobianMatrix().rows() > 0);
         BOOST_ASSERT(pelvisToSwingIK.getJacobianMatrix().rows() > 0);
-
-        const float ikPrec = 0.1;
-        const float minChange = 0;
-        const unsigned numSteps = 100;
 
         bool success = true;
         success = success && supportToPelvisIK.computeSteps(ikPrec, minChange, numSteps);
@@ -160,11 +160,11 @@ public:
     {
         VirtualRobot::DifferentialIK chestIK(torsoNodes);
 
-        chestIK.setGoal(chestPose, chest, VirtualRobot::IKSolver::Orientation);
-
-        const float ikPrec = 0.1;
+        const float ikPrec = 1.0;
         const float minChange = 0;
         const unsigned numSteps = 100;
+
+        chestIK.setGoal(chestPose, chest, VirtualRobot::IKSolver::Orientation, ikPrec, 1.0 / 180.0 * M_PI);
 
         bool success = chestIK.computeSteps(ikPrec, minChange, numSteps);
 
