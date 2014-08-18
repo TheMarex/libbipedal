@@ -37,15 +37,17 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 : chest(robot->getRobotNode("TorsoCenter"))
 , leftFoot(robot->getRobotNode("LeftLeg_TCP"))
 , rightFoot(robot->getRobotNode("RightLeg_TCP"))
-, leftAnkle(robot->getRobotNode("LeftLeg_BodyAnkle2"))
-, rightAnkle(robot->getRobotNode("RightLeg_BodyAnkle2"))
+, leftFootBody(robot->getRobotNode("LeftLeg_BodyAnkle2"))
+, rightFootBody(robot->getRobotNode("RightLeg_BodyAnkle2"))
+, leftAnkleBody(robot->getRobotNode("LeftLeg_BodyAnkle1"))
+, rightAnkleBody(robot->getRobotNode("RightLeg_BodyAnkle1"))
 , pelvis(robot->getRobotNode("Waist"))
 , leftAnkleSensor(leftAnkleSensor)
 , rightAnkleSensor(rightAnkleSensor)
 , chestPostureController(new ChestPostureController())
 , forceDistributor(new ForceDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
-                                        leftAnkle, rightAnkle, leftFoot, rightFoot))
+                                        leftFootBody, rightFootBody, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
 , nodes(robot->getRobotNodeSet("CoMCompensation"))
 , referenceIK(boost::dynamic_pointer_cast<ReferenceIK>(
@@ -107,6 +109,8 @@ void KajitaStabilizer::update(float dt,
     Eigen::Matrix4f leftToWorld  = leftFoot->getGlobalPose();
     Eigen::Matrix4f rightToWorld = rightFoot->getGlobalPose();
     ft = forceDistributor->distributeZMP(
+        leftAnkleBody->getGlobalPose().block(0, 0, 3, 1),
+        rightAnkleBody->getGlobalPose().block(0, 0, 3, 1),
         leftToWorld,
         rightToWorld,
         zmpPositionRef,

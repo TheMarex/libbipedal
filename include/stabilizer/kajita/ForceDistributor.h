@@ -41,8 +41,10 @@ public:
                         const Eigen::Vector2f& refZMPRight,
                         Kinematics::SupportPhase phase);
 
-    ForceTorque distributeZMP(const Eigen::Matrix4f& leftAnklePose,
-                              const Eigen::Matrix4f& rightAnklePose,
+    ForceTorque distributeZMP(const Eigen::Vector3f& leftAnklePosition,
+                              const Eigen::Vector3f& rightAnklePosition,
+                              const Eigen::Matrix4f& leftFootTCP,
+                              const Eigen::Matrix4f& rightFootTCP,
                               const Eigen::Vector3f& refZMP,
                               Kinematics::SupportPhase phase);
 

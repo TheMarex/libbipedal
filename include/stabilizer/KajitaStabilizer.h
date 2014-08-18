@@ -72,13 +72,17 @@ private:
     VirtualRobot::RobotNodePtr chest;
     // should not be affected by torso rotation + orientation, only changes in leg angles
     VirtualRobot::RobotNodePtr pelvis;
-    // TCP on left foot
-    VirtualRobot::RobotNodePtr leftAnkle;
-    // TCP on right foot
-    VirtualRobot::RobotNodePtr rightAnkle;
     // joint + body of left foot
-    VirtualRobot::RobotNodePtr leftFoot;
+    VirtualRobot::RobotNodePtr leftFootBody;
     // joint + body of right foot
+    VirtualRobot::RobotNodePtr rightFootBody;
+    // joint + body of left ankle
+    VirtualRobot::RobotNodePtr leftAnkleBody;
+    // joint + body of right ankle
+    VirtualRobot::RobotNodePtr rightAnkleBody;
+    // TCP on left foot
+    VirtualRobot::RobotNodePtr leftFoot;
+    // TCP on right foot
     VirtualRobot::RobotNodePtr rightFoot;
     // all nodes that are used for the IK
     VirtualRobot::RobotNodeSetPtr nodes;
