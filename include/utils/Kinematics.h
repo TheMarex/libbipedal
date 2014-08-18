@@ -71,10 +71,10 @@ inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
         case SUPPORT_BOTH:
             refToWorld.block(0, 3, 3, 1) = (rightFootPoseProjected.block(0, 3, 3, 1) + leftFootPoseProjected.block(0, 3, 3, 1)) / 2.0;
             Eigen::Vector3f zAxis(0, 0, 1);
-            Eigen::Vector3f xAxis = (rightFootPoseProjected.block(0, 0, 3, 1) + leftFootPoseProjected.block(0, 0, 3, 1)) / 2.0;
-            xAxis /= xAxis.norm();
-            Eigen::Vector3f yAxis = zAxis.cross(xAxis);
+            Eigen::Vector3f yAxis = (rightFootPoseProjected.block(0, 1, 3, 1) + leftFootPoseProjected.block(0, 1, 3, 1)) / 2.0;
             yAxis /= yAxis.norm();
+            Eigen::Vector3f xAxis = yAxis.cross(zAxis);
+            xAxis /= xAxis.norm();
             refToWorld.block(0, 0, 3, 1) = xAxis;
             refToWorld.block(0, 1, 3, 1) = yAxis;
             refToWorld.block(0, 2, 3, 1) = zAxis;
