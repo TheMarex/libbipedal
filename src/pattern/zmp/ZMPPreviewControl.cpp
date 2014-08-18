@@ -106,7 +106,7 @@ void ZMPPreviewControl::computeReference()
 
                 for (int t = 0; t < iFDS; t++)
                     if (iMethod == 0)
-                        if (t < iDS / 2)
+                        if (t < iFDS / 2)
                         {
                             _mReference.col(index + t) = start;
                         }
