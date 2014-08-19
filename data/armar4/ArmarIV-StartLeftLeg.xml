@@ -10,15 +10,9 @@
         <!--<Visualization>
 			<CoordinateAxis type="Inventor" enable="true"/>
         </Visualization>-->
-		<Child name="LeftLeg_TCP_trafo0"/>
+		<Child name="LeftLeg_TCP_trafo1"/>
 	</RobotNode>
 
-	<RobotNode name="LeftLeg_TCP_trafo0">
-    	<Transform>
-    			<Translation x="0" y="25" z="0"/>
-    	</Transform>
-    	<Child name="LeftLeg_TCP_trafo1"/>
-	</RobotNode> 
 
 	<RobotNode name="LeftLeg_TCP_trafo1">
     	<Transform>
