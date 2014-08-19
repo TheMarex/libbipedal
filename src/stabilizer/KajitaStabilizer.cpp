@@ -109,8 +109,8 @@ void KajitaStabilizer::update(float dt,
     Eigen::Matrix4f leftToWorld  = leftFoot->getGlobalPose();
     Eigen::Matrix4f rightToWorld = rightFoot->getGlobalPose();
     ft = forceDistributor->distributeZMP(
-        leftAnkleBody->getGlobalPose().block(0, 0, 3, 1),
-        rightAnkleBody->getGlobalPose().block(0, 0, 3, 1),
+        leftAnkleBody->getGlobalPose().block(0, 3, 3, 1),
+        rightAnkleBody->getGlobalPose().block(0, 3, 3, 1),
         leftToWorld,
         rightToWorld,
         zmpPositionRef,

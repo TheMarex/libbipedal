@@ -84,6 +84,8 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
 
     double alpha = computeAlpha(groundPoseLeft, groundPoseRight, groundRefZMP, localZMPLeft.head(2), localZMPRight.head(2), phase);
 
+    //std::cout << "########## " << alpha << " ###########" << std::endl;
+
     ForceTorque ft;
     // kg*m/s^2 = N
     ft.leftForce  = -(1-alpha) * mass * gravity;
@@ -101,6 +103,10 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
         Eigen::Vector3f rightTorqueWorld = groundPoseRight.block(0, 0, 3, 3) * ft.rightTorque;
         Eigen::Vector3f tau0 = -1 * (leftTorqueWorld + rightTorqueWorld);
 
+        //std::cout << "Tau0World: " << tau0.transpose() << std::endl;
+        //std::cout << "leftTorqueWorld: "  << leftTorqueWorld.transpose() << std::endl;
+        //std::cout << "rightTorqueWorld: " << rightTorqueWorld.transpose() << std::endl;
+
         // Note: Our coordinate system is different than in the paper!
         Eigen::Vector3f xAxis = leftAnklePosition - rightAnklePosition;
         xAxis /= xAxis.norm();
@@ -112,17 +118,25 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
         centerFrame.block(0, 1, 3, 1) = yAxis;
         centerFrame.block(0, 2, 3, 1) = zAxis;
 
+        //std::cout << "Center frame:\n" << centerFrame << std::endl;
+
         Eigen::Vector3f centerTau0 = centerFrame.transpose() * tau0;
-        Eigen::Vector3f torqueLeftCenter;
-        torqueLeftCenter.x() = (1-alpha)*centerTau0.x();
-        torqueLeftCenter.y() = centerTau0.y() < 0 ? centerTau0.y() : 0;
-        Eigen::Vector3f torqueRightCenter;
-        torqueRightCenter.x() = alpha*centerTau0.x();
-        torqueRightCenter.y() = centerTau0.y() < 0 ? 0 : centerTau0.y();
+        Eigen::Vector3f leftTorqueCenter;
+        leftTorqueCenter.x() = (1-alpha)*centerTau0.x();
+        leftTorqueCenter.y() = centerTau0.y() < 0 ? centerTau0.y() : 0;
+        leftTorqueCenter.z() = 0;
+        Eigen::Vector3f rightTorqueCenter;
+        rightTorqueCenter.x() = alpha*centerTau0.x();
+        rightTorqueCenter.y() = centerTau0.y() < 0 ? 0 : centerTau0.y();
+        rightTorqueCenter.z() = 0;
+
+        //std::cout << "Tau0Center: " << centerTau0.transpose() << std::endl;
+        //std::cout << "leftTorqueCenter: "  << leftTorqueCenter.transpose() << std::endl;
+        //std::cout << "rightTorqueCenter: " << rightTorqueCenter.transpose() << std::endl;
 
         // tcp <--- world <--- centerFrame
-        ft.leftTorque  = groundPoseLeft.block(0, 0, 3, 3).transpose()  * centerFrame * torqueLeftCenter;
-        ft.rightTorque = groundPoseRight.block(0, 0, 3, 3).transpose() * centerFrame * torqueRightCenter;
+        ft.leftTorque  = groundPoseLeft.block(0, 0, 3, 3).transpose()  * centerFrame * leftTorqueCenter;
+        ft.rightTorque = groundPoseRight.block(0, 0, 3, 3).transpose() * centerFrame * rightTorqueCenter;
     }
 
     // for some reason the sensors give a torque that is 10 times the expected value
@@ -130,6 +144,9 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
     // convert to Nm
     ft.leftTorque  *= torqueFactor / 1000.0 / 1000.0;
     ft.rightTorque *= torqueFactor / 1000.0 / 1000.0;
+
+    //std::cout << "leftTorque: "  << ft.leftTorque.transpose() << std::endl;
+    //std::cout << "rightTorque: " << ft.rightTorque.transpose() << std::endl;
 
     return ft;
 }
