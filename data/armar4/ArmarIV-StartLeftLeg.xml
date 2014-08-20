@@ -10,31 +10,23 @@
         <!--<Visualization>
 			<CoordinateAxis type="Inventor" enable="true"/>
         </Visualization>-->
-		<Child name="LeftLeg_TCP_trafo1"/>
+		<Child name="LeftLeg_BodyAnkle2"/>
 	</RobotNode>
 
-
-	<RobotNode name="LeftLeg_TCP_trafo1">
-    	<Transform>
-    			<rollpitchyaw roll="90" pitch="150" yaw="-90" unitsAngle="degree"/>
-    	</Transform>
-    	<Child name="LeftLeg_TCP_trafo2"/>
-	</RobotNode> 
-      
-	<RobotNode name="LeftLeg_TCP_trafo2">
-    	<Transform>
-    			<Translation x="90" y="-65" z="-32"/>
-    	</Transform>
-		<Child name="LeftLeg_BodyAnkle2"/>
-	</RobotNode> 
-
     <RobotNode name="LeftLeg_BodyAnkle2">
+		<Transform>
+			<Translation x="0" y="0" z="25"/>
+		</Transform>
 		<Visualization>
-			<File type="Inventor">iv/lfoot.iv</File>
+			<!--File type="Inventor">iv/lfoot.iv</File-->
+			<Primitives>
+				<Box width="120" height="250" depth="50"/>
+			</Primitives>
+			<UseAsCollisionModel/>
 		</Visualization>
-		<CollisionModel>
+		<!--CollisionModel>
             <File type="Inventor">iv_reduced/colmodel_lfoot.wrl</File>
-        </CollisionModel> 
+        </CollisionModel--> 
 		<Physics>
 			<Mass value="8.4756797e-01" unitsWeight="kg"/>
 			<!--CoM unitsLength="mm" x="-5.1146005e+01" y="2.6084766e+01" z="9.1396030e-01"/>
@@ -47,19 +39,19 @@
 		</Physics> 
 		<Child name="LeftLeg_Joint6tmp"/>
 	</RobotNode> 
-	
-    
 
 	<RobotNode name="LeftLeg_Joint6tmp">
       <Transform>
-			  <DH alpha="180" a="-150.707"  unitsAngle="degree"/>
+			  <rollpitchyaw roll="-90" pitch="-11" yaw="-89" unitsAngle="degree"/>
+			  <Translation x="50" y="0" z="0"/>
       </Transform>
       <Child name="LeftLeg_Joint6"/>
-	</RobotNode>    
+	</RobotNode>
 
 	<RobotNode name="LeftLeg_Joint6">
     <Transform>
-      <DH a="0" d="0" theta="109.174" alpha="0" units="degree"/>
+	  <!--rollpitchyaw roll="0" pitch="-90" yaw="180" unitsAngle="degree"/-->
+      <DH a="55" d="33" theta="-90" alpha="0" units="degree"/>
     </Transform>
     <Joint type="revolute">
       <axis x="0" y="0" z="1"/>

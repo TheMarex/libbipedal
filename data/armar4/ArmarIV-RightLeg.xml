@@ -240,20 +240,31 @@
 			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
 		</Joint>
-		<Child name="RightLeg_BodyAnkle2"/>
+		<Child name="RightLeg_Joint6temp"/>
         <Sensor name="RightLeg_AnkleSensor" type="forcetorque"/>
+	</RobotNode>
+
+	<RobotNode name="RightLeg_Joint6temp">
+		<Transform>
+			<DH alpha="0" a="62.939127" d="0" theta="60" unitsAngle="degree"/>
+		</Transform>
+		<Child name="RightLeg_BodyAnkle2"/>
 	</RobotNode>
 
 	<RobotNode name="RightLeg_BodyAnkle2">
 		<Transform>
-			<DH alpha="0" a="150.707" d="32.5008" unitsAngle="degree"/>
+			<DH alpha="0" a="-30.5061" d="0" theta="90" unitsAngle="degree"/>
 		</Transform>
 		<Visualization>
-			<File type="Inventor">iv/rfoot.iv</File>
+			<!--File type="Inventor">iv/rfoot.iv</File-->
+			<Primitives>
+				<Box width="250" height="50" depth="120"/>
+			</Primitives>
+			<UseAsCollisionModel/>
 		</Visualization>
-		<CollisionModel>
+		<!--CollisionModel>
             <File type="Inventor">iv_reduced/colmodel_rfoot.wrl</File>
-        </CollisionModel> 
+        </CollisionModel--> 
 		<Physics>
 			<Mass value="8.4756797e-01" unitsWeight="kg"/>
 			<!--CoM unitsLength="mm" x="-5.1146005e+01" y="2.6084766e+01" z="-9.1396030e-01"/>
@@ -265,18 +276,14 @@
 			<!--IgnoreCollision name="RightLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="RightLeg_Joint7"/>
-		<Child name="RightLeg_TCP_trafo"/>
-	</RobotNode>       
-	
-	<RobotNode name="RightLeg_TCP_trafo">
-			<Transform>
-			    <Translation x="-90" y="65" z="-32"/>
-			    <rollpitchyaw roll="90" pitch="90" yaw="-30" unitsAngle="degree"/>
-			</Transform>
 		<Child name="RightLeg_TCP"/>
-	</RobotNode> 
+	</RobotNode>
 	
 	<RobotNode name="RightLeg_TCP">
+		<Transform>
+		    <rollpitchyaw roll="-90" pitch="90" yaw="0" unitsAngle="degree"/>
+		    <Translation x="0" y="0" z="-25"/>
+		</Transform>
         <!--<Visualization>
 			<CoordinateAxis type="Inventor" enable="true"/>
         </Visualization>-->
@@ -284,7 +291,7 @@
 	
 	<RobotNode name="RightLeg_Joint7">
 		<Transform>
-			<DH theta="-29.6261" unitsAngle="degree"/>
+			<DH theta="-29.6131" unitsAngle="degree"/>
 		</Transform>
 		<Joint type="revolute">
 			<!-- <DH theta="-29.6261" alpha="0" a="0" d="0" unitsAngle="degree"/> -->
