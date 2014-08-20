@@ -32,32 +32,41 @@
  *  - Reference ZMP
  */
 KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
-               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
-               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
-               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY)
-// Names specific to ARMAR 4
-: chest(robot->getRobotNode("TorsoCenter"))
-, leftFoot(robot->getRobotNode("LeftLeg_TCP"))
-, rightFoot(robot->getRobotNode("RightLeg_TCP"))
-, leftFootBody(robot->getRobotNode("LeftLeg_BodyAnkle2"))
-, rightFootBody(robot->getRobotNode("RightLeg_BodyAnkle2"))
-, leftAnkleBody(robot->getRobotNode("LeftLeg_BodyAnkle1"))
-, rightAnkleBody(robot->getRobotNode("RightLeg_BodyAnkle1"))
-, pelvis(robot->getRobotNode("Waist"))
+                                   const VirtualRobot::RobotNodeSetPtr& nodes,
+                                   const VirtualRobot::RobotNodePtr& chest,
+                                   const VirtualRobot::RobotNodePtr& leftFoot,
+                                   const VirtualRobot::RobotNodePtr& rightFoot,
+                                   const VirtualRobot::RobotNodePtr& leftFootBody,
+                                   const VirtualRobot::RobotNodePtr& rightFootBody,
+                                   const VirtualRobot::RobotNodePtr& leftAnkleBody,
+                                   const VirtualRobot::RobotNodePtr& rightAnkleBody,
+                                   const VirtualRobot::RobotNodePtr& pelvis,
+                                   const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
+                                   const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
+                                   const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
+                                   const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
+                                   ReferenceIKPtr referenceIK)
+/* Nodes */
+: chest(chest)
+, leftFoot(leftFoot)
+, rightFoot(rightFoot)
+, leftFootBody(leftFootBody)
+, rightFootBody(rightFootBody)
+, leftAnkleBody(leftAnkleBody)
+, rightAnkleBody(rightAnkleBody)
+, pelvis(pelvis)
 , leftAnkleSensorX(leftAnkleSensorX)
 , rightAnkleSensorX(rightAnkleSensorX)
 , leftAnkleSensorY(leftAnkleSensorY)
 , rightAnkleSensorY(rightAnkleSensorY)
+, nodes(nodes)
+/* Controllers */
 , chestPostureController(new TwoDOFPostureController(40, 5, 80, 5))
 , forceDistributor(new ForceDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftFootBody, rightFootBody, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
-, nodes(robot->getRobotNodeSet("CoMCompensation"))
-, referenceIK(boost::dynamic_pointer_cast<ReferenceIK>(
-                boost::make_shared<DifferentialReferenceIK>(nodes, robot, robot->getRobotNodeSet("ColModelAll"), leftFoot, rightFoot, chest, pelvis)
-              ))
+/* Adapted frames */
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
 , leftFootPose(Eigen::Matrix4f::Identity())
@@ -68,12 +77,49 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , zmpPositionRef(Eigen::Vector3f::Zero())
 , stepAdaptionFrame(Eigen::Matrix4f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
+, referenceIK(referenceIK)
 {
+    // FIXME Make node name configurable
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
     Eigen::Vector3f rightHipPos = robot->getRobotNode("RightLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
     double hipJointDistance = (leftHipPos - rightHipPos).norm();
     footForceController = FootForceControllerPtr(new FootForceController(hipJointDistance));
 
+    BOOST_ASSERT(robot);
+    BOOST_ASSERT(nodes);
+    BOOST_ASSERT(chest);
+    BOOST_ASSERT(leftFoot);
+    BOOST_ASSERT(rightFoot);
+    BOOST_ASSERT(leftFootBody);
+    BOOST_ASSERT(rightFootBody);
+    BOOST_ASSERT(leftAnkleBody);
+    BOOST_ASSERT(rightAnkleBody);
+    BOOST_ASSERT(pelvis);
+    BOOST_ASSERT(leftAnkleSensorX);
+    BOOST_ASSERT(rightAnkleSensorX);
+    BOOST_ASSERT(leftAnkleSensorY);
+    BOOST_ASSERT(rightAnkleSensorY);
+    BOOST_ASSERT(referenceIK);
+
+/*
+    std::cout
+     << "KajitaStabilizer nodes:" << std::endl
+     << "robot: " << robot->getName() << std::endl
+     << "nodes: " << nodes->getName() << std::endl
+     << "chest: " << chest->getName() << std::endl
+     << "leftFoot: " << leftFoot->getName() << std::endl
+     << "rightFoot: " << rightFoot->getName() << std::endl
+     << "leftFootBody: " << leftFootBody->getName() << std::endl
+     << "rightFootBody: " << rightFootBody->getName() << std::endl
+     << "leftAnkleBody: " << leftAnkleBody->getName() << std::endl
+     << "rightAnkleBody: " << rightAnkleBody->getName() << std::endl
+     << "pelvis: " << pelvis->getName() << std::endl
+     << "leftAnkleSensorX: " << leftAnkleSensorX->getName() << std::endl
+     << "rightAnkleSensorX: " << rightAnkleSensorX->getName() << std::endl
+     << "leftAnkleSensorY: " << leftAnkleSensorY->getName() << std::endl
+     << "rightAnkleSensorY: " << rightAnkleSensorY->getName() << std::endl
+     << std::endl;
+*/
 }
 
 const DampeningController& KajitaStabilizer::getLeftAnkleTorqueXController() { return footTorqueController->leftPhiDC;}

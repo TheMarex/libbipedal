@@ -20,6 +20,10 @@ struct RobotConfig
 	const char* RIGHT_ANKLE_X_SENSOR_NAME;
 	const char* LEFT_ANKLE_Y_SENSOR_NAME;
 	const char* RIGHT_ANKLE_Y_SENSOR_NAME;
+	const char* LEFT_FOOT_BODY_NAME;
+	const char* RIGHT_FOOT_BODY_NAME;
+	const char* LEFT_ANKLE_BODY_NAME;
+	const char* RIGHT_ANKLE_BODY_NAME;
 };
 }
 

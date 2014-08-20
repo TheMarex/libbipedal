@@ -1,5 +1,5 @@
-#ifndef __KAJITA_STABILIZER_H__
-#define __KAJITA_STABILIZER_H__
+#ifndef __CARTESIAN_STABILIZER_H__
+#define __CARTESIAN_STABILIZER_H__
 
 #include <SimDynamics/SimDynamics.h>
 #include <SimDynamics/DynamicsEngine/DynamicsRobot.h>
@@ -10,38 +10,23 @@
 
 #include "../bipedal.h"
 
-#include "kajita/ForceDistributor.h"
-
 #include "FrameAdaptingStabilizer.h"
 
-class FootForceController;
-class FootTorqueController;
 class TwoDOFPostureController;
 
-typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
-typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
 typedef boost::shared_ptr<TwoDOFPostureController> TwoDOFPostureControllerPtr;
 
-class KajitaStabilizer : public FrameAdaptingStabilizer
+class CartesianStabilizer : public FrameAdaptingStabilizer
 {
 public:
-    KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-                     const VirtualRobot::RobotNodeSetPtr& nodes,
-                     const VirtualRobot::RobotNodePtr& chest,
-                     const VirtualRobot::RobotNodePtr& leftFoot,
-                     const VirtualRobot::RobotNodePtr& rightFoot,
-                     const VirtualRobot::RobotNodePtr& leftFootBody,
-                     const VirtualRobot::RobotNodePtr& rightFootBody,
-                     const VirtualRobot::RobotNodePtr& leftAnkleBody,
-                     const VirtualRobot::RobotNodePtr& rightAnkleBody,
-                     const VirtualRobot::RobotNodePtr& pelvis,
-                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
-                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
-                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
-                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
-                     ReferenceIKPtr referenceIK);
 
-    VirtualRobot::RobotPtr getInvertedRobot();
+    CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
+                        const VirtualRobot::RobotNodeSetPtr& nodes,
+                        const VirtualRobot::RobotNodePtr& chest,
+                        const VirtualRobot::RobotNodePtr& leftFoot,
+                        const VirtualRobot::RobotNodePtr& rightFoot,
+                        const VirtualRobot::RobotNodePtr& pelvis,
+                        ReferenceIKPtr referenceIK);
 
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
@@ -54,17 +39,6 @@ public:
     virtual const Eigen::Matrix4f& getPelvisPose() override { return pelvisPose; }
     virtual const Eigen::Matrix4f& getLeftFootPose() override { return leftFootPose; }
     virtual const Eigen::Matrix4f& getRightFootPose() override { return rightFootPose; }
-
-    const DampeningController& getLeftAnkleTorqueXController();
-    const DampeningController& getLeftAnkleTorqueYController();
-    const DampeningController& getRightAnkleTorqueXController();
-    const DampeningController& getRightAnkleTorqueYController();
-    const DampeningController& getPelvisController();
-
-    const Eigen::Vector3f& getLeftAnkleTorque() { return ft.leftTorque;}
-    const Eigen::Vector3f& getRightAnkleTorque() { return ft.rightTorque;}
-    const Eigen::Vector3f& getLeftAnkleForce() { return ft.leftForce;}
-    const Eigen::Vector3f& getRightAnkleForce() { return ft.rightForce;}
 
     virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
@@ -85,14 +59,6 @@ private:
     VirtualRobot::RobotNodePtr chest;
     // should not be affected by torso rotation + orientation, only changes in leg angles
     VirtualRobot::RobotNodePtr pelvis;
-    // joint + body of left foot
-    VirtualRobot::RobotNodePtr leftFootBody;
-    // joint + body of right foot
-    VirtualRobot::RobotNodePtr rightFootBody;
-    // joint + body of left ankle
-    VirtualRobot::RobotNodePtr leftAnkleBody;
-    // joint + body of right ankle
-    VirtualRobot::RobotNodePtr rightAnkleBody;
     // TCP on left foot
     VirtualRobot::RobotNodePtr leftFoot;
     // TCP on right foot
@@ -100,15 +66,11 @@ private:
     // all nodes that are used for the IK
     VirtualRobot::RobotNodeSetPtr nodes;
 
-    FootForceControllerPtr             footForceController;
-    FootTorqueControllerPtr            footTorqueController;
-    TwoDOFPostureControllerPtr         chestPostureController;
-    ForceDistributorPtr                forceDistributor;
-    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorX;
-    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorX;
-    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorY;
-    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorY;
-    ReferenceIKPtr                     referenceIK;
+    TwoDOFPostureControllerPtr chestPostureController;
+    TwoDOFPostureControllerPtr leftFootPostureController;
+    TwoDOFPostureControllerPtr rightFootPostureController;
+    TwoDOFPostureControllerPtr pelvisPostureController;
+    ReferenceIKPtr             referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;
 
@@ -130,7 +92,6 @@ private:
 
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
-    ForceDistributor::ForceTorque ft;
 };
 
 
