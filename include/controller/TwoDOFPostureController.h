@@ -1,23 +1,27 @@
-#ifndef __CHEST_POSTURE_CONTROLLER_H__
-#define __CHEST_POSTURE_CONTROLLER_H__
+#ifndef __TWO_DOF_POSTURE_CONTROLLER_H__
+#define __TWO_DOF_POSTURE_CONTROLLER_H__
 
 #include <VirtualRobot/MathTools.h>
 #include <Eigen/Dense>
 
-#include <bipedal/controller/DampeningController.h>
+#include "DampeningController.h"
 
 /**
- * Implements the chest posture controller proposed by Kajita in his 2010 paper.
+ * Implements a dampened controller, that controlls the rotation around the x and y axis
+ * of a reference frame.
+ *
+ * Based on the chest posture controller that was proposed by kajita in his 2010 paper.
  *
  * Note: The constant K in the paper is proportional, here it is anti-proportional
  * because I use the same dampening controller that is used for the foot forces/torques.
  *
  */
-struct ChestPostureController
+struct TwoDOFPostureController
 {
-    ChestPostureController()
-    : phiDC(DampeningController {40, 5.0, 0, 0})
-    , thetaDC(DampeningController {80, 5.0, 0, 0})
+    TwoDOFPostureController(double rollFeedbackDampening=40,  double rollNeutralTime=5,
+                            double pitchFeedbackDampening=80, double pitchNeutralTime=5)
+    : phiDC(DampeningController {rollFeedbackDampening, rollNeutralTime, 0, 0})
+    , thetaDC(DampeningController {pitchFeedbackDampening, pitchFeedbackDampening, 0, 0})
     , refRPY(Eigen::Vector3f::Zero())
     , currentRPY(Eigen::Vector3f::Zero())
     {

@@ -17,6 +17,7 @@ class TrajectoryExporter;
 class ReferenceIK;
 class KajitaStabilizer;
 class DampeningController;
+class TwoDOFPostureController;
 template<typename T> class ControlMatrixEntry;
 template<typename T> class ControlMatrixParser;
 template<typename T> class ControlPointEntry;

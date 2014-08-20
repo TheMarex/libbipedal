@@ -14,11 +14,11 @@
 
 class FootForceController;
 class FootTorqueController;
-class ChestPostureController;
+class TwoDOFPostureController;
 
 typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
-typedef boost::shared_ptr<ChestPostureController> ChestPostureControllerPtr;
+typedef boost::shared_ptr<TwoDOFPostureController> TwoDOFPostureControllerPtr;
 
 class KajitaStabilizer
 {
@@ -91,7 +91,7 @@ private:
 
     FootForceControllerPtr             footForceController;
     FootTorqueControllerPtr            footTorqueController;
-    ChestPostureControllerPtr          chestPostureController;
+    TwoDOFPostureControllerPtr         chestPostureController;
     ForceDistributorPtr                forceDistributor;
     VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorX;
     VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorX;

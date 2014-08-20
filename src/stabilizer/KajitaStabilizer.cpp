@@ -6,7 +6,6 @@
 #include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
 
-#include "kajita/ChestPostureController.h"
 #include "kajita/FootForceController.h"
 #include "kajita/FootTorqueController.h"
 
@@ -14,6 +13,8 @@
 #include "stabilizer/KajitaStabilizer.h"
 
 #include "ik/DifferentialReferenceIK.h"
+
+#include "controller/TwoDOFPostureController.h"
 
 /*
  * These controller needs a trajectory with the following control features:
@@ -48,7 +49,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , rightAnkleSensorX(rightAnkleSensorX)
 , leftAnkleSensorY(leftAnkleSensorY)
 , rightAnkleSensorY(rightAnkleSensorY)
-, chestPostureController(new ChestPostureController())
+, chestPostureController(new TwoDOFPostureController(40, 5, 80, 5))
 , forceDistributor(new ForceDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftFootBody, rightFootBody, leftFoot, rightFoot))
