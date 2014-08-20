@@ -16,8 +16,10 @@ struct RobotConfig
 	const char* RIGHT_LEG_TCP_NODE_NAME;
 	const char* LEFT_ANKLE_NODE_NAME;
 	const char* RIGHT_ANKLE_NODE_NAME;
-	const char* LEFT_ANKLE_SENSOR_NAME;
-	const char* RIGHT_ANKLE_SENSOR_NAME;
+	const char* LEFT_ANKLE_X_SENSOR_NAME;
+	const char* RIGHT_ANKLE_X_SENSOR_NAME;
+	const char* LEFT_ANKLE_Y_SENSOR_NAME;
+	const char* RIGHT_ANKLE_Y_SENSOR_NAME;
 };
 }
 

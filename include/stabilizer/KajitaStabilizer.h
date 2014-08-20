@@ -27,8 +27,10 @@ public:
     VirtualRobot::RobotPtr getInvertedRobot();
 
     KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
-                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor);
+                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
+                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
+                     const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
+                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY);
 
     const Eigen::Matrix4f& getChestPoseRef() { return chestPoseRef; }
     const Eigen::Matrix4f& getPelvisPoseRef() { return pelvisPoseRef; }
@@ -91,8 +93,10 @@ private:
     FootTorqueControllerPtr            footTorqueController;
     ChestPostureControllerPtr          chestPostureController;
     ForceDistributorPtr                forceDistributor;
-    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensor;
-    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensor;
+    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorX;
+    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorX;
+    VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorY;
+    VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorY;
     ReferenceIKPtr                     referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;

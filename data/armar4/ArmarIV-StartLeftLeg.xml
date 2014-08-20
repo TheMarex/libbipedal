@@ -63,7 +63,7 @@
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftLeg_BodyAnkle1"/>
-        <Sensor name="LeftLeg_AnkleSensor" type="forcetorque"/>
+        <Sensor name="LeftLeg_AnkleSensorX" type="forcetorque"/>
 	</RobotNode>
 	
 	<RobotNode name="LeftLeg_BodyAnkle1">
@@ -103,6 +103,7 @@
 			<MaxTorque value="100"/> 			
 		</Joint>
 		<Child name="LeftLeg_BodyKnee"/>
+        <Sensor name="LeftLeg_AnkleSensorY" type="forcetorque"/>
 	</RobotNode>
 	
 	<RobotNode name="LeftLeg_BodyKnee">

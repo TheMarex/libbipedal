@@ -45,7 +45,7 @@ void ZMPPreviewControl::computeReference()
     double dDS = _pPlaner->getDSTime();
     int iSS = (int)(dSS * _pPlaner->getSamplesPerSecond());
     int iDS = (int)(dDS * _pPlaner->getSamplesPerSecond());
-    int iFDS = iDS*10;
+    int iFDS = iDS*50;
     _nSamplesDS = iDS;
     _nSamplesSS = iSS;
     Eigen::Matrix3Xf mLeftFoot = _pPlaner->getLeftFootPositions();

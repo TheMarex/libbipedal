@@ -15,8 +15,10 @@ const Bipedal::RobotConfig ARMAR4_CONFIG = {
 "RightLeg_TCP",
 "LeftLeg_BodyAnkle2",
 "RightLeg_BodyAnkle2",
-"LeftLeg_AnkleSensor",
-"RightLeg_AnkleSensor"
+"LeftLeg_AnkleSensorX",
+"RightLeg_AnkleSensorX",
+"LeftLeg_AnkleSensorY",
+"RightLeg_AnkleSensorY"
 };
 
 #endif

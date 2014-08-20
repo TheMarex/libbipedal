@@ -31,8 +31,10 @@
  *  - Reference ZMP
  */
 KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensor,
-               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensor)
+               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
+               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
+               const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
+               const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY)
 // Names specific to ARMAR 4
 : chest(robot->getRobotNode("TorsoCenter"))
 , leftFoot(robot->getRobotNode("LeftLeg_TCP"))
@@ -42,8 +44,10 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , leftAnkleBody(robot->getRobotNode("LeftLeg_BodyAnkle1"))
 , rightAnkleBody(robot->getRobotNode("RightLeg_BodyAnkle1"))
 , pelvis(robot->getRobotNode("Waist"))
-, leftAnkleSensor(leftAnkleSensor)
-, rightAnkleSensor(rightAnkleSensor)
+, leftAnkleSensorX(leftAnkleSensorX)
+, rightAnkleSensorX(rightAnkleSensorX)
+, leftAnkleSensorY(leftAnkleSensorY)
+, rightAnkleSensorY(rightAnkleSensorY)
 , chestPostureController(new ChestPostureController())
 , forceDistributor(new ForceDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
@@ -119,8 +123,8 @@ void KajitaStabilizer::update(float dt,
 
     Eigen::Matrix3f worldToLeft  = leftToWorld.block(0, 0, 3, 3).inverse();
     Eigen::Matrix3f worldToRight = rightToWorld.block(0, 0, 3, 3).inverse();
-    Eigen::Vector3f leftTorqueWorld  = leftAnkleSensor->getTorque();
-    Eigen::Vector3f rightTorqueWorld = rightAnkleSensor->getTorque();
+    Eigen::Vector3f leftTorqueWorld  = leftAnkleSensorX->getAxisTorque()  + leftAnkleSensorY->getAxisTorque();
+    Eigen::Vector3f rightTorqueWorld = rightAnkleSensorX->getAxisTorque() + rightAnkleSensorY->getAxisTorque();
 
     leftFootPose  = Eigen::Matrix4f::Identity();
     rightFootPose = Eigen::Matrix4f::Identity();
@@ -139,8 +143,8 @@ void KajitaStabilizer::update(float dt,
         pelvisPoseRef,
         ft.leftForce,
         ft.rightForce,
-        -leftAnkleSensor->getForce(),
-        rightAnkleSensor->getForce()
+        -leftAnkleSensorX->getForce(),
+        rightAnkleSensorX->getForce()
     );
 
     chestPose = chestPostureController->correctPosture(

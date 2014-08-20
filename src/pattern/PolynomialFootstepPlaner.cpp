@@ -109,7 +109,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     int iSS = (int)(iSamplesPerStep * _dSS);
     int iDS = (int)(iSamplesPerStep * _dDS);
     // first dual support phase needs to be *long* to warm up the preview control
-    int iFDS = iDS * 10;
+    int iFDS = iDS * 50;
 
     calculateStep(_dSingleSupportPhase, iSS, sampleDelta, _dStepLength, _dStepHeight, _footTrajectory);
 
