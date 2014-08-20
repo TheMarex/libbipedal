@@ -16,7 +16,7 @@ class FootForceController
 public:
     FootForceController(double hipJointDistance)
     : hipJointDistance(hipJointDistance)
-    , zCtrlDC(DampeningController {3000.0, 100.0, 0.0, 0.0})
+    , zCtrlDC(DampeningController {3000.0, 10.0, 0.0, 0.0})
     {
         BOOST_ASSERT(hipJointDistance > 0);
     }
