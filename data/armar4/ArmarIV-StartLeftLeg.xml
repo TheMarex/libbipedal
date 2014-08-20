@@ -20,7 +20,7 @@
 		<Visualization>
 			<!--File type="Inventor">iv/lfoot.iv</File-->
 			<Primitives>
-				<Box width="120" height="250" depth="50"/>
+				<Box width="120" height="260" depth="50"/>
 			</Primitives>
 			<UseAsCollisionModel/>
 		</Visualization>
