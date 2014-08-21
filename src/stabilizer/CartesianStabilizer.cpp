@@ -117,3 +117,19 @@ void CartesianStabilizer::update(float dt,
     nodes->getRobot()->setGlobalPose(originalRoot);
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
+
+std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getControllers()
+{
+    std::unordered_map<std::string, DampeningController*> controllers;
+
+    controllers["Chest_Roll"]     = &chestPostureController->phiDC;
+    controllers["Chest_Pitch"]    = &chestPostureController->thetaDC;
+    controllers["LeftFoot_Roll"]  = &leftFootPostureController->phiDC;
+    controllers["LeftFoot_Pitch"] = &leftFootPostureController->thetaDC;
+    controllers["RightFoot_Roll"]  = &rightFootPostureController->phiDC;
+    controllers["RightFoot_Pitch"] = &rightFootPostureController->thetaDC;
+    controllers["PelvisFoot_Roll"]  = &pelvisPostureController->phiDC;
+    controllers["PelvisFoot_Pitch"] = &pelvisPostureController->thetaDC;
+
+    return controllers;
+}

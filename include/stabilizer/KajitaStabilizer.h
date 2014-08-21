@@ -13,6 +13,7 @@
 #include "kajita/ForceDistributor.h"
 
 #include "FrameAdaptingStabilizer.h"
+#include "TorqueControllingStabilizer.h"
 
 class FootForceController;
 class FootTorqueController;
@@ -22,7 +23,7 @@ typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
 typedef boost::shared_ptr<TwoDOFPostureController> TwoDOFPostureControllerPtr;
 
-class KajitaStabilizer : public FrameAdaptingStabilizer
+class KajitaStabilizer : public FrameAdaptingStabilizer, public TorqueControllingStabilizer
 {
 public:
     KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
@@ -41,8 +42,6 @@ public:
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
                      ReferenceIKPtr referenceIK);
 
-    VirtualRobot::RobotPtr getInvertedRobot();
-
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
     virtual const Eigen::Matrix4f& getLeftFootPoseRef() override { return leftFootPoseRef; }
@@ -55,16 +54,12 @@ public:
     virtual const Eigen::Matrix4f& getLeftFootPose() override { return leftFootPose; }
     virtual const Eigen::Matrix4f& getRightFootPose() override { return rightFootPose; }
 
-    const DampeningController& getLeftAnkleTorqueXController();
-    const DampeningController& getLeftAnkleTorqueYController();
-    const DampeningController& getRightAnkleTorqueXController();
-    const DampeningController& getRightAnkleTorqueYController();
-    const DampeningController& getPelvisController();
+    virtual std::unordered_map<std::string, DampeningController*> getControllers();
 
-    const Eigen::Vector3f& getLeftAnkleTorque() { return ft.leftTorque;}
-    const Eigen::Vector3f& getRightAnkleTorque() { return ft.rightTorque;}
-    const Eigen::Vector3f& getLeftAnkleForce() { return ft.leftForce;}
-    const Eigen::Vector3f& getRightAnkleForce() { return ft.rightForce;}
+    virtual const Eigen::Vector3f& getLeftAnkleTorque() override { return ft.leftTorque;}
+    virtual const Eigen::Vector3f& getRightAnkleTorque() override { return ft.rightTorque;}
+    virtual const Eigen::Vector3f& getLeftAnkleForce() override { return ft.leftForce;}
+    virtual const Eigen::Vector3f& getRightAnkleForce() override { return ft.rightForce;}
 
     virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }

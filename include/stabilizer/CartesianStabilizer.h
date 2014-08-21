@@ -7,6 +7,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <string>
+#include <unordered_map>
 
 #include "../bipedal.h"
 
@@ -42,6 +43,8 @@ public:
 
     virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
+
+    virtual std::unordered_map<std::string, DampeningController*> getControllers() override;
 
     virtual void update(float dt,
                 Kinematics::SupportPhase phase,

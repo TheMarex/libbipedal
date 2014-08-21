@@ -3,6 +3,10 @@
 
 #include <Eigen/Dense>
 
+#include <unordered_map>
+
+class DampeningController;
+
 class FrameAdaptingStabilizer
 {
 public:
@@ -20,6 +24,8 @@ public:
 
     virtual const Eigen::VectorXf& getResultAngles() = 0;
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() = 0;
+
+    virtual std::unordered_map<std::string, DampeningController*> getControllers() = 0;
 
     virtual void update(float dt,
                         Kinematics::SupportPhase phase,

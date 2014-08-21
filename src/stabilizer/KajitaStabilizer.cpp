@@ -6,6 +6,8 @@
 #include <boost/assert.hpp>
 #include <boost/make_shared.hpp>
 
+#include <unordered_map>
+
 #include "kajita/FootForceController.h"
 #include "kajita/FootTorqueController.h"
 
@@ -122,12 +124,6 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 */
 }
 
-const DampeningController& KajitaStabilizer::getLeftAnkleTorqueXController() { return footTorqueController->leftPhiDC;}
-const DampeningController& KajitaStabilizer::getLeftAnkleTorqueYController() { return footTorqueController->leftThetaDC;}
-const DampeningController& KajitaStabilizer::getRightAnkleTorqueXController() { return footTorqueController->rightPhiDC;}
-const DampeningController& KajitaStabilizer::getRightAnkleTorqueYController() { return footTorqueController->rightThetaDC;}
-const DampeningController& KajitaStabilizer::getPelvisController() { return footForceController->zCtrlDC;}
-
 void KajitaStabilizer::update(float dt,
                               Kinematics::SupportPhase phase,
                               const Eigen::Vector3f& zmpRefWorld,
@@ -216,7 +212,18 @@ void KajitaStabilizer::update(float dt,
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 
-VirtualRobot::RobotPtr KajitaStabilizer::getInvertedRobot()
+std::unordered_map<std::string, DampeningController*> KajitaStabilizer::getControllers()
 {
-    return boost::dynamic_pointer_cast<DifferentialReferenceIK>(referenceIK)->getInvertedRobot();
+    std::unordered_map<std::string, DampeningController*> controllers;
+
+    controllers["LeftAnkle_TorqueX"]  = &footTorqueController->leftPhiDC;
+    controllers["LeftAnkle_TorqueY"]  = &footTorqueController->leftThetaDC;
+    controllers["RightAnkle_TorqueX"] = &footTorqueController->rightPhiDC;
+    controllers["RightAnkle_TorqueY"] = &footTorqueController->rightThetaDC;
+    controllers["Chest_Roll"]         = &chestPostureController->phiDC;
+    controllers["Chest_Pitch"]        = &chestPostureController->thetaDC;
+    controllers["Pelvis_Pitch"]       = &footForceController->zCtrlDC;
+
+    return controllers;
 }
+
