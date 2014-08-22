@@ -8,6 +8,7 @@ namespace Kinematics {
     enum SupportPhase : unsigned short;
 };
 
+class TrajectoryLogger;
 class TorqueControllingStabilizer;
 class StabilizerFactory;
 class CartesianStabilizer;
@@ -43,6 +44,7 @@ typedef boost::shared_ptr<KajitaStabilizer>            KajitaStabilizerPtr;
 typedef boost::shared_ptr<CartesianStabilizer>         CartesianStabilizerPtr;
 typedef boost::shared_ptr<TrajectoryPlayer>            TrajectoryPlayerPtr;
 typedef boost::shared_ptr<TrajectoryExporter>          TrajectoryExporterPtr;
+typedef boost::shared_ptr<TrajectoryLogger>            TrajectoryLoggerPtr;
 typedef boost::shared_ptr<ReferenceIK>                 ReferenceIKPtr;
 typedef boost::shared_ptr<FootstepPlaner>              FootstepPlanerPtr;
 typedef boost::shared_ptr<ZMPPlaner>                   ZMPPlanerPtr;
