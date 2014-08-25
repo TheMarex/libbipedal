@@ -21,7 +21,7 @@ struct TwoDOFPostureController
     TwoDOFPostureController(double rollFeedbackDampening=40,  double rollNeutralTime=5,
                             double pitchFeedbackDampening=80, double pitchNeutralTime=5)
     : phiDC(DampeningController {rollFeedbackDampening, rollNeutralTime, 0, 0})
-    , thetaDC(DampeningController {pitchFeedbackDampening, pitchFeedbackDampening, 0, 0})
+    , thetaDC(DampeningController {pitchFeedbackDampening, pitchNeutralTime, 0, 0})
     , refRPY(Eigen::Vector3f::Zero())
     , currentRPY(Eigen::Vector3f::Zero())
     {
