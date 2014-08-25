@@ -8,6 +8,8 @@ namespace Kinematics {
     enum SupportPhase : unsigned short;
 };
 
+class WalkingIK;
+class HierarchicalWalkingIK;
 class TrajectoryLogger;
 class TorqueControllingStabilizer;
 class StabilizerFactory;
@@ -37,6 +39,8 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
+typedef boost::shared_ptr<WalkingIK>                   WalkingIKPtr;
+typedef boost::shared_ptr<HierarchicalWalkingIK>       HierarchicalWalkingIKPtr;
 typedef boost::shared_ptr<TorqueControllingStabilizer> TorqueControllingStabilizerPtr;
 typedef boost::shared_ptr<StabilizerFactory>           StabilizerFactoryPtr;
 typedef boost::shared_ptr<FrameAdaptingStabilizer>     FrameAdaptingStabilizerPtr;
