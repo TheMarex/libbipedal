@@ -4,6 +4,7 @@
 #include <VirtualRobot/IK/CoMIK.h>
 
 #include "bipedal/ik/HierarchicalWalkingIK.h"
+#include "bipedal/utils/Kinematics.h"
 
 HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot,
                                              const VirtualRobot::RobotNodeSetPtr& nodeSet,
@@ -48,15 +49,37 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
     Eigen::VectorXf configuration;
     int N = trajectory.cols();
 
+    Eigen::Vector3f yAxisLeft  = leftInitialPose.block(0, 1, 3, 1);
+    Eigen::Vector3f yAxisRight = rightInitialPose.block(0, 1, 3, 1);
+    Eigen::Matrix4f leftFootPose  = leftInitialPose;
+    Eigen::Matrix4f rightFootPose = rightInitialPose;
     for (int i = 0; i < N; i++)
     {
-        // Move basis along with the left foot
-        Eigen::Matrix4f leftFootPose = leftInitialPose;
         leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
+        leftFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisLeft);
         robot->setGlobalPose(leftFootPose);
 
-        Eigen::Matrix4f rightFootPose = rightInitialPose;
         rightFootPose.block(0, 3, 3, 1) = 1000 * rightFootTrajectory.col(i);
+        rightFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisRight);
+
+        // compute pose for next step:
+        // Use vector between old position and new as y-Axsis to realize
+        // a changing walking direction.
+        if (i < N-1)
+        {
+            Eigen::Vector2f leftDirection = leftFootTrajectory.col(i+1).block(0, 0, 2, 1) - leftFootTrajectory.col(i).block(0, 0, 2, 1);
+            if (leftDirection.norm() > 0)
+            {
+                yAxisLeft.block(0, 0, 2, 1) = leftDirection / leftDirection.norm();
+                yAxisLeft /= yAxisLeft.norm();
+            }
+            Eigen::Vector2f rightDirection = rightFootTrajectory.col(i+1).block(0, 0, 2, 1) - rightFootTrajectory.col(i).block(0, 0, 2, 1);
+            if (rightDirection.norm() > 0)
+            {
+                yAxisRight.block(0, 0, 2, 1) = rightDirection / rightDirection.norm();
+                yAxisRight /= yAxisRight.norm();
+            }
+        }
 
         std::cout << "Frame #" << i << ", ";
         computeStepConfiguration(1000 * comTrajectory.col(i),

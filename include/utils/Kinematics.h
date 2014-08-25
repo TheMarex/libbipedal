@@ -45,6 +45,19 @@ inline Eigen::Matrix4f projectPoseToGround(const Eigen::Matrix4f& pose)
     return projected;
 }
 
+inline Eigen::Matrix3f poseFromYAxis(const Eigen::Vector3f& yAxis)
+{
+    Eigen::Matrix3f frame;
+    Eigen::Vector3f zAxis(0, 0, 1);
+    Eigen::Vector3f xAxis = yAxis.cross(zAxis);
+    xAxis /= xAxis.norm();
+    frame.block(0, 0, 3, 1) = xAxis;
+    frame.block(0, 1, 3, 1) = yAxis;
+    frame.block(0, 2, 3, 1) = zAxis;
+
+    return frame;
+}
+
 /**
  * Return pose of ground frame.
  *
@@ -73,11 +86,7 @@ inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
             Eigen::Vector3f zAxis(0, 0, 1);
             Eigen::Vector3f yAxis = (rightFootPoseProjected.block(0, 1, 3, 1) + leftFootPoseProjected.block(0, 1, 3, 1)) / 2.0;
             yAxis /= yAxis.norm();
-            Eigen::Vector3f xAxis = yAxis.cross(zAxis);
-            xAxis /= xAxis.norm();
-            refToWorld.block(0, 0, 3, 1) = xAxis;
-            refToWorld.block(0, 1, 3, 1) = yAxis;
-            refToWorld.block(0, 2, 3, 1) = zAxis;
+            refToWorld.block(0, 0, 3, 3) = poseFromYAxis(yAxis);
             break;
     }
 
