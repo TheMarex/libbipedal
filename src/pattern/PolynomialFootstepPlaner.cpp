@@ -75,8 +75,8 @@ void PolynomialFootstepPlaner::calculateStep(double ssTime, int ssSamples, doubl
             ztemp = 0;
         }
 
-        trajectory(0, i) = xtemp;
-        trajectory(1, i) = 0;
+        trajectory(0, i) = 0;
+        trajectory(1, i) = xtemp;
         trajectory(2, i) = ztemp;
     }
 }
@@ -150,8 +150,8 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     Eigen::Vector3f vTempL, vTempR;
     vLeftFoot.setZero();
     vRightFoot.setZero();
-    vLeftFoot(1) = -_dStepWidth / 2;
-    vRightFoot(1) = _dStepWidth / 2;
+    vLeftFoot(0) = -_dStepWidth / 2;
+    vRightFoot(0) = _dStepWidth / 2;
     _vDeltaLeftFoot = vLeftFoot;
     _vDeltaRightFoot = vRightFoot;
 
@@ -167,7 +167,6 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
     }
 
     Eigen::Matrix3Xf _currentFootTrajectory = _footTrajectoryFirst;
-
     for (int i = 0; i < _iNumberOfSteps; i++)
     {
         if (i == 1)
@@ -195,8 +194,10 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
                 vTempR = _currentFootTrajectory.col(j);
             }
 
-            _mLFootTrajectory.col(index) = vLeftFoot + vTempL;
-            _mRFootTrajectory.col(index) = vRightFoot + vTempR;
+            Eigen::Vector3f currentLFoot = vLeftFoot + vTempL;
+            Eigen::Vector3f currentRFoot = vRightFoot + vTempR;
+            _mLFootTrajectory.col(index) = currentLFoot;
+            _mRFootTrajectory.col(index) = currentRFoot;
             index++;
         }
 
@@ -205,21 +206,54 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
         // save new foot positions to temporary vectors
         vLeftFoot = _mLFootTrajectory.col(index - 1);
         vRightFoot = _mRFootTrajectory.col(index - 1);
-        stepCounter++;
-        _mLFootPositions.col(stepCounter) = vLeftFoot;
-        _mRFootPositions.col(stepCounter) = vRightFoot;
     }
+
+    //double angle = M_PI/2;
+    double angle = 0;
+    double anglePerLeftY = -angle / (vLeftFoot.y());
+    double anglePerRightY = -angle / (vRightFoot.y());
+    Eigen::Vector3f center(0.35, 0, 0);
+    for (int i = 0; i < _iNumberOfSteps; i++)
+    {
+        for (int j = 0; j < iSamplesPerStep; j++)
+        {
+            int k = iFDS + i*iSamplesPerStep + j;
+            Eigen::Matrix4f R = Eigen::Matrix4f::Identity();
+
+            Eigen::Vector3f currentLFoot = _mLFootTrajectory.col(k);
+            Eigen::Vector3f currentRFoot = _mRFootTrajectory.col(k);
+            double alphaLeft = currentLFoot.y() * anglePerLeftY;
+            VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaLeft, R);
+            currentLFoot = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentLFoot-center), R) + center;
+            double alphaRight = currentRFoot.y() * anglePerRightY;
+            VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaRight, R);
+            currentRFoot = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentRFoot-center), R) + center;
+            _mLFootTrajectory.col(k) = currentLFoot;
+            _mRFootTrajectory.col(k) = currentRFoot;
+        }
+
+        // switch feet
+        bLeft = (bLeft ? false : true);
+        // save new foot positions to temporary vectors
+        stepCounter++;
+        _mLFootPositions.col(stepCounter) = _mLFootTrajectory.col(iFDS + (i+1)*iSamplesPerStep - 1);
+        _mRFootPositions.col(stepCounter) = _mRFootTrajectory.col(iFDS + (i+1)*iSamplesPerStep - 1);
+    }
+
+    Eigen::Vector3f lastLeftPos = _mLFootTrajectory.col(iFDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector3f lastRighPos = _mRFootTrajectory.col(iFDS + _iNumberOfSteps*iSamplesPerStep - 1);
 
     // insert ending DS-phase
     for (int j=0; j<iFDS; j++) {
-        _mLFootTrajectory.col(index) = vLeftFoot;
-        _mRFootTrajectory.col(index) = vRightFoot;
+        _mLFootTrajectory.col(index) = lastLeftPos;
+        _mRFootTrajectory.col(index) = lastRighPos;
         index++;
     }
     // save last step positions
     stepCounter++;
-    _mLFootPositions.col(stepCounter)=vLeftFoot;
-    _mRFootPositions.col(stepCounter)=vRightFoot;
+    _mLFootPositions.col(stepCounter) = lastLeftPos;
+    _mRFootPositions.col(stepCounter) = lastRighPos;
+
     _bGenerated = true;
 }
 

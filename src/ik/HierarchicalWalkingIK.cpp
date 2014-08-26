@@ -32,13 +32,15 @@ HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot
 }
 
 void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& comTrajectory,
-                                      const Eigen::Matrix3Xf& rightFootTrajectory,
-                                      const Eigen::Matrix3Xf& leftFootTrajectory,
-                                      Eigen::MatrixXf& trajectory)
+                                                     const Eigen::Matrix3Xf& rightFootTrajectory,
+                                                     const Eigen::Matrix3Xf& leftFootTrajectory,
+                                                     std::vector<Eigen::Matrix3f>& rootOrientation,
+                                                     Eigen::MatrixXf& trajectory)
 {
     int rows = nodeSet->getSize();
 
     trajectory.resize(rows, rightFootTrajectory.cols());
+    rootOrientation.resize(rightFootTrajectory.cols());
 
     Eigen::Matrix4f rightInitialPose = rightFootTCP->getGlobalPose();
     Eigen::Matrix4f leftInitialPose  = leftFootTCP->getGlobalPose();
@@ -53,6 +55,7 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
     Eigen::Vector3f yAxisRight = rightInitialPose.block(0, 1, 3, 1);
     Eigen::Matrix4f leftFootPose  = leftInitialPose;
     Eigen::Matrix4f rightFootPose = rightInitialPose;
+    Eigen::Matrix4f waistPose = waistInitialPose;
     for (int i = 0; i < N; i++)
     {
         leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
@@ -62,19 +65,25 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
         rightFootPose.block(0, 3, 3, 1) = 1000 * rightFootTrajectory.col(i);
         rightFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisRight);
 
+        // FIXME the orientation of the waist is specific to armar 4 as the y-axis
+        // is reversed on the pose of the body.
+        Eigen::Vector3f yAxisWaist = (yAxisLeft + yAxisRight)/2;
+        yAxisWaist /= yAxisWaist.norm();
+        waistPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(-yAxisWaist);
+
         // compute pose for next step:
         // Use vector between old position and new as y-Axsis to realize
         // a changing walking direction.
         if (i < N-1)
         {
             Eigen::Vector2f leftDirection = leftFootTrajectory.col(i+1).block(0, 0, 2, 1) - leftFootTrajectory.col(i).block(0, 0, 2, 1);
-            if (leftDirection.norm() > 0)
+            if (leftDirection.norm() > 0.00001)
             {
                 yAxisLeft.block(0, 0, 2, 1) = leftDirection / leftDirection.norm();
                 yAxisLeft /= yAxisLeft.norm();
             }
             Eigen::Vector2f rightDirection = rightFootTrajectory.col(i+1).block(0, 0, 2, 1) - rightFootTrajectory.col(i).block(0, 0, 2, 1);
-            if (rightDirection.norm() > 0)
+            if (rightDirection.norm() > 0.00001)
             {
                 yAxisRight.block(0, 0, 2, 1) = rightDirection / rightDirection.norm();
                 yAxisRight /= yAxisRight.norm();
@@ -84,10 +93,11 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
         std::cout << "Frame #" << i << ", ";
         computeStepConfiguration(1000 * comTrajectory.col(i),
                                  rightFootPose,
-                                 waistInitialPose,
+                                 waistPose,
                                  configuration);
 
         trajectory.col(i) = configuration;
+        rootOrientation[i] = leftFootPose.block(0, 0, 3, 3);
     }
 }
 

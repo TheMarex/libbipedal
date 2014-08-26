@@ -54,8 +54,9 @@ namespace Walking
         rotNinety << 0, 1, -1, 0;
         Eigen::Vector2f walkingDirection = rotNinety * centerToLeft;
 
+        // Note: The TCP coordinate system in Armar4 uses y as forward direction
         Eigen::Matrix2f pose;
-        pose << walkingDirection.x(), centerToLeft.x(), walkingDirection.y(), centerToLeft.y();
+        pose << -centerToLeft.x(), walkingDirection.x(), -centerToLeft.y(), walkingDirection.y();
 
         return pose;
     }

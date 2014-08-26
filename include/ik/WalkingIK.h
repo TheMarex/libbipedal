@@ -24,6 +24,7 @@ public:
     virtual void computeWalkingTrajectory(const Eigen::Matrix3Xf& comTrajectory,
                                           const Eigen::Matrix3Xf& rightFootTrajectory,
                                           const Eigen::Matrix3Xf& leftFootTrajectory,
+                                          std::vector<Eigen::Matrix3f>& rootOrientation,
                                           Eigen::MatrixXf& trajectory) = 0;
 
 protected:
