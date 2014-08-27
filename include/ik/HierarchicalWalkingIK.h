@@ -16,7 +16,7 @@ public:
     HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot,
                           const VirtualRobot::RobotNodeSetPtr& nodeSet,
                           const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
-                          const VirtualRobot::RobotNodePtr& waist,
+                          const VirtualRobot::RobotNodePtr& chest,
                           const VirtualRobot::RobotNodePtr& leftFootTCP,
                           const VirtualRobot::RobotNodePtr& rightFootTCP);
 
@@ -29,7 +29,7 @@ public:
 private:
     void computeStepConfiguration(const Eigen::Vector3f& targetCoM,
                                   const Eigen::Matrix4f& targetRightFootPose,
-                                  const Eigen::Matrix4f& targetWaistPose,
+                                  const Eigen::Matrix4f& targetChestPose,
                                   Eigen::VectorXf& result);
 
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;

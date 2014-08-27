@@ -208,8 +208,8 @@ void PolynomialFootstepPlaner::computeFeetTrajectories(int numberOfSteps)
         vRightFoot = _mRFootTrajectory.col(index - 1);
     }
 
-    //double angle = M_PI/2;
-    double angle = 0;
+    double angle = M_PI/2;
+    //double angle = 0;
     double anglePerLeftY = -angle / (vLeftFoot.y());
     double anglePerRightY = -angle / (vRightFoot.y());
     Eigen::Vector3f center(0.35, 0, 0);

@@ -45,6 +45,19 @@ inline Eigen::Matrix4f projectPoseToGround(const Eigen::Matrix4f& pose)
     return projected;
 }
 
+inline Eigen::Matrix3f poseFromXAxis(const Eigen::Vector3f& xAxis)
+{
+    Eigen::Matrix3f frame;
+    Eigen::Vector3f zAxis(0, 0, 1);
+    Eigen::Vector3f yAxis = zAxis.cross(xAxis);
+    yAxis /= yAxis.norm();
+    frame.block(0, 0, 3, 1) = xAxis;
+    frame.block(0, 1, 3, 1) = yAxis;
+    frame.block(0, 2, 3, 1) = zAxis;
+
+    return frame;
+}
+
 inline Eigen::Matrix3f poseFromYAxis(const Eigen::Vector3f& yAxis)
 {
     Eigen::Matrix3f frame;

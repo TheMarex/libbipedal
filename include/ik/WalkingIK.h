@@ -9,13 +9,13 @@ public:
     WalkingIK(const VirtualRobot::RobotPtr& robot,
               const VirtualRobot::RobotNodeSetPtr& nodeSet,
               const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
-              const VirtualRobot::RobotNodePtr& waist,
+              const VirtualRobot::RobotNodePtr& chest,
               const VirtualRobot::RobotNodePtr& leftFootTCP,
               const VirtualRobot::RobotNodePtr& rightFootTCP)
     : robot(robot)
     , nodeSet(nodeSet)
     , colModelNodeSet(colModelNodeSet)
-    , waist(waist)
+    , chest(chest)
     , leftFootTCP(leftFootTCP)
     , rightFootTCP(rightFootTCP)
     {
@@ -31,7 +31,7 @@ protected:
     VirtualRobot::RobotPtr robot;
     VirtualRobot::RobotNodeSetPtr nodeSet;
     VirtualRobot::RobotNodeSetPtr colModelNodeSet;
-    VirtualRobot::RobotNodePtr waist;
+    VirtualRobot::RobotNodePtr chest;
     VirtualRobot::RobotNodePtr leftFootTCP;
     VirtualRobot::RobotNodePtr rightFootTCP;
 };
