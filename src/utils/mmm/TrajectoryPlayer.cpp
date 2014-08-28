@@ -36,7 +36,8 @@ bool TrajectoryPlayer::update(float dt)
 void TrajectoryPlayer::reset()
 {
     isRunning = false;
-    nextFrame = motion->getMotionFrame(0);
+    nextFrame    = motion->getMotionFrame(0);
+    currentFrame = motion->getMotionFrame(0);
     frameCounter = 1;
     time = 0;
 }

@@ -47,10 +47,13 @@ public:
 
     /**
      * Start control sequence.
-     *
-     * Note: control() is called regardless of the state of the control motion!
      */
-    void start() { isRunning = true; };
+    void start() { isRunning = true; }
+
+    /**
+     * Stop control sequence. The last played frame is kept as currentFrame.
+     */
+    void stop() { isRunning = false; }
 
     /**
      * Reset controller to initial state.
