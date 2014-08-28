@@ -81,32 +81,36 @@ void CartesianStabilizer::update(float dt,
     zmpPositionRef   = VirtualRobot::MathTools::transformPosition(zmpRefWorld, stepAdaptionFrame);
     comPositionRef   = VirtualRobot::MathTools::transformPosition(comRefWorld, stepAdaptionFrame);
 
-    pelvisPose = pelvisPostureController->correctPosture(
-        pelvisPoseRef,
-        pelvis->getGlobalPose()
+    // Reference coordinate system for orientations is the ground frame
+    // not the global frame
+    // Note: We don't care about positions here, only the orientation part is used
+    Eigen::Matrix4f refToWorld = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase);
+    Eigen::Matrix4f worldToRef = refToWorld.inverse();
+
+    pelvisPose = refToWorld * pelvisPostureController->correctPosture(
+        worldToRef * pelvisPoseRef,
+        worldToRef * pelvis->getGlobalPose()
     );
 
-    chestPose = chestPostureController->correctPosture(
-        chestPoseRef,
-        chest->getGlobalPose()
+    chestPose = refToWorld * chestPostureController->correctPosture(
+        worldToRef * chestPoseRef,
+        worldToRef * chest->getGlobalPose()
     );
 
-    leftFootPose = leftFootPostureController->correctPosture(
-        leftFootPoseRef,
-        leftFoot->getGlobalPose()
+    leftFootPose = refToWorld * leftFootPostureController->correctPosture(
+        worldToRef * leftFootPoseRef,
+        worldToRef * leftFoot->getGlobalPose()
     );
 
-    rightFootPose = rightFootPostureController->correctPosture(
-        rightFootPoseRef,
-        rightFoot->getGlobalPose()
+    rightFootPose = refToWorld * rightFootPostureController->correctPosture(
+        worldToRef * rightFootPoseRef,
+        worldToRef * rightFoot->getGlobalPose()
     );
 
-/*
-    leftFootPose  = leftFootPoseRef;
-    rightFootPose = rightFootPoseRef;
-    chestPose     = chestPoseRef;
-    pelvisPose    = pelvisPoseRef;
-*/
+    //leftFootPose  = leftFootPoseRef;
+    //rightFootPose = rightFootPoseRef;
+    //chestPose     = chestPoseRef;
+    //pelvisPose    = pelvisPoseRef;
     comPosition   = comPositionRef;
 
     std::vector<float> angles;
