@@ -113,6 +113,11 @@ void CartesianStabilizer::update(float dt,
     //pelvisPose    = pelvisPoseRef;
     comPosition   = comPositionRef;
 
+    VirtualRobot::RobotNodePtr leftArm = nodes->getRobot()->getRobotNode("LeftArm_Joint3");
+    nodes->getRobot()->setJointValue(leftArm, 0.3);
+    VirtualRobot::RobotNodePtr rightArm = nodes->getRobot()->getRobotNode("RightArm_Joint3");
+    nodes->getRobot()->setJointValue(rightArm, -0.3);
+
     std::vector<float> angles;
     auto originalRoot = nodes->getRobot()->getGlobalPose();
     nodes->getJointValues(angles);
