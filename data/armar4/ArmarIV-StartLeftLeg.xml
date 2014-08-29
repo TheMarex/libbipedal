@@ -660,13 +660,13 @@
         <Node name="RightArm_Joint8"/>
     </RobotNodeSet>   
 
-    <RobotNodeSet name="CoMCompensation" kinematicRoot="Root">
-        <Node name="LeftLeg_Joint1"/>
-        <Node name="LeftLeg_Joint2"/>
-        <Node name="LeftLeg_Joint3"/>
-        <Node name="LeftLeg_Joint4"/>
-        <Node name="LeftLeg_Joint5"/>
+    <RobotNodeSet name="CoMCompensation" tcp="RightLeg_TCP" kinematicRoot="LeftLeg_TCP">
         <Node name="LeftLeg_Joint6"/>
+        <Node name="LeftLeg_Joint5"/>
+        <Node name="LeftLeg_Joint4"/>
+        <Node name="LeftLeg_Joint3"/>
+        <Node name="LeftLeg_Joint2"/>
+        <Node name="LeftLeg_Joint1"/>
         <Node name="RightLeg_Joint1"/>
         <Node name="RightLeg_Joint2"/>
         <Node name="RightLeg_Joint3"/>
