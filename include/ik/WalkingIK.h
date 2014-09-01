@@ -10,12 +10,14 @@ public:
               const VirtualRobot::RobotNodeSetPtr& nodeSet,
               const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
               const VirtualRobot::RobotNodePtr& chest,
+              const VirtualRobot::RobotNodePtr& pelvis,
               const VirtualRobot::RobotNodePtr& leftFootTCP,
               const VirtualRobot::RobotNodePtr& rightFootTCP)
     : robot(robot)
     , nodeSet(nodeSet)
     , colModelNodeSet(colModelNodeSet)
     , chest(chest)
+    , pelvis(pelvis)
     , leftFootTCP(leftFootTCP)
     , rightFootTCP(rightFootTCP)
     {
@@ -32,6 +34,7 @@ protected:
     VirtualRobot::RobotNodeSetPtr nodeSet;
     VirtualRobot::RobotNodeSetPtr colModelNodeSet;
     VirtualRobot::RobotNodePtr chest;
+    VirtualRobot::RobotNodePtr pelvis;
     VirtualRobot::RobotNodePtr leftFootTCP;
     VirtualRobot::RobotNodePtr rightFootTCP;
 };

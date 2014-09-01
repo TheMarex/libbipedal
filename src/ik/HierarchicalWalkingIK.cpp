@@ -10,11 +10,13 @@ HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot
                                              const VirtualRobot::RobotNodeSetPtr& nodeSet,
                                              const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
                                              const VirtualRobot::RobotNodePtr& chest,
+                                             const VirtualRobot::RobotNodePtr& pelvis,
                                              const VirtualRobot::RobotNodePtr& leftFootTCP,
                                              const VirtualRobot::RobotNodePtr& rightFootTCP)
-: WalkingIK(robot, nodeSet, colModelNodeSet, chest, leftFootTCP, rightFootTCP)
+: WalkingIK(robot, nodeSet, colModelNodeSet, chest, pelvis, leftFootTCP, rightFootTCP)
 , rightFootIK(new VirtualRobot::DifferentialIK(nodeSet))
 , uprightBodyIK(new VirtualRobot::DifferentialIK(nodeSet))
+, straightPelvisIK(new VirtualRobot::DifferentialIK(nodeSet))
 , comIK(new VirtualRobot::CoMIK(nodeSet, colModelNodeSet))
 , hIK(new VirtualRobot::HierarchicalIK(nodeSet))
 {
@@ -25,6 +27,10 @@ HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot
     VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
     jCoM.jacProvider = comIK;
     jacobiDefinitions.push_back(jCoM);
+
+    VirtualRobot::HierarchicalIK::JacobiDefinition jStraightPelvis;
+    jStraightPelvis.jacProvider = straightPelvisIK;
+    jacobiDefinitions.push_back(jStraightPelvis);
 
     VirtualRobot::HierarchicalIK::JacobiDefinition jUprightBody;
     jUprightBody.jacProvider = uprightBodyIK;
@@ -44,7 +50,10 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
 
     Eigen::Matrix4f rightInitialPose = rightFootTCP->getGlobalPose();
     Eigen::Matrix4f leftInitialPose  = leftFootTCP->getGlobalPose();
+    rightInitialPose.block(0,0,3,3) = Eigen::Matrix3f::Identity();
+    leftInitialPose.block(0,0,3,3)  = Eigen::Matrix3f::Identity();
     Eigen::Matrix4f chestInitialPose = chest->getGlobalPose();
+    Eigen::Matrix4f pelvisInitialPose = pelvis->getGlobalPose();
 
     Eigen::Vector3f com = colModelNodeSet->getCoM();
 
@@ -56,6 +65,8 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
     Eigen::Matrix4f leftFootPose  = leftInitialPose;
     Eigen::Matrix4f rightFootPose = rightInitialPose;
     Eigen::Matrix4f chestPose = chestInitialPose;
+    Eigen::Matrix4f pelvisPose = pelvisInitialPose;
+
     for (int i = 0; i < N; i++)
     {
         leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
@@ -65,11 +76,12 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
         rightFootPose.block(0, 3, 3, 1) = 1000 * rightFootTrajectory.col(i);
         rightFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisRight);
 
-        // FIXME the orientation of the chest is specific to armar 4
+        // FIXME the orientation of the chest and chest is specific to armar 4
         // since the x-Axsis points in walking direction
         Eigen::Vector3f xAxisChest = (yAxisLeft + yAxisRight)/2;
         xAxisChest.normalize();
         chestPose.block(0, 0, 3, 3) = Kinematics::poseFromXAxis(xAxisChest);
+        pelvisPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(-xAxisChest);
 
         // compute pose for next step:
         // Use vector between old position and new as y-Axsis to realize
@@ -94,6 +106,7 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
         computeStepConfiguration(1000 * comTrajectory.col(i),
                                  rightFootPose,
                                  chestPose,
+                                 pelvisPose,
                                  configuration);
 
         trajectory.col(i) = configuration;
@@ -104,6 +117,7 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
 void HierarchicalWalkingIK::computeStepConfiguration(const Eigen::Vector3f& targetCoM,
                                                      const Eigen::Matrix4f& targetRightFootPose,
                                                      const Eigen::Matrix4f& targetChestPose,
+                                                     const Eigen::Matrix4f& targetPelvisPose,
                                                      Eigen::VectorXf& result)
 {
     const float ikPrec = 0.5;
@@ -111,6 +125,7 @@ void HierarchicalWalkingIK::computeStepConfiguration(const Eigen::Vector3f& targ
     rightFootIK->setGoal(targetRightFootPose);
     comIK->setGoal(targetCoM);
     uprightBodyIK->setGoal(targetChestPose, chest, VirtualRobot::IKSolver::Orientation);
+    straightPelvisIK->setGoal(targetPelvisPose, pelvis, VirtualRobot::IKSolver::Orientation);
 
     float lastErrorLength = std::numeric_limits<float>::max();
     for (int i = 0; i < 50; i++)

@@ -17,6 +17,7 @@ public:
                           const VirtualRobot::RobotNodeSetPtr& nodeSet,
                           const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
                           const VirtualRobot::RobotNodePtr& chest,
+                          const VirtualRobot::RobotNodePtr& pelvis,
                           const VirtualRobot::RobotNodePtr& leftFootTCP,
                           const VirtualRobot::RobotNodePtr& rightFootTCP);
 
@@ -30,12 +31,14 @@ private:
     void computeStepConfiguration(const Eigen::Vector3f& targetCoM,
                                   const Eigen::Matrix4f& targetRightFootPose,
                                   const Eigen::Matrix4f& targetChestPose,
+                                  const Eigen::Matrix4f& targetPelvisPose,
                                   Eigen::VectorXf& result);
 
     std::vector<VirtualRobot::HierarchicalIK::JacobiDefinition> jacobiDefinitions;
     VirtualRobot::HierarchicalIKPtr hIK;
     VirtualRobot::CoMIKPtr comIK;
     VirtualRobot::DifferentialIKPtr uprightBodyIK;
+    VirtualRobot::DifferentialIKPtr straightPelvisIK;
     VirtualRobot::DifferentialIKPtr rightFootIK;
 };
 
