@@ -10,7 +10,7 @@
 
 #include "ik/DifferentialReferenceIK.h"
 
-#include "controller/TwoDOFPostureController.h"
+#include "controller/PostureController.h"
 
 /**
  * These controller needs a trajectory with the following control features:
@@ -38,16 +38,20 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 , leftFoot(leftFoot)
 , rightFoot(rightFoot)
 , pelvis(pelvis)
-, chestPostureController(new TwoDOFPostureController(7, 6.5, 7, 6.5))
-, leftFootPostureController(new TwoDOFPostureController(20, 18.5, 20, 18.5))
-, rightFootPostureController(new TwoDOFPostureController(20, 18.5, 20, 18.5))
-, pelvisPostureController(new TwoDOFPostureController(7, 6.5, 7, 6.5))
+, chestPostureController(new ThreeDOFPostureController(7, 6.5, 7, 6.5, 7, 6.5))
+, leftFootPostureController(new ThreeDOFPostureController(20, 18.5, 20, 18.5, 20, 18.5))
+, rightFootPostureController(new ThreeDOFPostureController(20, 18.5, 20, 18.5, 20, 18.5))
+, pelvisPostureController(new ThreeDOFPostureController(7, 6.5, 7, 6.5, 7, 6.5))
 , nodes(nodes)
 , referenceIK(referenceIK)
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
 , leftFootPose(Eigen::Matrix4f::Identity())
 , rightFootPose(Eigen::Matrix4f::Identity())
+, chestPoseRef(Eigen::Matrix4f::Identity())
+, pelvisPoseRef(Eigen::Matrix4f::Identity())
+, leftFootPoseRef(Eigen::Matrix4f::Identity())
+, rightFootPoseRef(Eigen::Matrix4f::Identity())
 , rootPose(Eigen::Matrix4f::Identity())
 , comPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
@@ -84,28 +88,30 @@ void CartesianStabilizer::update(float dt,
     // Reference coordinate system for orientations is the ground frame
     // not the global frame
     // Note: We don't care about positions here, only the orientation part is used
-    Eigen::Matrix4f refToWorld = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase);
-    Eigen::Matrix4f worldToRef = refToWorld.inverse();
+    Eigen::Matrix4f worldToRefGF = computeGroundFrame(leftFootPoseRef, rightFootPoseRef, phase).inverse();
+    Eigen::Matrix4f worldToGF = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase).inverse();
 
-    pelvisPose = refToWorld * pelvisPostureController->correctPosture(
-        worldToRef * pelvisPoseRef,
-        worldToRef * pelvis->getGlobalPose()
+    pelvisPose = pelvisPoseRef * pelvisPostureController->correctPosture(
+        worldToRefGF * pelvisPoseRef,
+        worldToGF * pelvis->getGlobalPose()
     );
 
-    chestPose = refToWorld * chestPostureController->correctPosture(
-        worldToRef * chestPoseRef,
-        worldToRef * chest->getGlobalPose()
+    chestPose = chestPoseRef * chestPostureController->correctPosture(
+        worldToRefGF * chestPoseRef,
+        worldToGF * chest->getGlobalPose()
     );
 
-    leftFootPose = refToWorld * leftFootPostureController->correctPosture(
-        worldToRef * leftFootPoseRef,
-        worldToRef * leftFoot->getGlobalPose()
+    Eigen::Matrix4f leftCorrection = leftFootPostureController->correctPosture(
+        worldToRefGF * leftFootPoseRef,
+        worldToGF * leftFoot->getGlobalPose()
+    );
+    Eigen::Matrix4f rightCorrection = rightFootPostureController->correctPosture(
+        worldToRefGF * rightFootPoseRef,
+        worldToGF * rightFoot->getGlobalPose()
     );
 
-    rightFootPose = refToWorld * rightFootPostureController->correctPosture(
-        worldToRef * rightFootPoseRef,
-        worldToRef * rightFoot->getGlobalPose()
-    );
+    leftFootPose = leftFootPoseRef * leftCorrection;
+    rightFootPose = rightFootPoseRef * rightCorrection;
 
     //leftFootPose  = leftFootPoseRef;
     //rightFootPose = rightFootPoseRef;
@@ -133,12 +139,16 @@ std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getCo
 
     controllers["Chest_Roll"]     = &chestPostureController->phiDC;
     controllers["Chest_Pitch"]    = &chestPostureController->thetaDC;
+    controllers["Chest_Yaw"]    = &chestPostureController->gammaDC;
     controllers["LeftFoot_Roll"]  = &leftFootPostureController->phiDC;
     controllers["LeftFoot_Pitch"] = &leftFootPostureController->thetaDC;
+    controllers["LeftFoot_Yaw"] = &leftFootPostureController->gammaDC;
     controllers["RightFoot_Roll"]  = &rightFootPostureController->phiDC;
     controllers["RightFoot_Pitch"] = &rightFootPostureController->thetaDC;
-    controllers["PelvisFoot_Roll"]  = &pelvisPostureController->phiDC;
-    controllers["PelvisFoot_Pitch"] = &pelvisPostureController->thetaDC;
+    controllers["RightFoot_Yaw"] = &rightFootPostureController->gammaDC;
+    controllers["Pelvis_Roll"]  = &pelvisPostureController->phiDC;
+    controllers["Pelvis_Pitch"] = &pelvisPostureController->thetaDC;
+    controllers["Pelvis_Yaw"] = &pelvisPostureController->gammaDC;
 
     return controllers;
 }

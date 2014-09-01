@@ -17,11 +17,9 @@
 
 class FootForceController;
 class FootTorqueController;
-class TwoDOFPostureController;
 
 typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
-typedef boost::shared_ptr<TwoDOFPostureController> TwoDOFPostureControllerPtr;
 
 class KajitaStabilizer : public FrameAdaptingStabilizer, public TorqueControllingStabilizer
 {

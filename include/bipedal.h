@@ -8,6 +8,10 @@ namespace Kinematics {
     enum SupportPhase : unsigned short;
 };
 
+template<bool, bool, bool> class PostureController;
+using TwoDOFPostureController = PostureController<true, true, false>;
+using ThreeDOFPostureController = PostureController<true, true, true>;
+
 class WalkingIK;
 class HierarchicalWalkingIK;
 class TrajectoryLogger;
@@ -24,7 +28,6 @@ class TrajectoryExporter;
 class ReferenceIK;
 class KajitaStabilizer;
 class DampeningController;
-class TwoDOFPostureController;
 template<typename T> class ControlMatrixEntry;
 template<typename T> class ControlMatrixParser;
 template<typename T> class ControlPointEntry;
@@ -54,5 +57,7 @@ typedef boost::shared_ptr<FootstepPlaner>              FootstepPlanerPtr;
 typedef boost::shared_ptr<ZMPPlaner>                   ZMPPlanerPtr;
 typedef boost::shared_ptr<PolynominalFootstepPlaner>   PolynominalFootstepPlanerPtr;
 typedef boost::shared_ptr<ZMPPreviewControl>           ZMPPreviewControlPtr;
+typedef boost::shared_ptr<TwoDOFPostureController>     TwoDOFPostureControllerPtr;
+typedef boost::shared_ptr<ThreeDOFPostureController>   ThreeDOFPostureControllerPtr;
 
 #endif

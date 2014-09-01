@@ -13,9 +13,7 @@
 
 #include "FrameAdaptingStabilizer.h"
 
-class TwoDOFPostureController;
 
-typedef boost::shared_ptr<TwoDOFPostureController> TwoDOFPostureControllerPtr;
 
 class CartesianStabilizer : public FrameAdaptingStabilizer
 {
@@ -69,10 +67,10 @@ private:
     // all nodes that are used for the IK
     VirtualRobot::RobotNodeSetPtr nodes;
 
-    TwoDOFPostureControllerPtr chestPostureController;
-    TwoDOFPostureControllerPtr leftFootPostureController;
-    TwoDOFPostureControllerPtr rightFootPostureController;
-    TwoDOFPostureControllerPtr pelvisPostureController;
+    ThreeDOFPostureControllerPtr chestPostureController;
+    ThreeDOFPostureControllerPtr leftFootPostureController;
+    ThreeDOFPostureControllerPtr rightFootPostureController;
+    ThreeDOFPostureControllerPtr pelvisPostureController;
     ReferenceIKPtr             referenceIK;
 
     std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;

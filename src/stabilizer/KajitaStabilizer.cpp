@@ -16,7 +16,7 @@
 
 #include "ik/DifferentialReferenceIK.h"
 
-#include "controller/TwoDOFPostureController.h"
+#include "controller/PostureController.h"
 
 /*
  * These controller needs a trajectory with the following control features:
