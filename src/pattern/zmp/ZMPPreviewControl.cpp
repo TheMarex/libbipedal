@@ -10,9 +10,12 @@
 #include <VirtualRobot/IK/CoMIK.h>
 #include <VirtualRobot/IK/HierarchicalIK.h>
 
-ZMPPreviewControl::ZMPPreviewControl() : _nPreviewCount(150), ZMPPlaner()
+ZMPPreviewControl::ZMPPreviewControl(const FootstepPlanerPtr& footstepPlaner,
+                                     const ZMPReferencePlanerPtr& refPlaner,
+                                     double comHeight)
+: _nPreviewCount(150)
+, ZMPPlaner(footstepPlaner, refPlaner, comHeight)
 {
-    std::cout << "Construction ZMP Preview Controller" << std::endl;
 }
 
 ZMPPreviewControl::~ZMPPreviewControl()
@@ -22,219 +25,17 @@ ZMPPreviewControl::~ZMPPreviewControl()
 void ZMPPreviewControl::setPreview(int N)
 {
     _nPreviewCount = N;
-    // recalulate?
-    computeReference();
 }
 
-
-// computes the ZMP-Reference from Foot-Positions
-void ZMPPreviewControl::computeReference()
+void ZMPPreviewControl::computeCoMTrajectory()
 {
-    int iMethod = 0;
-
-    // method 1 will try to generate more smooth zmp trajectories, while method 0 will generate instant zmp switches
-    if (_pPlaner == 0)
-    {
-        std::cout << "Cannot plan ZMP without footstep-planer!" << std::endl;
-        return;
-    }
-
-    std::cout << "Constructing ZMP Preview Reference!" << std::endl;
-    bool bLeftSwing = _pPlaner->isStartingWithLeftFoot();
-    double dSS = _pPlaner->getSSTime();
-    double dDS = _pPlaner->getDSTime();
-    int iSS = (int)(dSS * _pPlaner->getSamplesPerSecond());
-    int iDS = (int)(dDS * _pPlaner->getSamplesPerSecond());
-    int iFDS = iSS;
-    _nSamplesDS = iDS;
-    _nSamplesSS = iSS;
-    Eigen::Matrix3Xf mLeftFoot = _pPlaner->getLeftFootPositions();
-    Eigen::Matrix3Xf mRightFoot = _pPlaner->getRightFootPositions();
-    // use state-machine for this... state=0 is starting phase, state=1 is walking state, state=2 is active, when walking is coming to an end
-    int state = 0;
-    // starting with DS-Phase we alternate between DS and SS Phase
-    // for every phase we create a reference-ZMP... in SS Phase it is in the center of the standing leg,
-    // in DS-Phase it has to move from previous standing leg to previous swing leg
-    // exceptions are the first and last steps... here we have to move the zmp to the standing foot or center of both feet accordingly
-    assert(mLeftFoot.cols() == mRightFoot.cols() && "Right and Left Foot Position-Matrices have to be the same size!\n");
-    int size = mLeftFoot.cols();
-    std::cout << "size: " << size << std::endl;
-    //int mSize = (size+1)/2 * (iDS+iSS) + iDS;
-    int mSize = (size - 2) * (iDS + iSS) + 2*iFDS;
-    std::cout << "Computed Vector Size for refZMP: " << mSize << std::endl;
-    _mReference.resize(2, mSize);
-    _mPhase.resize(mSize);
-    int index = 0;
-    std::cout << "using following left foot positions: " << std::endl << mLeftFoot << std::endl << std::flush;
-    std::cout << "using following right foot positions: " << std::endl << mRightFoot << std::endl << std::flush;
-    // premovement phase, state = 0, starting with DS Phase
-
-    // starting DS Phase
-    Eigen::Vector2f vLeftFoot;
-    Eigen::Vector2f vRightFoot;
-    vLeftFoot.setZero();
-    vRightFoot.setZero();
-
-    Eigen::Vector2f start;
-    Eigen::Vector2f end;
-
-    // initialise with first feet position and move zmp to next standing foot
-    vLeftFoot.x() = mLeftFoot.col(0).x();
-    vLeftFoot.y() = mLeftFoot.col(0).y();
-    vRightFoot.x() = mRightFoot.col(0).x();
-    vRightFoot.y() = mRightFoot.col(0).y();
-
-
-    for (int i = 0; i < size; i++)
-    {
-        // get FootPositions
-        vLeftFoot.x() = mLeftFoot.col(i).x();
-        vLeftFoot.y() = mLeftFoot.col(i).y();
-        vRightFoot.x() = mRightFoot.col(i).x();
-        vRightFoot.y() = mRightFoot.col(i).y();
-        std::cout << "Left and right foot: [" << vLeftFoot.x() << "|" << vLeftFoot.y() << "], [" << vRightFoot.x() << "|" << vRightFoot.y() << "]" << std::endl << std::flush;
-
-        // process state
-        switch (state)
-        {
-            case 0: // starting phase
-                // 1. starting, move ZMP from center of both feet to next standing foot
-                start = (vLeftFoot + vRightFoot) * 0.5f;
-                end  = (bLeftSwing ? vRightFoot : vLeftFoot);
-                //std::cout << "0[DS-Start] Moving from center to standing foot!" << std::endl << start << std::endl << end << std::endl << std::flush;
-                std::cout << "0[DS-Start][ZMPPreview] index: " << index << "iDS: " << iDS << std::endl;
-
-                for (int t = 0; t < iFDS; t++)
-                    if (iMethod == 0)
-                        if (t < iFDS / 2)
-                        {
-                            _mReference.col(index + t) = start;
-                        }
-                        else
-                        {
-                            _mReference.col(index + t) = end;
-                        }
-                    else
-                    {
-                        _mReference.col(index + t) = start + ((10 * (end - start)) / pow(iDS, 3) * pow(t, 3)) + ((15 * (start - end)) / pow(iDS, 4) * pow(t, 4)) + ((6 * (end - start)) / pow(iDS, 5) * pow(t, 5));
-                    }
-
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iFDS, Kinematics::SUPPORT_BOTH);
-                // increase index
-                index += iFDS;
-                // next is swing-phase
-                state = 1;
-                break;
-
-            case 1: // walking phase
-                // 1. SS Phase - keep zmp on standing foot
-                start = (bLeftSwing ? vRightFoot : vLeftFoot);
-
-                if (bLeftSwing)
-                {
-                    std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_RIGHT);
-                }
-                else
-                {
-                    std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iSS, Kinematics::SUPPORT_LEFT);
-                }
-
-                //std::cout << "1[SS] Remaining on one foot!" << std::endl << start << std::endl << std::flush;
-                std::cout << "1[SS][ZMPPreview] index: " << index << " iSS: " << iSS << " i" << i << std::endl;
-
-                for (int t = 0; t < iSS; t++)
-                {
-                    _mReference.col(index + t) = start;
-                }
-
-                // increase index
-                index += iSS;
-                // 2. normal DS Phase - move from standing foot to previously swinging foot
-                start = (bLeftSwing ? vRightFoot : vLeftFoot);
-                end = (bLeftSwing ? vLeftFoot : vRightFoot);
-
-                //std::cout << "1[DS] Moving from one foot to other foot!" << std::endl << start << std::endl << end << std::endl << std::flush;
-                //std::cout << "index: " << index << " iDS: " << iDS << " i" << i << std::endl;
-                for (int t = 0; t < iDS; t++)
-                    if (iMethod == 0)
-                    {
-                        if (t < iDS / 2)
-                        {
-                            _mReference.col(index + t) = start;
-                        }
-                        else
-                        {
-                            _mReference.col(index + t) = end;
-                        }
-                    }
-                    else
-                    {
-                        _mReference.col(index + t) = start + ((10 * (end - start)) / pow(iDS, 3) * pow(t, 3)) + ((15 * (start - end)) / pow(iDS, 4) * pow(t, 4)) + ((6 * (end - start)) / pow(iDS, 5) * pow(t, 5));
-                    }
-
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iDS, Kinematics::SUPPORT_BOTH);
-                // increase index
-                index += iDS;
-                // switch next swing foot
-                bLeftSwing = !bLeftSwing;
-
-                // move to coming to a halt, when finished
-                if (i == size - 2)
-                {
-                    state = 2;
-                }
-
-                break;
-
-            case 2: // stopping phase
-                start = (bLeftSwing ? vRightFoot : vLeftFoot);
-                end = (vLeftFoot + vRightFoot) * 0.5f;
-
-                //std::cout << "2[DS-END] Moving from standing foot to center!" << std::endl << start << std::endl << end << std::endl << std::flush;
-                //std::cout << "index: " << index << " iDS: " << iDS << " i" << i << std::endl;
-                for (int t = 0; t < iFDS; t++)
-                    if (iMethod == 0)
-                    {
-                        _mReference.col(index + t) = end;
-                    }
-                    else
-                    {
-                        _mReference.col(index + t) = start + ((10 * (end - start)) / pow(iDS, 3) * pow(t, 3)) + ((15 * (start - end)) / pow(iDS, 4) * pow(t, 4)) + ((6 * (end - start)) / pow(iDS, 5) * pow(t, 5));
-                    }
-
-                std::fill(_mPhase.begin() + index, _mPhase.begin() + index + iFDS, Kinematics::SUPPORT_BOTH);
-                // increase index
-                index += iFDS;
-                break;
-        }
-
-    }
-
-    std::cout << "[endfor][ZMPPreview] index: " << index << std::endl;
-    _bComputed = true;
-    computeCoM();
-}
-
-
-
-
-void ZMPPreviewControl::computeCoM()
-{
-    if (_pPlaner == 0)
-    {
-        std::cout << "Need Footstep Planer to compute CoM!" << std::endl;
-        return;
-    }
-
-    std::cout << "Number of samples from LeftFoot trajectory: " << _pPlaner->getLeftFootTrajectory().cols() << std::endl;
-    std::cout << "Number of samples from ZMP trajectory: " << _mReference.cols() << std::endl;
-    //std::cout << "Number of samples in computed general steps: " << _pPlaner->_mLFootTrajectory.cols() << std::endl;
-
+    // FIXME current the preview is calculated over ther whole trajectroy!
+    // int N = _NPreviewCount;
     int N = _mReference.cols();
 
     double T = 1.0f / (_pPlaner->getSamplesPerSecond());
     double g = 9.81;
-    double hCoM = _pPlaner->getCoMHeight(); //0.7 as standard
+    double hCoM = _dCoMHeight;
 
     Eigen::Matrix3d A;
     Eigen::MatrixXd B;

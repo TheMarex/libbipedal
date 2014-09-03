@@ -17,6 +17,18 @@ enum SupportPhase : unsigned short
     SUPPORT_BOTH  = 3
 };
 
+struct SupportInterval
+{
+    SupportInterval(unsigned beginIdx, unsigned endIdx, SupportPhase phase)
+    : beginIdx(beginIdx), endIdx(endIdx), phase(phase) {}
+
+    // start index of phase
+    unsigned beginIdx;
+    // end index of phase (exclusive)
+    unsigned endIdx;
+    SupportPhase phase;
+};
+
 /**
  * Extract a vector of poses of the given node as the robot follows the given
  * angle trajectories.
@@ -118,7 +130,7 @@ inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
                                        VirtualRobot::RobotNodeSetPtr bodyJoints,
                                        const Eigen::MatrixXf& bodyTrajectory,
                                        const Eigen::Matrix3Xf& trajectory,
-                                       const std::vector<SupportPhase>& phase,
+                                       const std::vector<SupportInterval>& intervals,
                                        Eigen::Matrix3Xf& relativeTrajectory);
 
 /**

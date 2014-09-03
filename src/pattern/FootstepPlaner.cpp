@@ -3,11 +3,6 @@
 #include "utils/Walking.h"
 
 #include <VirtualRobot/Robot.h>
-#include <Inventor/nodes/SoTranslation.h>
-#include <Inventor/nodes/SoSphere.h>
-#include <Inventor/actions/SoWriteAction.h>
-
-#include "VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h"
 
 #include <boost/assert.hpp>
 
@@ -17,25 +12,48 @@ FootstepPlaner::FootstepPlaner(void)
     , _dStepWidth(0.2f)
     , _dStepHeight(0.1f)
     , _dStepPeriod(0.8f)
-    , _dCoMHeight(0.86f)
     , _dSingleSupportPhase(0.7f)
     , _dDoubleSupportPhase(0.1f)
     , _iSampleSize(50)
     , _bLeftFootFirst(true)
-    , _bChangesMade(false),
-    _bGenerated(false)
+    , _bGenerated(false)
 {
-    _mInitialCoMPosition.setZero();
 }
 
-void FootstepPlaner::generate(int numberOfSteps)
+void FootstepPlaner::setParameters(unsigned numberOfSteps,
+                                   unsigned sampleSize,
+                                   double stepLength,
+                                   double singleSupportPhase,
+                                   double doubleSupportPhase,
+                                   double stepHeight,
+                                   double angle,
+                                   double radius)
 {
-    computeFeetTrajectories(numberOfSteps);
+    _iNumberOfSteps = numberOfSteps;
+    _dStepLength = stepLength;
+    _dStepPeriod = singleSupportPhase + doubleSupportPhase;
+    _dDoubleSupportPhase = doubleSupportPhase;
+    _dSingleSupportPhase = singleSupportPhase;
+    _dStepHeight = stepHeight;
+    _iSampleSize = sampleSize;
+    _bParametersInitialized = true;
+    _bGenerated = false;
+}
+
+void FootstepPlaner::generate()
+{
+    BOOST_ASSERT(_bParametersInitialized);
+
+    computeFeetTrajectories();
     transformFootPositions();
+
+    _bGenerated = true;
 }
 
 // assign a Robot Model to the Footstep Planer
-void FootstepPlaner::setRobotModel(VirtualRobot::RobotPtr pRobot, std::string nameRightFoot, std::string nameLeftFoot)
+void FootstepPlaner::setRobotModel(const VirtualRobot::RobotPtr& pRobot,
+                                   const std::string& nameRightFoot,
+                                   const std::string& nameLeftFoot)
 {
     _pRobot = pRobot;
     _sRightFootName = nameRightFoot;
@@ -117,24 +135,34 @@ void FootstepPlaner::transformFootPositions()
     _mRFootTrajectoryTransformed = rFootTrajectories;
 }
 
-const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootPositions()
+const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootPositions() const
 {
+    BOOST_ASSERT(_bGenerated);
     return _mLFootPositionsTransformed;
 }
 
-const Eigen::Matrix3Xf& FootstepPlaner::getRightFootPositions()
+const Eigen::Matrix3Xf& FootstepPlaner::getRightFootPositions() const
 {
+    BOOST_ASSERT(_bGenerated);
     return _mRFootPositionsTransformed;
 }
 
 
-const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootTrajectory()
+const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootTrajectory() const
 {
+    BOOST_ASSERT(_bGenerated);
     return _mLFootTrajectoryTransformed;
 }
 
-const Eigen::Matrix3Xf& FootstepPlaner::getRightFootTrajectory()
+const Eigen::Matrix3Xf& FootstepPlaner::getRightFootTrajectory() const
 {
+    BOOST_ASSERT(_bGenerated);
     return _mRFootTrajectoryTransformed;
+}
+
+const std::vector<Kinematics::SupportInterval>& FootstepPlaner::getSupportIntervals() const
+{
+    BOOST_ASSERT(_bGenerated);
+    return _supportIntervals;
 }
 

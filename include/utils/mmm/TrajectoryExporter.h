@@ -23,7 +23,7 @@ public:
                        const std::vector<Eigen::Matrix4f>& rightFootTrajectory,
                        const std::vector<Eigen::Matrix4f>& chestTrajectory,
                        const std::vector<Eigen::Matrix4f>& pelvisTrajectory,
-                       const std::vector<Kinematics::SupportPhase>& phase,
+                       const std::vector<Kinematics::SupportInterval>& intervals,
                        float timestep)
         : pathToRobot(pathToRobot)
         , jointNames(jointNames)
@@ -38,7 +38,7 @@ public:
         , chestTrajectory(chestTrajectory)
         , pelvisTrajectory(pelvisTrajectory)
         , timestep(timestep)
-        , phase(phase)
+        , intervals(intervals)
     {
     }
 
@@ -58,7 +58,7 @@ private:
     const std::vector<Eigen::Matrix4f>& rightFootTrajectory;
     const std::vector<Eigen::Matrix4f>& chestTrajectory;
     const std::vector<Eigen::Matrix4f>& pelvisTrajectory;
-    const std::vector<Kinematics::SupportPhase>& phase;
+    const std::vector<Kinematics::SupportInterval>& intervals;
     float timestep;
 };
 

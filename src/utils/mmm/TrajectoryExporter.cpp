@@ -37,8 +37,15 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
     Eigen::MatrixXf bodyVelocity     = Bipedal::slopeEstimation(bodyTrajectory, timestep);
     Eigen::MatrixXf bodyAcceleratoin = Bipedal::slopeEstimation(bodyVelocity, timestep);
 
+    auto intervalIter = intervals.begin();
+
     for (int i = 0; i < size; i++)
     {
+        while (i >= intervalIter->endIdx)
+        {
+            intervalIter = std::next(intervalIter);
+        }
+
         // we need rootPos in mm
         MMM::MotionFramePtr frame(new MMM::MotionFrame(ndof));
         Eigen::Matrix4f rootPose = leftFootTrajectory[i];
@@ -87,7 +94,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
                        );
         frame->addEntry("SupportPhase",
                         boost::make_shared<ControlValueEntry<int>>("SupportPhase",
-                                phase[i]
+                                intervalIter->phase
                                                                   )
                        );
 

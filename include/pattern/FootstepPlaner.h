@@ -3,74 +3,51 @@
 
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/MathTools.h>
+
 #include <boost/shared_ptr.hpp>
+
+#include "../utils/Kinematics.h"
 
 class FootstepPlaner
 {
 public:
     FootstepPlaner();
 
-    void generate(int numberOfSteps = 5);
-    virtual void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize = 100) = 0;
+    void generate();
+    void setParameters(unsigned numberOfSteps,
+                       unsigned sampleSize,
+                       double stepLength,
+                       double singleSupportPhase,
+                       double doubleSupportPhase,
+                       double stepHeight,
+                       double angle=0, // in radians: >0 counter clockwise
+                       double radius=1);
 
-    void setRobotModel(VirtualRobot::RobotPtr pRobot,
-                       std::string nameRightFoot = "RightLeg_BodyAnkle2",
-                       std::string nameLeftFoot = "LeftLeg_BodyAnkle2");
-    VirtualRobot::RobotPtr getRobotModel()
-    {
-        return _pRobot;
-    };
+    void setRobotModel(const VirtualRobot::RobotPtr& pRobot,
+                       const std::string& nameRightFoot = "RightLeg_BodyAnkle2",
+                       const std::string& nameLeftFoot  = "LeftLeg_BodyAnkle2");
 
-    const Eigen::Matrix3Xf& getLeftFootPositions();
-    const Eigen::Matrix3Xf& getRightFootPositions();
+    VirtualRobot::RobotPtr getRobotModel() const { return _pRobot; };
 
-    const Eigen::Matrix3Xf& getLeftFootTrajectory();
-    const Eigen::Matrix3Xf& getRightFootTrajectory();
+    const Eigen::Matrix3Xf& getLeftFootPositions() const;
+    const Eigen::Matrix3Xf& getRightFootPositions() const;
 
+    const Eigen::Matrix3Xf& getLeftFootTrajectory() const;
+    const Eigen::Matrix3Xf& getRightFootTrajectory() const;
 
-    double getDSTime()
-    {
-        return _dDoubleSupportPhase;
-    };
-    double getSSTime()
-    {
-        return _dSingleSupportPhase;
-    };
-    bool isStartingWithLeftFoot()
-    {
-        return _bLeftFootFirst;
-    };
-    int getSamplesPerSecond()
-    {
-        return _iSampleSize;
-    };
-    float getStepHeight()
-    {
-        return _dStepHeight;
-    };
-    float getCoMHeight()
-    {
-        return _dCoMHeight;
-    };
-    Eigen::Vector3f getInitialCoMPosition()
-    {
-        return _mInitialCoMPosition;
-    };
-    void setInitialCoMPosition(Eigen::Vector3f v)
-    {
-        _mInitialCoMPosition = v;
-    };
-    VirtualRobot::MathTools::ConvexHull2DPtr getLeftFootConvexHull()
-    {
-        return cvLeft;
-    };
-    VirtualRobot::MathTools::ConvexHull2DPtr getRightFootConvexHull()
-    {
-        return cvRight;
-    };
+    const std::vector<Kinematics::SupportInterval>& getSupportIntervals() const;
+
+    unsigned getSamplesPerSecond() const { return _iSampleSize; };
+    double getStepHeight() const { return _dStepHeight; };
+    double getStepLength() const { return _dStepHeight; };
+    double getSSTime() const { return _dDoubleSupportPhase; };
+    double getDSTime() const { return _dSingleSupportPhase; };
+
+    VirtualRobot::MathTools::ConvexHull2DPtr getLeftFootConvexHull() const { return cvLeft; };
+    VirtualRobot::MathTools::ConvexHull2DPtr getRightFootConvexHull() const { return cvRight; };
 
 protected:
-    virtual void computeFeetTrajectories(int numberOfSteps = 5) = 0;
+    virtual void computeFeetTrajectories() = 0;
 
     void computeFeetShape();
     void transformFootPositions();
@@ -85,7 +62,7 @@ protected:
     Eigen::Matrix3Xf _mLFootTrajectoryTransformed;
     Eigen::Matrix3Xf _mRFootTrajectoryTransformed;
 
-    Eigen::Vector3f _mInitialCoMPosition;
+    std::vector<Kinematics::SupportInterval> _supportIntervals;
 
     VirtualRobot::MathTools::ConvexHull2DPtr cvRight;
     VirtualRobot::MathTools::ConvexHull2DPtr cvLeft;
@@ -95,15 +72,17 @@ protected:
     double _dStepWidth;
     double _dStepHeight;
     double _dStepPeriod;
-    double _dCoMHeight;
     double _dSingleSupportPhase;
     double _dDoubleSupportPhase;
-    double _iSampleSize;
+    double _dAngle;
+    double _dRadius;
+    unsigned _iSampleSize;
+    unsigned _iNumberOfSteps;
     bool _bLeftFootFirst;
 
     // administrative bool values
-    bool _bChangesMade;
     bool _bGenerated;
+    bool _bParametersInitialized;
 
     // the robot model and the names of the foot segments
     VirtualRobot::RobotPtr _pRobot;

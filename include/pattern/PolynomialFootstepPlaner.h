@@ -12,16 +12,21 @@ class PolynomialFootstepPlaner :
 public:
     PolynomialFootstepPlaner();
 
-    void setLeftFootFirst();
-    void setRightFootFirst();
+private:
+    void computeStep(double ssTime,
+                     double sampleDelta,
+                     double stepLength,
+                     double stepHeight,
+                     Eigen::Matrix3Xf& trajectory);
 
-    virtual void setParameters(double stepLength, double stepPeriod, double doubleSupportPhase, double stepHeight, int sampleSize = 100);
+    void computeGeneralizedTrajectories();
+
+    Eigen::Matrix3Xf _mFootTrajectory;
+    Eigen::Matrix3Xf _mFootTrajectoryFirst;
+    Eigen::Matrix3Xf _mFootTrajectoryLast;
 
 protected:
-    void calculateStep(double ssTime, int ssSamples, double sampleDelta, double stepLength, double stepHeight, Eigen::Matrix3Xf& trajectory);
-    virtual void computeFeetTrajectories(int numberOfSteps = 5);
-    int _iNumberOfSteps;
-    bool _bParametersInitialized;
+    virtual void computeFeetTrajectories() override;
 };
 
 typedef boost::shared_ptr<PolynomialFootstepPlaner> PolynomialFootstepPlanerPtr;

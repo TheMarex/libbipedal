@@ -7,7 +7,7 @@
 #include "utils/Interpolation.h"
 
 BalancingPlaner::BalancingPlaner()
-    : PolynomialFootstepPlaner()
+    : FootstepPlaner()
 {
 }
 
@@ -97,17 +97,11 @@ void BalancingPlaner::calculateLastStep(double sampleDelta,
     }
 }
 
-void BalancingPlaner::computeFeetTrajectories(int numberOfSteps)
+void BalancingPlaner::computeFeetTrajectories()
 {
-    /* Currently only going to standing on one foot and going back is supported
-    if (numberOfSteps < 2)
-    {
-        numberOfSteps = 2;
-    }
-    */
-    numberOfSteps = 2;
+    // FIXME We only support 2 steps at the moment.
+    _iNumberOfSteps = 2;
 
-    _iNumberOfSteps = numberOfSteps;
     _mLFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps + 2);
     _mRFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps + 2);
     int stepCounter = 0;
@@ -131,7 +125,7 @@ void BalancingPlaner::computeFeetTrajectories(int numberOfSteps)
     // first dual support phase needs to be *long* to warm up the preview control
     int iFDS = iSS;
 
-    bool _bRightFootLast = numberOfSteps % 2 == 0;
+    bool _bRightFootLast = _iNumberOfSteps % 2 == 0;
     calculateStep(_dSingleSupportPhase, iSS, sampleDelta, _dStepLength, _dStepHeight, 1.0, _footTrajectoryLeft);
     calculateStep(_dSingleSupportPhase, iSS, sampleDelta, _dStepLength, _dStepHeight, -1.0, _footTrajectoryRight);
     calculateInitialStep(sampleDelta, _dStepWidth, _dStepHeight, _bLeftFootFirst ? -1.0 : 1.0, _footTrajectoryFirst);
@@ -174,11 +168,10 @@ void BalancingPlaner::computeFeetTrajectories(int numberOfSteps)
     {
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
-        const Eigen::Matrix3Xf& _currentFootTrajectory = [i, bLeft, numberOfSteps,
-                                                          &_footTrajectoryFirst,
+        const Eigen::Matrix3Xf& _currentFootTrajectory = [&_footTrajectoryFirst,
                                                           &_footTrajectoryLast,
                                                           &_footTrajectoryLeft,
-                                                          &_footTrajectoryRight]()
+                                                          &_footTrajectoryRight](unsigned i, unsigned numberOfSteps, bool bLeft)
         {
             if (i == 0)
             {
@@ -199,7 +192,7 @@ void BalancingPlaner::computeFeetTrajectories(int numberOfSteps)
             {
                 return _footTrajectoryLast;
             }
-        }();
+        }(i, _iNumberOfSteps, bLeft);
 
         // TODO: find a more elegant solution
         vTempL.setZero();

@@ -3,16 +3,10 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "PolynomialFootstepPlaner.h"
+#include "FootstepPlaner.h"
 
-/**
- * FIXME The Footstep planer interface needs a cleanup.
- * This should not need to be a child of PolynomialFootstepPlaner
- * There is a very tight coupeling between the structure of the generated
- * trajectory and the ZMPPlaner.
- */
 class BalancingPlaner :
-    public PolynomialFootstepPlaner
+    public FootstepPlaner
 {
 public:
     BalancingPlaner();
@@ -36,7 +30,7 @@ protected:
                               double lateralDirection,
                               Eigen::Matrix3Xf& trajectory);
 
-    virtual void computeFeetTrajectories(int numberOfSteps = 5) override;
+    virtual void computeFeetTrajectories() override;
 };
 
 typedef boost::shared_ptr<BalancingPlaner> BalancingPlanerPtr;

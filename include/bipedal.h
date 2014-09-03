@@ -12,6 +12,9 @@ template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
 
+class ZMPPlaner;
+class ZMPReferencePlaner;
+class ZMPPreviewControl;
 class WalkingIK;
 class HierarchicalWalkingIK;
 class TrajectoryLogger;
@@ -59,5 +62,8 @@ typedef boost::shared_ptr<PolynominalFootstepPlaner>   PolynominalFootstepPlaner
 typedef boost::shared_ptr<ZMPPreviewControl>           ZMPPreviewControlPtr;
 typedef boost::shared_ptr<TwoDOFPostureController>     TwoDOFPostureControllerPtr;
 typedef boost::shared_ptr<ThreeDOFPostureController>   ThreeDOFPostureControllerPtr;
+typedef boost::shared_ptr<ZMPPlaner>                   ZMPPlanerPtr;
+typedef boost::shared_ptr<ZMPReferencePlaner>          ZMPReferencePlanerPtr;
+typedef boost::shared_ptr<ZMPPreviewControl>           ZMPPreviewControlPtr;
 
 #endif

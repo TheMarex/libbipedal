@@ -6,14 +6,16 @@
 class ZMPPreviewControl : public ZMPPlaner
 {
 public:
-    ZMPPreviewControl();
+    ZMPPreviewControl(const FootstepPlanerPtr& footstepPlaner,
+                      const ZMPReferencePlanerPtr& refPlaner,
+                      double comHeight=0.86);
     ~ZMPPreviewControl();
 
-    virtual void computeReference();
     void setPreview(int N);
-    void computeCoM();
 
 protected:
+    virtual void computeCoMTrajectory() override;
+
     int _nPreviewCount;
 };
 
