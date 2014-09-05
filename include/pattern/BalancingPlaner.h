@@ -12,25 +12,31 @@ public:
     BalancingPlaner();
 
 protected:
-    void calculateStep(double ssTime,
-                       int ssSamples,
-                       double sampleDelta,
-                       double stepLength,
-                       double stepHeight,
-                       double lateralDirection,
-                       Eigen::Matrix3Xf& trajectory);
-    void calculateLastStep(double sampleDelta,
-                           double stepWidth,
-                           double stepHeight,
-                           double lateralDirection,
-                           Eigen::Matrix3Xf& trajectory);
-    void calculateInitialStep(double sampleDelta,
-                              double stepWidth,
-                              double stepHeight,
-                              double lateralDirection,
-                              Eigen::Matrix3Xf& trajectory);
+    void computeStep(double ssTime,
+                     double sampleDelta,
+                     double stepLength,
+                     double stepHeight,
+                     double lateralDirection,
+                     Eigen::Matrix3Xf& trajectory);
+    void computeLastStep(double sampleDelta,
+                         double stepWidth,
+                         double stepHeight,
+                         double lateralDirection,
+                         Eigen::Matrix3Xf& trajectory);
+    void computeInitialStep(double sampleDelta,
+                            double stepWidth,
+                            double stepHeight,
+                            double lateralDirection,
+                            Eigen::Matrix3Xf& trajectory);
+
+    void computeGeneralizedTrajectories();
 
     virtual void computeFeetTrajectories() override;
+
+    Eigen::Matrix3Xf _mFootTrajectoryLeft;
+    Eigen::Matrix3Xf _mFootTrajectoryRight;
+    Eigen::Matrix3Xf _mFootTrajectoryFirst;
+    Eigen::Matrix3Xf _mFootTrajectoryLast;
 };
 
 typedef boost::shared_ptr<BalancingPlaner> BalancingPlanerPtr;
