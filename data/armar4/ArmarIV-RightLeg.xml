@@ -247,7 +247,7 @@
 
 	<RobotNode name="RightLeg_Joint6temp">
 		<Transform>
-			<DH alpha="0" a="62.939127" d="0" theta="60" unitsAngle="degree"/>
+			<DH alpha="4" a="62.939127" d="0" theta="60" unitsAngle="degree"/>
 		</Transform>
 		<Child name="RightLeg_BodyAnkle2"/>
 	</RobotNode>

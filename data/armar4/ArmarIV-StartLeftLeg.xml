@@ -42,7 +42,7 @@
 
 	<RobotNode name="LeftLeg_Joint6tmp">
       <Transform>
-			  <rollpitchyaw roll="-90" pitch="-11" yaw="-89" unitsAngle="degree"/>
+			  <rollpitchyaw roll="-90" pitch="-11" yaw="-90" unitsAngle="degree"/>
 			  <Translation x="50" y="0" z="0"/>
       </Transform>
       <Child name="LeftLeg_Joint6"/>
