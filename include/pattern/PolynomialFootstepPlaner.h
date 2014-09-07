@@ -10,20 +10,21 @@ class PolynomialFootstepPlaner :
     public FootstepPlaner
 {
 public:
-    PolynomialFootstepPlaner();
+    PolynomialFootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                            const VirtualRobot::RobotNodePtr& rightFootBody);
 
 private:
     void computeStep(double ssTime,
                      double sampleDelta,
                      double stepLength,
                      double stepHeight,
-                     Eigen::Matrix3Xf& trajectory);
+                     Eigen::Matrix6Xf& trajectory);
 
     void computeGeneralizedTrajectories();
 
-    Eigen::Matrix3Xf _mFootTrajectory;
-    Eigen::Matrix3Xf _mFootTrajectoryFirst;
-    Eigen::Matrix3Xf _mFootTrajectoryLast;
+    Eigen::Matrix6Xf _mFootTrajectory;
+    Eigen::Matrix6Xf _mFootTrajectoryFirst;
+    Eigen::Matrix6Xf _mFootTrajectoryLast;
 
 protected:
     virtual void computeFeetTrajectories() override;

@@ -6,34 +6,27 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "../bipedal.h"
 #include "../utils/Kinematics.h"
 
 class FootstepPlaner
 {
 public:
-    FootstepPlaner();
+    FootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                   const VirtualRobot::RobotNodePtr& rightFootBody);
 
-    void generate();
+    void generate(const Eigen::Matrix4f& leftFootPose, const Eigen::Matrix4f& rightFootPose);
     void setParameters(unsigned numberOfSteps,
                        unsigned sampleSize,
                        double stepLength,
                        double singleSupportPhase,
                        double doubleSupportPhase,
                        double stepHeight,
-                       double angle=0, // in radians: >0 counter clockwise
-                       double radius=1);
+                       double angle=0.0, // in radians: >0 counter clockwise
+                       double radius=1.0);
 
-    void setRobotModel(const VirtualRobot::RobotPtr& pRobot,
-                       const std::string& nameRightFoot = "RightLeg_BodyAnkle2",
-                       const std::string& nameLeftFoot  = "LeftLeg_BodyAnkle2");
-
-    VirtualRobot::RobotPtr getRobotModel() const { return _pRobot; };
-
-    const Eigen::Matrix3Xf& getLeftFootPositions() const;
-    const Eigen::Matrix3Xf& getRightFootPositions() const;
-
-    const Eigen::Matrix3Xf& getLeftFootTrajectory() const;
-    const Eigen::Matrix3Xf& getRightFootTrajectory() const;
+    const Eigen::Matrix6Xf& getLeftFootTrajectory() const;
+    const Eigen::Matrix6Xf& getRightFootTrajectory() const;
 
     const std::vector<Kinematics::SupportInterval>& getSupportIntervals() const;
 
@@ -50,17 +43,14 @@ protected:
     virtual void computeFeetTrajectories() = 0;
 
     void computeFeetShape();
-    void transformFootPositions();
+
+    // Units: In meter, not mm!
+    void transformFootTrajectories(const Eigen::Matrix4f& leftFootPose, const Eigen::Matrix4f& rightFootPose);
 
     // data structures to save footstep positions and feet trajectories
-    Eigen::Matrix3Xf _mLFootTrajectory;
-    Eigen::Matrix3Xf _mRFootTrajectory;
-    Eigen::Matrix3Xf _mLFootPositions;
-    Eigen::Matrix3Xf _mRFootPositions;
-    Eigen::Matrix3Xf _mLFootPositionsTransformed;
-    Eigen::Matrix3Xf _mRFootPositionsTransformed;
-    Eigen::Matrix3Xf _mLFootTrajectoryTransformed;
-    Eigen::Matrix3Xf _mRFootTrajectoryTransformed;
+    // We store x, y, z, roll, pitch and yaw
+    Eigen::Matrix6Xf _mLFootTrajectory;
+    Eigen::Matrix6Xf _mRFootTrajectory;
 
     std::vector<Kinematics::SupportInterval> _supportIntervals;
 
@@ -85,9 +75,8 @@ protected:
     bool _bParametersInitialized;
 
     // the robot model and the names of the foot segments
-    VirtualRobot::RobotPtr _pRobot;
-    std::string _sLeftFootName;
-    std::string _sRightFootName;
+    VirtualRobot::RobotNodePtr _pLeftFootBody;
+    VirtualRobot::RobotNodePtr _pRightFootBody;
 
     // starting points of robot, right-foot and left-foot
     Eigen::Vector2f _vRobotCenter;

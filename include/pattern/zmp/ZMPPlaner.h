@@ -49,11 +49,11 @@ public:
         return _mZMP;
     }
 
-    void generate()
+    void generate(const Eigen::Matrix4f& leftFootPose, const Eigen::Matrix4f& rightFootPose)
     {
-        _pPlaner->generate();
-        _pRefPlaner->generateReference(_pPlaner->getLeftFootPositions(),
-                                       _pPlaner->getRightFootPositions(),
+        _pPlaner->generate(leftFootPose, rightFootPose);
+        _pRefPlaner->generateReference(_pPlaner->getLeftFootTrajectory(),
+                                       _pPlaner->getRightFootTrajectory(),
                                        _pPlaner->getSupportIntervals(),
                                        _mReference);
         computeCoMTrajectory();

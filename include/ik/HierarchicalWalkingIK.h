@@ -22,8 +22,8 @@ public:
                           const VirtualRobot::RobotNodePtr& rightFootTCP);
 
     virtual void computeWalkingTrajectory(const Eigen::Matrix3Xf& comTrajectory,
-                                          const Eigen::Matrix3Xf& rightFootTrajectory,
-                                          const Eigen::Matrix3Xf& leftFootTrajectory,
+                                          const Eigen::Matrix6Xf& rightFootTrajectory,
+                                          const Eigen::Matrix6Xf& leftFootTrajectory,
                                           std::vector<Eigen::Matrix3f>& rootOrientation,
                                           Eigen::MatrixXf& trajectory) override;
 

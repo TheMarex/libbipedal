@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "../../utils/Kinematics.h"
+#include "../../bipedal.h"
 
 class ZMPReferencePlaner
 {
@@ -13,8 +14,8 @@ public:
      * Given the position of each foot in each support phase
      * compute trajectory of the given support interval.
      */
-    void generateReference(const Eigen::Matrix3Xf& leftFootPositions,
-                           const Eigen::Matrix3Xf& rightFootPositions,
+    void generateReference(const Eigen::Matrix6Xf& leftFootTrajectory,
+                           const Eigen::Matrix6Xf& rightFootTrajectory,
                            const std::vector<Kinematics::SupportInterval>& supportIntervals,
                            Eigen::Matrix2Xf& referenceZMP) const;
 private:

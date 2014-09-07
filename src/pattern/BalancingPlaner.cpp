@@ -6,8 +6,9 @@
 
 #include "utils/Interpolation.h"
 
-BalancingPlaner::BalancingPlaner()
-    : FootstepPlaner()
+BalancingPlaner::BalancingPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                                 const VirtualRobot::RobotNodePtr& rightFootBody)
+    : FootstepPlaner(leftFootBody, rightFootBody)
 {
 }
 
@@ -16,7 +17,7 @@ void BalancingPlaner::computeStep(double ssTime,
                                   double stepLength,
                                   double stepHeight,
                                   double lateralDirection,
-                                  Eigen::Matrix3Xf& trajectory)
+                                  Eigen::Matrix6Xf& trajectory)
 {
     // temporary variables
     double T1 = ssTime;                 // T^1
@@ -66,7 +67,7 @@ void BalancingPlaner::computeInitialStep(double sampleDelta,
                                          double stepWidth,
                                          double stepHeight,
                                          double lateralDirection,
-                                         Eigen::Matrix3Xf& trajectory)
+                                         Eigen::Matrix6Xf& trajectory)
 {
     unsigned numSamples = trajectory.cols();
     double T = sampleDelta * numSamples;
@@ -83,7 +84,7 @@ void BalancingPlaner::computeLastStep(double sampleDelta,
                                       double stepWidth,
                                       double stepHeight,
                                       double lateralDirection,
-                                      Eigen::Matrix3Xf& trajectory)
+                                      Eigen::Matrix6Xf& trajectory)
 {
     unsigned numSamples = trajectory.cols();
     double T = sampleDelta * numSamples;
@@ -106,10 +107,10 @@ void BalancingPlaner::computeGeneralizedTrajectories()
 
     std::cout << "Calculating generalized foot positions (iDS/iSS: [" << iDS << "|" << iSS << "])..." << std::flush;
 
-    _mFootTrajectoryLeft  = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-    _mFootTrajectoryRight = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-    _mFootTrajectoryFirst = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-    _mFootTrajectoryLast  = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+    _mFootTrajectoryLeft  = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
+    _mFootTrajectoryRight = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
+    _mFootTrajectoryFirst = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
+    _mFootTrajectoryLast  = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
 
     bool bRightFootLast = _iNumberOfSteps % 2 != 0;
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, 1.0, _mFootTrajectoryLeft);
@@ -142,23 +143,18 @@ void BalancingPlaner::computeFeetTrajectories()
     // ******************************************
 
     // Each step has a SS + DS phase and we start with a DS and end with a DS
-    _mLFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps*2 + 2);
-    _mRFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps*2 + 2);
-    _mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
-    _mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
+    _mLFootTrajectory =  Eigen::Matrix6Xf::Zero(6, iSamples);
+    _mRFootTrajectory =  Eigen::Matrix6Xf::Zero(6, iSamples);
     _supportIntervals.clear();
 
     // determine starting positions of left and right foot
-    Eigen::Vector3f vLeftFoot = Eigen::Vector3f::Zero();
-    Eigen::Vector3f vRightFoot = Eigen::Vector3f::Zero();
+    Eigen::Vector6f vLeftFoot = Eigen::Vector6f::Zero();
+    Eigen::Vector6f vRightFoot = Eigen::Vector6f::Zero();
     vLeftFoot.x()  = -_dStepWidth / 2;
     vRightFoot.x() = _dStepWidth / 2;
 
     // starting with full DS-Phase
     _supportIntervals.emplace_back(0, iLDS, Kinematics::SUPPORT_BOTH);
-    int intervalCounter = 0;
-    _mLFootPositions.col(intervalCounter) = vLeftFoot;
-    _mRFootPositions.col(intervalCounter) = vRightFoot;
     int index = 0;
     for (int j = 0; j < iLDS; j++)
     {
@@ -179,7 +175,7 @@ void BalancingPlaner::computeFeetTrajectories()
                                        Kinematics::SUPPORT_BOTH);
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
-        const Eigen::Matrix3Xf& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps, bool left)
+        const Eigen::Matrix6Xf& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps, bool left)
         {
             if (i == 0)
             {
@@ -200,8 +196,8 @@ void BalancingPlaner::computeFeetTrajectories()
 
         for (int j = 0; j < iSamplesPerStep; j++)
         {
-            const Eigen::Vector3f currentLFoot = bLeft ? vLeftFoot + _currentFootTrajectory.col(j) : vLeftFoot;
-            const Eigen::Vector3f currentRFoot = bLeft ? vRightFoot                                : vRightFoot + _currentFootTrajectory.col(j);
+            const Eigen::Vector6f currentLFoot = bLeft ? vLeftFoot + _currentFootTrajectory.col(j) : vLeftFoot;
+            const Eigen::Vector6f currentRFoot = bLeft ? vRightFoot                                : vRightFoot + _currentFootTrajectory.col(j);
             _mLFootTrajectory.col(index) = currentLFoot;
             _mRFootTrajectory.col(index) = currentRFoot;
             index++;
@@ -216,28 +212,16 @@ void BalancingPlaner::computeFeetTrajectories()
         // save new foot positions to temporary vectors
         vLeftFoot = _mLFootTrajectory.col(index - 1);
         vRightFoot = _mRFootTrajectory.col(index - 1);
-        // save foot positions twice: we have SS + DS phase and positions don't change in DS phase.
-        intervalCounter++;
-        _mLFootPositions.col(intervalCounter) = _mLFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        _mRFootPositions.col(intervalCounter) = _mRFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        intervalCounter++;
-        _mLFootPositions.col(intervalCounter) = _mLFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        _mRFootPositions.col(intervalCounter) = _mRFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
     }
 
     // insert ending DS-phase
     _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
-    Eigen::Vector3f lastLeftPos  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
-    Eigen::Vector3f lastRightPos = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector6f lastLeftPos  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector6f lastRightPos = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
     for (int j = 0; j < iLDS; j++) {
         _mLFootTrajectory.col(index) = lastLeftPos;
         _mRFootTrajectory.col(index) = lastRightPos;
         index++;
     }
-    intervalCounter++;
-    _mLFootPositions.col(intervalCounter) = lastLeftPos;
-    _mRFootPositions.col(intervalCounter) = lastRightPos;
-
-    _bGenerated = true;
 }
 

@@ -4,8 +4,9 @@
 #include <VirtualRobot/CollisionDetection/CollisionChecker.h>
 #include <VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h>
 
-PolynomialFootstepPlaner::PolynomialFootstepPlaner()
-    : FootstepPlaner()
+PolynomialFootstepPlaner::PolynomialFootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                                                   const VirtualRobot::RobotNodePtr& rightFootBody)
+    : FootstepPlaner(leftFootBody, rightFootBody)
 {
 }
 
@@ -13,7 +14,7 @@ void PolynomialFootstepPlaner::computeStep(double ssTime,
                                            double sampleDelta,
                                            double stepLength,
                                            double stepHeight,
-                                           Eigen::Matrix3Xf& trajectory)
+                                           Eigen::Matrix6Xf& trajectory)
 {
     // temporary variables
     double T1 = ssTime;                 // T^1
@@ -66,9 +67,9 @@ void PolynomialFootstepPlaner::computeGeneralizedTrajectories()
 
     std::cout << "Calculating generalized foot positions (iDS/iSS: [" << iDS << "|" << iSS << "])..." << std::flush;
 
-    _mFootTrajectory      = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-    _mFootTrajectoryFirst = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
-    _mFootTrajectoryLast  = Eigen::Matrix3Xf::Zero(3, iSamplesPerStep);
+    _mFootTrajectory      = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
+    _mFootTrajectoryFirst = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
+    _mFootTrajectoryLast  = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
 
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, _mFootTrajectory);
 
@@ -101,23 +102,18 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
     // ******************************************
 
     // Each step has a SS + DS phase and we start with a DS and end with a DS
-    _mLFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps*2 + 2);
-    _mRFootPositions = Eigen::Matrix3Xf::Zero(3, _iNumberOfSteps*2 + 2);
-    _mLFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
-    _mRFootTrajectory =  Eigen::Matrix3Xf::Zero(3, iSamples);
+    _mLFootTrajectory =  Eigen::Matrix6Xf::Zero(6, iSamples);
+    _mRFootTrajectory =  Eigen::Matrix6Xf::Zero(6, iSamples);
     _supportIntervals.clear();
 
     // determine starting positions of left and right foot
-    Eigen::Vector3f vLeftFoot = Eigen::Vector3f::Zero();
-    Eigen::Vector3f vRightFoot = Eigen::Vector3f::Zero();
+    Eigen::Vector6f vLeftFoot  = Eigen::Vector6f::Zero();
+    Eigen::Vector6f vRightFoot = Eigen::Vector6f::Zero();
     vLeftFoot.x()  = -_dStepWidth / 2;
     vRightFoot.x() = _dStepWidth / 2;
 
     // starting with full DS-Phase
     _supportIntervals.emplace_back(0, iLDS, Kinematics::SUPPORT_BOTH);
-    int intervalCounter = 0;
-    _mLFootPositions.col(intervalCounter) = vLeftFoot;
-    _mRFootPositions.col(intervalCounter) = vRightFoot;
     int index = 0;
     for (int j = 0; j < iLDS; j++)
     {
@@ -138,7 +134,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
                                        Kinematics::SUPPORT_BOTH);
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
-        const Eigen::Matrix3Xf& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps)
+        const auto& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps)
         {
             if (i == 0)
             {
@@ -156,8 +152,10 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
 
         for (int j = 0; j < iSamplesPerStep; j++)
         {
-            const Eigen::Vector3f currentLFoot = bLeft ? vLeftFoot + _currentFootTrajectory.col(j) : vLeftFoot;
-            const Eigen::Vector3f currentRFoot = bLeft ? vRightFoot                                : vRightFoot + _currentFootTrajectory.col(j);
+            // Make sure that RPY in in the trajectory are always ZERO
+            // because you can not add RPY angles
+            const Eigen::Vector6f currentLFoot = bLeft ? vLeftFoot + _currentFootTrajectory.col(j) : vLeftFoot;
+            const Eigen::Vector6f currentRFoot = bLeft ? vRightFoot                                : vRightFoot + _currentFootTrajectory.col(j);
             _mLFootTrajectory.col(index) = currentLFoot;
             _mRFootTrajectory.col(index) = currentRFoot;
             index++;
@@ -181,52 +179,55 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
         // only do all that copying if necessary
         if (std::abs(angle) > std::numeric_limits<double>::epsilon())
         {
+            Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
+            Eigen::Matrix4f rightFootPose = Eigen::Matrix4f::Identity();
+            Eigen::Vector6f rotatedLeft;
+            Eigen::Vector6f rotatedRight;
             for (int j = 0; j < iSamplesPerStep; j++)
             {
                 int k = iLDS + i*iSamplesPerStep + j;
                 Eigen::Matrix4f R = Eigen::Matrix4f::Identity();
 
-                Eigen::Vector3f currentLFoot = _mLFootTrajectory.col(k);
-                Eigen::Vector3f currentRFoot = _mRFootTrajectory.col(k);
+                const Eigen::Vector6f& currentLFoot = _mLFootTrajectory.col(k);
+                const Eigen::Vector6f& currentRFoot = _mRFootTrajectory.col(k);
+                VirtualRobot::MathTools::rpy2eigen4f(currentLFoot[3], currentLFoot[4], currentLFoot[5], leftFootPose);
+                VirtualRobot::MathTools::rpy2eigen4f(currentRFoot[3], currentRFoot[4], currentRFoot[5], rightFootPose);
 
+                Eigen::Vector3f tmp;
+
+                // transform left foot pose
                 double alphaLeft = currentLFoot.y() * anglePerLeftY;
                 VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaLeft, R);
-                currentLFoot = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentLFoot-center), R) + center;
+                leftFootPose *= R;
+                rotatedLeft.head(3) = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentLFoot.head(3) - center), R) + center;
+                VirtualRobot::MathTools::eigen4f2rpy(leftFootPose, tmp);
+                rotatedLeft.tail(3) = tmp;
 
+                // transform right foot pose
                 double alphaRight = currentRFoot.y() * anglePerRightY;
                 VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaRight, R);
-                currentRFoot = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentRFoot-center), R) + center;
+                rightFootPose *= R;
+                rotatedRight.head(3) = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentRFoot.head(3) - center), R) + center;
+                VirtualRobot::MathTools::eigen4f2rpy(rightFootPose, tmp);
+                rotatedRight.tail(3) = tmp;
 
-                _mLFootTrajectory.col(k) = currentLFoot;
-                _mRFootTrajectory.col(k) = currentRFoot;
+                _mLFootTrajectory.col(k) = rotatedLeft;
+                _mRFootTrajectory.col(k) = rotatedRight;
             }
         }
 
         // switch feet
         bLeft = (bLeft ? false : true);
-
-        // save foot positions twice: we have SS + DS phase and positions don't change in DS phase.
-        intervalCounter++;
-        _mLFootPositions.col(intervalCounter) = _mLFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        _mRFootPositions.col(intervalCounter) = _mRFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        intervalCounter++;
-        _mLFootPositions.col(intervalCounter) = _mLFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
-        _mRFootPositions.col(intervalCounter) = _mRFootTrajectory.col(iLDS + (i+1)*iSamplesPerStep - 1);
     }
 
     // insert ending DS-phase
     _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
-    Eigen::Vector3f lastLeftPos  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
-    Eigen::Vector3f lastRightPos = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector6f lastLeftPose  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector6f lastRightPose = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
     for (int j = 0; j < iLDS; j++) {
-        _mLFootTrajectory.col(index) = lastLeftPos;
-        _mRFootTrajectory.col(index) = lastRightPos;
+        _mLFootTrajectory.col(index) = lastLeftPose;
+        _mRFootTrajectory.col(index) = lastRightPose;
         index++;
     }
-    intervalCounter++;
-    _mLFootPositions.col(intervalCounter) = lastLeftPos;
-    _mRFootPositions.col(intervalCounter) = lastRightPos;
-
-    _bGenerated = true;
 }
 

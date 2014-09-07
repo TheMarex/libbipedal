@@ -7,7 +7,8 @@
 #include <boost/assert.hpp>
 
 
-FootstepPlaner::FootstepPlaner(void)
+FootstepPlaner::FootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                               const VirtualRobot::RobotNodePtr& rightFootBody)
     : _dStepLength(0.3f)
     , _dStepWidth(0.2f)
     , _dStepHeight(0.1f)
@@ -17,7 +18,10 @@ FootstepPlaner::FootstepPlaner(void)
     , _iSampleSize(50)
     , _bLeftFootFirst(true)
     , _bGenerated(false)
+    , _pLeftFootBody(leftFootBody)
+    , _pRightFootBody(rightFootBody)
 {
+    computeFeetShape();
 }
 
 void FootstepPlaner::setParameters(unsigned numberOfSteps,
@@ -37,30 +41,19 @@ void FootstepPlaner::setParameters(unsigned numberOfSteps,
     _dStepHeight = stepHeight;
     _iSampleSize = sampleSize;
     _bParametersInitialized = true;
+    _dAngle = angle;
+    _dRadius = radius;
     _bGenerated = false;
 }
 
-void FootstepPlaner::generate()
+void FootstepPlaner::generate(const Eigen::Matrix4f& leftFootPose, const Eigen::Matrix4f& rightFootPose)
 {
     BOOST_ASSERT(_bParametersInitialized);
 
     computeFeetTrajectories();
-    transformFootPositions();
+    transformFootTrajectories(leftFootPose, rightFootPose);
 
     _bGenerated = true;
-}
-
-// assign a Robot Model to the Footstep Planer
-void FootstepPlaner::setRobotModel(const VirtualRobot::RobotPtr& pRobot,
-                                   const std::string& nameRightFoot,
-                                   const std::string& nameLeftFoot)
-{
-    _pRobot = pRobot;
-    _sRightFootName = nameRightFoot;
-    _sLeftFootName = nameLeftFoot;
-
-    // compute shape of feet (support polygon of left and right foot)
-    computeFeetShape();
 }
 
 // compute the shape of each foot and generate a visualization for every foot
@@ -68,96 +61,54 @@ void FootstepPlaner::computeFeetShape()
 {
     Eigen::Vector2f vRightCenter;
     Eigen::Vector2f vLeftCenter;
-    cvRight = Walking::ComputeFootContact(_pRobot->getRobotNode(_sRightFootName)->getCollisionModel());
-    cvLeft  = Walking::ComputeFootContact(_pRobot->getRobotNode(_sLeftFootName)->getCollisionModel());
+    cvRight = Walking::ComputeFootContact(_pRightFootBody->getCollisionModel());
+    cvLeft  = Walking::ComputeFootContact(_pLeftFootBody->getCollisionModel());
     vRightCenter = Walking::CenterConvexHull(cvRight);
     vLeftCenter  = Walking::CenterConvexHull(cvLeft);
     _vRightFootCenter = vRightCenter / 1000.0f;
     _vLeftFootCenter  = vLeftCenter / 1000.0f;
-    _mRotateWalking = Walking::ComputeWalkingDirection(vLeftCenter, vRightCenter);
 }
 
 // build visualization for feet position and feet trajectories
-void FootstepPlaner::transformFootPositions()
+void FootstepPlaner::transformFootTrajectories(const Eigen::Matrix4f& leftFootPose, const Eigen::Matrix4f& rightFootPose)
 {
-    BOOST_ASSERT(_bGenerated);
+    Eigen::Matrix4f trajLeftFootPose = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f trajRightFootPose = Eigen::Matrix4f::Identity();
+    Eigen::Vector6f startLeft  = _mLFootTrajectory.col(0);
+    Eigen::Vector6f startRight = _mRFootTrajectory.col(0);
+    VirtualRobot::MathTools::rpy2eigen4f(startLeft[3], startLeft[4], startLeft[5], trajLeftFootPose);
+    VirtualRobot::MathTools::rpy2eigen4f(startRight[3], startRight[4], startRight[5], trajRightFootPose);
+    trajLeftFootPose.block(0, 3, 3, 1)  = startLeft.head(3);
+    trajRightFootPose.block(0, 3, 3, 1) = startRight.head(3);
 
-    // rotate generated walking pattern to walking direction
-    Eigen::Matrix3f rot;
-    rot.setIdentity();
-    rot.block(0, 0, 2, 2) = _mRotateWalking;
-    Eigen::Matrix3Xf rFootPositions = rot * _mRFootPositions;
-    Eigen::Matrix3Xf lFootPositions = rot * _mLFootPositions;
-    Eigen::Matrix3Xf rFootTrajectories = rot * _mRFootTrajectory;
-    Eigen::Matrix3Xf lFootTrajectories = rot * _mLFootTrajectory;
+    // use orientation and position of groundframe to adapt to current pose:
+    // the y-axsis always points in walking direction.
+    Eigen::Matrix4f trajectoryGF = Kinematics::computeGroundFrame(trajLeftFootPose, trajRightFootPose, Kinematics::SUPPORT_BOTH);
+    Eigen::Matrix4f currentGF    = Kinematics::computeGroundFrame(leftFootPose, rightFootPose, Kinematics::SUPPORT_BOTH);
 
-    // translate foot positions so that inital foot position matches actual position
-    Eigen::Vector3f rDelta, lDelta;
-    rDelta.setZero();
-    lDelta.setZero();
-
-    rDelta.x() =  - rFootPositions.col(0).x() + _vRightFootCenter.x(); //- _vRobotCenterStart.x();
-    rDelta.y() =  - rFootPositions.col(0).y() + _vRightFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
-    // rDelta = _vRightFootCenter-rFootPositions.block(0,0,2,1);
-    lDelta.x() =  - lFootPositions.col(0).x() + _vLeftFootCenter.x(); //- _vRobotCenterStart.x();
-    lDelta.y() =  - lFootPositions.col(0).y() + _vLeftFootCenter.y(); // - _vRobotCenterStart.x();  +_vRightFootCenter.y()
-
-    // lDelta = _vLeftFootCenter-lFootPositions.block(0,0,2,1);
-    for (int i = 0; i < rFootPositions.cols(); i++)
-    {
-        rFootPositions.col(i) += rDelta ;
-    }
-
-    for (int i = 0; i < lFootPositions.cols(); i++)
-    {
-        lFootPositions.col(i) += lDelta ;
-    }
-
-    for (int i = 0; i < rFootTrajectories.cols(); i++)
-    {
-        rFootTrajectories.col(i) += rDelta ;
-    }
-
-    for (int i = 0; i < lFootTrajectories.cols(); i++)
-    {
-        lFootTrajectories.col(i) += lDelta ;
-    }
-
-    // save transformed foot positions
-    _mRFootPositionsTransformed.resize(3, rFootPositions.cols());
-    _mLFootPositionsTransformed.resize(3, lFootPositions.cols());
-    _mRFootPositionsTransformed = rFootPositions; //.block(0,0,3,rFootPositions.cols());
-    _mLFootPositionsTransformed = lFootPositions; //.block(0,0,3,lFootPositions.cols());
-    // save transformed feet trajectory
-    _mLFootTrajectoryTransformed.resize(3, lFootTrajectories.cols());
-    _mRFootTrajectoryTransformed.resize(3, rFootTrajectories.cols());
-    _mLFootTrajectoryTransformed = lFootTrajectories;
-    _mRFootTrajectoryTransformed = rFootTrajectories;
+    Eigen::Matrix4f adaptionFrame = currentGF * trajectoryGF.inverse();
+    _mLFootTrajectory.topRows(3) = adaptionFrame.block(0, 0, 3, 3) * _mLFootTrajectory.topRows(3);
+    _mRFootTrajectory.topRows(3) = adaptionFrame.block(0, 0, 3, 3) * _mRFootTrajectory.topRows(3);
+    const Eigen::Vector3f& delta = adaptionFrame.block(0, 3, 3, 1);
+    // matrix is stored in row-major order, this should be cache efficent
+    _mLFootTrajectory.row(0).array() += delta.x();
+    _mLFootTrajectory.row(1).array() += delta.y();
+    _mLFootTrajectory.row(2).array() += delta.z();
+    _mRFootTrajectory.row(0).array() += delta.x();
+    _mRFootTrajectory.row(1).array() += delta.y();
+    _mRFootTrajectory.row(2).array() += delta.z();
 }
 
-const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootPositions() const
+const Eigen::Matrix6Xf& FootstepPlaner::getLeftFootTrajectory() const
 {
     BOOST_ASSERT(_bGenerated);
-    return _mLFootPositionsTransformed;
+    return _mLFootTrajectory;
 }
 
-const Eigen::Matrix3Xf& FootstepPlaner::getRightFootPositions() const
+const Eigen::Matrix6Xf& FootstepPlaner::getRightFootTrajectory() const
 {
     BOOST_ASSERT(_bGenerated);
-    return _mRFootPositionsTransformed;
-}
-
-
-const Eigen::Matrix3Xf& FootstepPlaner::getLeftFootTrajectory() const
-{
-    BOOST_ASSERT(_bGenerated);
-    return _mLFootTrajectoryTransformed;
-}
-
-const Eigen::Matrix3Xf& FootstepPlaner::getRightFootTrajectory() const
-{
-    BOOST_ASSERT(_bGenerated);
-    return _mRFootTrajectoryTransformed;
+    return _mRFootTrajectory;
 }
 
 const std::vector<Kinematics::SupportInterval>& FootstepPlaner::getSupportIntervals() const

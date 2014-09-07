@@ -1,21 +1,12 @@
 #include "pattern/zmp/ZMPReferencePlaner.h"
 
-/**
-* Starting with DS-Phase we alternate between DS and SS Phase
-* for every phase we create a reference-ZMP... in SS Phase it is in the center of the standing leg,
-* in DS-Phase it has to move from previous standing leg to previous swing leg
-* exceptions are the first and last steps...
-* here we have to move the zmp to the standing foot or center of both feet accordingly
-*/
-void ZMPReferencePlaner::generateReference(const Eigen::Matrix3Xf& leftFootPositions,
-                                         const Eigen::Matrix3Xf& rightFootPositions,
-                                         const std::vector<Kinematics::SupportInterval>& supportIntervals,
-                                         Eigen::Matrix2Xf& referenceZMP) const
+void ZMPReferencePlaner::generateReference(const Eigen::Matrix6Xf& leftFootTrajectory,
+                                           const Eigen::Matrix6Xf& rightFootTrajectory,
+                                           const std::vector<Kinematics::SupportInterval>& supportIntervals,
+                                           Eigen::Matrix2Xf& referenceZMP) const
 {
     unsigned columns = supportIntervals.back().endIdx;
     referenceZMP.resize(2, columns);
-
-    std::cout << "Num intervals: " << supportIntervals.size() << std::endl;
 
     const unsigned size = supportIntervals.size();
     for (unsigned i = 0; i < size; i++)
@@ -23,8 +14,9 @@ void ZMPReferencePlaner::generateReference(const Eigen::Matrix3Xf& leftFootPosit
         const auto& interval     = supportIntervals[i];
         const auto& prevInterval = i > 0 ? supportIntervals[i-1] : interval;
         const auto& nextInterval = i < size - 1 ? supportIntervals[i+1] : interval;
-        const auto& currentLeft  = leftFootPositions.block(0, i, 2, 1);
-        const auto& currentRight = rightFootPositions.block(0, i, 2, 1);
+        // foot poses at the begin of the interval, in SS one stays constant, in DS both
+        const auto& currentLeft  = leftFootTrajectory.block(0, interval.beginIdx, 2, 1);
+        const auto& currentRight = rightFootTrajectory.block(0, interval.beginIdx, 2, 1);
 
         switch (interval.phase)
         {
@@ -84,8 +76,6 @@ void ZMPReferencePlaner::shiftZMP(const Eigen::Vector2f& begin,
 {
     unsigned numCols = endIdx - beginIdx;
     unsigned midIdx = beginIdx + numCols / 2;
-
-    std::cout << "Shifting from [" << begin.transpose() << "] to [" << end.transpose() << "] : (" << beginIdx << ", " << midIdx << ", " << endIdx << ")" << std::endl;
 
     for (unsigned i = beginIdx; i < midIdx; i++)
     {

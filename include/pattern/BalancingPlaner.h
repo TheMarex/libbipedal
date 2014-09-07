@@ -9,7 +9,8 @@ class BalancingPlaner :
     public FootstepPlaner
 {
 public:
-    BalancingPlaner();
+    BalancingPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
+                    const VirtualRobot::RobotNodePtr& rightFootBody);
 
 protected:
     void computeStep(double ssTime,
@@ -17,26 +18,26 @@ protected:
                      double stepLength,
                      double stepHeight,
                      double lateralDirection,
-                     Eigen::Matrix3Xf& trajectory);
+                     Eigen::Matrix6Xf& trajectory);
     void computeLastStep(double sampleDelta,
                          double stepWidth,
                          double stepHeight,
                          double lateralDirection,
-                         Eigen::Matrix3Xf& trajectory);
+                         Eigen::Matrix6Xf& trajectory);
     void computeInitialStep(double sampleDelta,
                             double stepWidth,
                             double stepHeight,
                             double lateralDirection,
-                            Eigen::Matrix3Xf& trajectory);
+                            Eigen::Matrix6Xf& trajectory);
 
     void computeGeneralizedTrajectories();
 
     virtual void computeFeetTrajectories() override;
 
-    Eigen::Matrix3Xf _mFootTrajectoryLeft;
-    Eigen::Matrix3Xf _mFootTrajectoryRight;
-    Eigen::Matrix3Xf _mFootTrajectoryFirst;
-    Eigen::Matrix3Xf _mFootTrajectoryLast;
+    Eigen::Matrix6Xf _mFootTrajectoryLeft;
+    Eigen::Matrix6Xf _mFootTrajectoryRight;
+    Eigen::Matrix6Xf _mFootTrajectoryFirst;
+    Eigen::Matrix6Xf _mFootTrajectoryLast;
 };
 
 typedef boost::shared_ptr<BalancingPlaner> BalancingPlanerPtr;

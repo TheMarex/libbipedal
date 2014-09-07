@@ -38,8 +38,8 @@ HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot
 }
 
 void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& comTrajectory,
-                                                     const Eigen::Matrix3Xf& rightFootTrajectory,
-                                                     const Eigen::Matrix3Xf& leftFootTrajectory,
+                                                     const Eigen::Matrix6Xf& rightFootTrajectory,
+                                                     const Eigen::Matrix6Xf& leftFootTrajectory,
                                                      std::vector<Eigen::Matrix3f>& rootOrientation,
                                                      Eigen::MatrixXf& trajectory)
 {
@@ -48,61 +48,31 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
     trajectory.resize(rows, rightFootTrajectory.cols());
     rootOrientation.resize(rightFootTrajectory.cols());
 
-    Eigen::Matrix4f rightInitialPose = rightFootTCP->getGlobalPose();
-    Eigen::Matrix4f leftInitialPose  = leftFootTCP->getGlobalPose();
-    rightInitialPose.block(0,0,3,3) = Eigen::Matrix3f::Identity();
-    leftInitialPose.block(0,0,3,3)  = Eigen::Matrix3f::Identity();
-    Eigen::Matrix4f chestInitialPose = chest->getGlobalPose();
-    Eigen::Matrix4f pelvisInitialPose = pelvis->getGlobalPose();
 
     Eigen::Vector3f com = colModelNodeSet->getCoM();
 
     Eigen::VectorXf configuration;
     int N = trajectory.cols();
 
-    Eigen::Vector3f yAxisLeft  = leftInitialPose.block(0, 1, 3, 1);
-    Eigen::Vector3f yAxisRight = rightInitialPose.block(0, 1, 3, 1);
-    Eigen::Matrix4f leftFootPose  = leftInitialPose;
-    Eigen::Matrix4f rightFootPose = rightInitialPose;
-    Eigen::Matrix4f chestPose = chestInitialPose;
-    Eigen::Matrix4f pelvisPose = pelvisInitialPose;
+    Eigen::Matrix4f leftFootPose  = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f rightFootPose = Eigen::Matrix4f::Identity();
+    Eigen::Matrix4f chestPose     = chest->getGlobalPose();
+    Eigen::Matrix4f pelvisPose    = pelvis->getGlobalPose();
 
     for (int i = 0; i < N; i++)
     {
-        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
-        leftFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisLeft);
-        robot->setGlobalPose(leftFootPose);
-
-        rightFootPose.block(0, 3, 3, 1) = 1000 * rightFootTrajectory.col(i);
-        rightFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(yAxisRight);
+        VirtualRobot::MathTools::posrpy2eigen4f(1000 * leftFootTrajectory.block(0, i, 3, 1),  leftFootTrajectory.block(3, i, 3, 1),  leftFootPose);
+        VirtualRobot::MathTools::posrpy2eigen4f(1000 * rightFootTrajectory.block(0, i, 3, 1), rightFootTrajectory.block(3, i, 3, 1), rightFootPose);
 
         // FIXME the orientation of the chest and chest is specific to armar 4
         // since the x-Axsis points in walking direction
-        Eigen::Vector3f xAxisChest = (yAxisLeft + yAxisRight)/2;
+        Eigen::Vector3f xAxisChest = (leftFootPose.block(0, 1, 3, 1) + rightFootPose.block(0, 1, 3, 1))/2;
         xAxisChest.normalize();
         chestPose.block(0, 0, 3, 3) = Kinematics::poseFromXAxis(xAxisChest);
         pelvisPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(-xAxisChest);
 
-        // compute pose for next step:
-        // Use vector between old position and new as y-Axsis to realize
-        // a changing walking direction.
-        if (i < N-1)
-        {
-            Eigen::Vector2f leftDirection = leftFootTrajectory.col(i+1).block(0, 0, 2, 1) - leftFootTrajectory.col(i).block(0, 0, 2, 1);
-            if (leftDirection.norm() > 0.00001)
-            {
-                yAxisLeft.block(0, 0, 2, 1) = leftDirection / leftDirection.norm();
-                yAxisLeft.normalize();
-            }
-            Eigen::Vector2f rightDirection = rightFootTrajectory.col(i+1).block(0, 0, 2, 1) - rightFootTrajectory.col(i).block(0, 0, 2, 1);
-            if (rightDirection.norm() > 0.00001)
-            {
-                yAxisRight.block(0, 0, 2, 1) = rightDirection / rightDirection.norm();
-                yAxisRight.normalize();
-            }
-        }
-
         std::cout << "Frame #" << i << ", ";
+        robot->setGlobalPose(leftFootPose);
         computeStepConfiguration(1000 * comTrajectory.col(i),
                                  rightFootPose,
                                  chestPose,

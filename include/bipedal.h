@@ -8,6 +8,11 @@ namespace Kinematics {
     enum SupportPhase : unsigned short;
 };
 
+namespace Eigen {
+    typedef Matrix<float, 6, Dynamic> Matrix6Xf;
+    typedef Matrix<float, 6, 1> Vector6f;
+};
+
 template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
