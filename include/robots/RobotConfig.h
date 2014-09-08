@@ -9,6 +9,7 @@ struct RobotConfig
 	const char* WAIST_NODE_NAME;
 	const char* COL_NODESET_NAME;
 	const char* ROBOT_NODESET_NAME;
+	const char* WALKING_NODESET_NAME;
 	const char* LEGS_NODESET_NAME;
 	const char* CHEST_NODE_NAME;
 	const char* LEGS_IK_CHAIN;

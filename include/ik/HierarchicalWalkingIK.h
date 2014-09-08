@@ -14,7 +14,8 @@ class HierarchicalWalkingIK : public WalkingIK
 {
 public:
     HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot,
-                          const VirtualRobot::RobotNodeSetPtr& nodeSet,
+                          const VirtualRobot::RobotNodeSetPtr& outputNodeSet,
+                          const VirtualRobot::RobotNodeSetPtr& ikNodeSet,
                           const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
                           const VirtualRobot::RobotNodePtr& chest,
                           const VirtualRobot::RobotNodePtr& pelvis,

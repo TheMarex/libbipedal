@@ -8,6 +8,7 @@ const Bipedal::RobotConfig ARMAR4_CONFIG = {
 "Waist",
 "ColModelAll",
 "CoMCompensation",
+"CoMCompensation_NoArms",
 "Left2RightLeg",
 "TorsoCenter",
 "Left2RightLeg",

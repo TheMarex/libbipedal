@@ -8,15 +8,22 @@
 class WalkingIK
 {
 public:
+    /**
+     * \param outputNodeSet will be used to read out the result vector of angles
+     * \param ikNodeSet nodes that will be used for the IK
+     * \param colModelNodeSet nodes that will be used for computing the CoM
+     */
     WalkingIK(const VirtualRobot::RobotPtr& robot,
-              const VirtualRobot::RobotNodeSetPtr& nodeSet,
+              const VirtualRobot::RobotNodeSetPtr& outputNodeSet,
+              const VirtualRobot::RobotNodeSetPtr& ikNodeSet,
               const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
               const VirtualRobot::RobotNodePtr& chest,
               const VirtualRobot::RobotNodePtr& pelvis,
               const VirtualRobot::RobotNodePtr& leftFootTCP,
               const VirtualRobot::RobotNodePtr& rightFootTCP)
     : robot(robot)
-    , nodeSet(nodeSet)
+    , outputNodeSet(outputNodeSet)
+    , ikNodeSet(ikNodeSet)
     , colModelNodeSet(colModelNodeSet)
     , chest(chest)
     , pelvis(pelvis)
@@ -33,7 +40,8 @@ public:
 
 protected:
     VirtualRobot::RobotPtr robot;
-    VirtualRobot::RobotNodeSetPtr nodeSet;
+    VirtualRobot::RobotNodeSetPtr outputNodeSet;
+    VirtualRobot::RobotNodeSetPtr ikNodeSet;
     VirtualRobot::RobotNodeSetPtr colModelNodeSet;
     VirtualRobot::RobotNodePtr chest;
     VirtualRobot::RobotNodePtr pelvis;

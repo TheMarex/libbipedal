@@ -7,34 +7,35 @@
 #include "bipedal/utils/Kinematics.h"
 
 HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot,
-                                             const VirtualRobot::RobotNodeSetPtr& nodeSet,
+                                             const VirtualRobot::RobotNodeSetPtr& outputNodeSet,
+                                             const VirtualRobot::RobotNodeSetPtr& ikNodeSet,
                                              const VirtualRobot::RobotNodeSetPtr& colModelNodeSet,
                                              const VirtualRobot::RobotNodePtr& chest,
                                              const VirtualRobot::RobotNodePtr& pelvis,
                                              const VirtualRobot::RobotNodePtr& leftFootTCP,
                                              const VirtualRobot::RobotNodePtr& rightFootTCP)
-: WalkingIK(robot, nodeSet, colModelNodeSet, chest, pelvis, leftFootTCP, rightFootTCP)
-, rightFootIK(new VirtualRobot::DifferentialIK(nodeSet))
-, uprightBodyIK(new VirtualRobot::DifferentialIK(nodeSet))
-, straightPelvisIK(new VirtualRobot::DifferentialIK(nodeSet))
-, comIK(new VirtualRobot::CoMIK(nodeSet, colModelNodeSet))
-, hIK(new VirtualRobot::HierarchicalIK(nodeSet))
+: WalkingIK(robot, outputNodeSet, ikNodeSet, colModelNodeSet, chest, pelvis, leftFootTCP, rightFootTCP)
+, rightFootIK(new VirtualRobot::DifferentialIK(ikNodeSet))
+, uprightBodyIK(new VirtualRobot::DifferentialIK(ikNodeSet))
+, straightPelvisIK(new VirtualRobot::DifferentialIK(ikNodeSet))
+, comIK(new VirtualRobot::CoMIK(ikNodeSet, colModelNodeSet))
+, hIK(new VirtualRobot::HierarchicalIK(ikNodeSet))
 {
-    VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
-    jRightFoot.jacProvider = rightFootIK;
-    jacobiDefinitions.push_back(jRightFoot);
-
-    VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
-    jCoM.jacProvider = comIK;
-    jacobiDefinitions.push_back(jCoM);
+    VirtualRobot::HierarchicalIK::JacobiDefinition jUprightBody;
+    jUprightBody.jacProvider = uprightBodyIK;
+    jacobiDefinitions.push_back(jUprightBody);
 
     VirtualRobot::HierarchicalIK::JacobiDefinition jStraightPelvis;
     jStraightPelvis.jacProvider = straightPelvisIK;
     jacobiDefinitions.push_back(jStraightPelvis);
 
-    VirtualRobot::HierarchicalIK::JacobiDefinition jUprightBody;
-    jUprightBody.jacProvider = uprightBodyIK;
-    jacobiDefinitions.push_back(jUprightBody);
+    VirtualRobot::HierarchicalIK::JacobiDefinition jCoM;
+    jCoM.jacProvider = comIK;
+    jacobiDefinitions.push_back(jCoM);
+
+    VirtualRobot::HierarchicalIK::JacobiDefinition jRightFoot;
+    jRightFoot.jacProvider = rightFootIK;
+    jacobiDefinitions.push_back(jRightFoot);
 }
 
 void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& comTrajectory,
@@ -43,7 +44,7 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
                                                      std::vector<Eigen::Matrix3f>& rootOrientation,
                                                      Eigen::MatrixXf& trajectory)
 {
-    int rows = nodeSet->getSize();
+    int rows = outputNodeSet->getSize();
 
     trajectory.resize(rows, rightFootTrajectory.cols());
     rootOrientation.resize(rightFootTrajectory.cols());
@@ -120,9 +121,9 @@ void HierarchicalWalkingIK::computeStepConfiguration(const Eigen::Vector3f& targ
 
         Eigen::VectorXf delta = hIK->computeStep(jacobiDefinitions);
         Eigen::VectorXf jv;
-        nodeSet->getJointValues(jv);
+        ikNodeSet->getJointValues(jv);
         jv += delta;
-        nodeSet->setJointValues(jv);
+        ikNodeSet->setJointValues(jv);
     }
 
     float e1 = jacobiDefinitions[0].jacProvider->getError().norm();
@@ -142,8 +143,8 @@ void HierarchicalWalkingIK::computeStepConfiguration(const Eigen::Vector3f& targ
         }
     }
 
-    std::cout << ((e1 <= ikPrec && e2 <= ikPrec) ? "IK Ok" : "IK Failed") << std::endl;
+    std::cout << (ok ? "IK Ok" : "IK Failed") << std::endl;
 
-    nodeSet->getJointValues(result);
+    outputNodeSet->getJointValues(result);
 }
 
