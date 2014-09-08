@@ -168,58 +168,6 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
         vRightFoot = _mRFootTrajectory.col(index - 1);
     }
 
-    // If we want to walk in a circle transform foot trajectories by rotating around
-    // a circle.
-    double angle = _dAngle;
-    double anglePerLeftY = angle / (vLeftFoot.y());
-    double anglePerRightY = angle / (vRightFoot.y());
-    Eigen::Vector3f center(angle > 0 ? -_dRadius : _dRadius, 0, 0);
-    for (int i = 0; i < _iNumberOfSteps; i++)
-    {
-        // only do all that copying if necessary
-        if (std::abs(angle) > std::numeric_limits<double>::epsilon())
-        {
-            Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
-            Eigen::Matrix4f rightFootPose = Eigen::Matrix4f::Identity();
-            Eigen::Vector6f rotatedLeft;
-            Eigen::Vector6f rotatedRight;
-            for (int j = 0; j < iSamplesPerStep; j++)
-            {
-                int k = iLDS + i*iSamplesPerStep + j;
-                Eigen::Matrix4f R = Eigen::Matrix4f::Identity();
-
-                const Eigen::Vector6f& currentLFoot = _mLFootTrajectory.col(k);
-                const Eigen::Vector6f& currentRFoot = _mRFootTrajectory.col(k);
-                VirtualRobot::MathTools::rpy2eigen4f(currentLFoot[3], currentLFoot[4], currentLFoot[5], leftFootPose);
-                VirtualRobot::MathTools::rpy2eigen4f(currentRFoot[3], currentRFoot[4], currentRFoot[5], rightFootPose);
-
-                Eigen::Vector3f tmp;
-
-                // transform left foot pose
-                double alphaLeft = currentLFoot.y() * anglePerLeftY;
-                VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaLeft, R);
-                leftFootPose *= R;
-                rotatedLeft.head(3) = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentLFoot.head(3) - center), R) + center;
-                VirtualRobot::MathTools::eigen4f2rpy(leftFootPose, tmp);
-                rotatedLeft.tail(3) = tmp;
-
-                // transform right foot pose
-                double alphaRight = currentRFoot.y() * anglePerRightY;
-                VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaRight, R);
-                rightFootPose *= R;
-                rotatedRight.head(3) = VirtualRobot::MathTools::transformPosition((Eigen::Vector3f) (currentRFoot.head(3) - center), R) + center;
-                VirtualRobot::MathTools::eigen4f2rpy(rightFootPose, tmp);
-                rotatedRight.tail(3) = tmp;
-
-                _mLFootTrajectory.col(k) = rotatedLeft;
-                _mRFootTrajectory.col(k) = rotatedRight;
-            }
-        }
-
-        // switch feet
-        bLeft = (bLeft ? false : true);
-    }
-
     // insert ending DS-phase
     _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
     Eigen::Vector6f lastLeftPose  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
@@ -228,6 +176,59 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
         _mLFootTrajectory.col(index) = lastLeftPose;
         _mRFootTrajectory.col(index) = lastRightPose;
         index++;
+    }
+
+    // If we want to walk in a circle transform foot trajectories by rotating around
+    // a circle.
+    // only do all that copying if necessary
+    if (std::abs(_dAngle) > std::numeric_limits<double>::epsilon())
+    {
+        const double radiusLeft  = _dAngle > 0 ? _dRadius : _dRadius + _dStepWidth;
+        const double radiusRight = _dAngle > 0 ? _dRadius + _dStepWidth : _dRadius;
+        const double circumfenceLeft = _dAngle * radiusLeft;
+        const double circumfenceRight = _dAngle * radiusRight;
+        const double circPerYLeft  = circumfenceLeft  / vLeftFoot.y();
+        const double circPerYRight = circumfenceRight / vRightFoot.y();
+        const Eigen::Vector3f center(_dAngle > 0 ? -_dRadius : _dRadius, 0, 0);
+
+        Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
+        Eigen::Matrix4f rightFootPose = Eigen::Matrix4f::Identity();
+        Eigen::Vector6f rotatedLeft;
+        Eigen::Vector6f rotatedRight;
+        for (int k = 0; k < index; k++)
+        {
+            Eigen::Matrix4f R = Eigen::Matrix4f::Identity();
+
+            const Eigen::Vector6f& currentLFoot = _mLFootTrajectory.col(k);
+            const Eigen::Vector6f& currentRFoot = _mRFootTrajectory.col(k);
+            VirtualRobot::MathTools::rpy2eigen4f(currentLFoot[3], currentLFoot[4], currentLFoot[5], leftFootPose);
+            VirtualRobot::MathTools::rpy2eigen4f(currentRFoot[3], currentRFoot[4], currentRFoot[5], rightFootPose);
+
+            Eigen::Vector3f tmp;
+
+            // transform left foot pose
+            const double alphaLeft = currentLFoot.y() * circPerYLeft / radiusLeft;
+            VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaLeft, R);
+            leftFootPose *= R;
+            rotatedLeft.x() = radiusLeft * cos(alphaLeft) + center.x();
+            rotatedLeft.y() = radiusLeft * sin(alphaLeft) + center.y();
+            rotatedLeft.z() = currentLFoot.z();
+            VirtualRobot::MathTools::eigen4f2rpy(leftFootPose, tmp);
+            rotatedLeft.tail(3) = tmp;
+
+            // transform right foot pose
+            const double alphaRight = currentRFoot.y() * circPerYRight / radiusRight;
+            VirtualRobot::MathTools::rpy2eigen4f(0, 0, alphaRight, R);
+            rightFootPose *= R;
+            rotatedRight.x() = radiusRight * cos(alphaRight) + center.x();
+            rotatedRight.y() = radiusRight * sin(alphaRight) + center.y();
+            rotatedRight.z() = currentRFoot.z();
+            VirtualRobot::MathTools::eigen4f2rpy(rightFootPose, tmp);
+            rotatedRight.tail(3) = tmp;
+
+            _mLFootTrajectory.col(k) = rotatedLeft;
+            _mRFootTrajectory.col(k) = rotatedRight;
+        }
     }
 }
 
