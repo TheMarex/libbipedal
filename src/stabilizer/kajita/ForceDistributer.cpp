@@ -12,19 +12,8 @@ ForceDistributor::ForceDistributor(double mass, Eigen::Vector3f gravity,
 : mass(mass)
 , gravity(gravity)
 {
-    leftConvexHull  = computeConvexHull(leftFoot, leftFootTCP);
-    rightConvexHull = computeConvexHull(rightFoot, rightFootTCP);
-}
-
-VirtualRobot::MathTools::ConvexHull2DPtr ForceDistributor::computeConvexHull(const VirtualRobot::RobotNodePtr& foot,
-                                                                             const VirtualRobot::RobotNodePtr& tcp)
-{
-    auto colModel = foot->getCollisionModel()->clone();
-    Eigen::Matrix4f relPose = tcp->getGlobalPose().inverse() * colModel->getGlobalPose();
-    colModel->setGlobalPose(relPose);
-    auto hull = Walking::ComputeFootContact(colModel);
-    Walking::CenterConvexHull(hull);
-    return hull;
+    leftConvexHull  = Walking::computeConvexHull(leftFoot, leftFootTCP);
+    rightConvexHull = Walking::computeConvexHull(rightFoot, rightFootTCP);
 }
 
 /**

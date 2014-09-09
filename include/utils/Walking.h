@@ -30,8 +30,17 @@ namespace Walking
      * Note: If the contact point is inside the convex hull, you will still get a correct contact point.
      *
      * Returns contact point on convex hull segment in the above coordinate system.
+     *
+     * FIXME: Should be moved to MathTools?
      */
     Eigen::Vector2f computeHullContactPoint(const Eigen::Vector2f p, const VirtualRobot::MathTools::ConvexHull2DPtr& hull);
+
+    /**
+     * Computes the convex hull of the support polygone the given body.
+     * Centers it around the TCP.
+     */
+    VirtualRobot::MathTools::ConvexHull2DPtr computeConvexHull(const VirtualRobot::RobotNodePtr& foot,
+                                                               const VirtualRobot::RobotNodePtr& tcp);
 }
 
 #endif

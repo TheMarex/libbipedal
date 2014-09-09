@@ -28,8 +28,6 @@ public:
                      VirtualRobot::RobotNodePtr leftFootTCP,
                      VirtualRobot::RobotNodePtr rightFootTCP);
 
-    VirtualRobot::MathTools::ConvexHull2DPtr computeConvexHull(const VirtualRobot::RobotNodePtr& foot, const VirtualRobot::RobotNodePtr& tcp);
-
     Eigen::Vector2f computeHullContact(const Eigen::Matrix4f& anklePose,
                                        const Eigen::Vector3f& refZMP,
                                        const VirtualRobot::MathTools::ConvexHull2DPtr& hull);

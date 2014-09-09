@@ -78,4 +78,14 @@ namespace Walking
         return VirtualRobot::MathTools::nearestPointOnSegment(hull->vertices[min_segment.id1], hull->vertices[min_segment.id2], p);
     }
 
+    VirtualRobot::MathTools::ConvexHull2DPtr computeConvexHull(const VirtualRobot::RobotNodePtr& foot,
+                                                               const VirtualRobot::RobotNodePtr& tcp)
+    {
+        auto colModel = foot->getCollisionModel()->clone();
+        Eigen::Matrix4f relPose = tcp->getGlobalPose().inverse() * colModel->getGlobalPose();
+        colModel->setGlobalPose(relPose);
+        auto hull = Walking::ComputeFootContact(colModel);
+        Walking::CenterConvexHull(hull);
+        return hull;
+    }
 }

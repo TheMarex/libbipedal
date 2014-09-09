@@ -49,7 +49,6 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
     trajectory.resize(rows, rightFootTrajectory.cols());
     rootOrientation.resize(rightFootTrajectory.cols());
 
-
     Eigen::Vector3f com = colModelNodeSet->getCoM();
 
     Eigen::VectorXf configuration;

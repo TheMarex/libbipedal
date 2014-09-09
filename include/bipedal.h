@@ -17,6 +17,8 @@ template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
 
+class PushRecovery;
+class CapturePointRecovery;
 class ZMPPlaner;
 class ZMPReferencePlaner;
 class ZMPPreviewControl;
@@ -50,6 +52,8 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
+typedef boost::shared_ptr<PushRecovery>                PushRecoveryPtr;
+typedef boost::shared_ptr<CapturePointRecovery>        CapturePointRecoveryPtr;
 typedef boost::shared_ptr<WalkingIK>                   WalkingIKPtr;
 typedef boost::shared_ptr<HierarchicalWalkingIK>       HierarchicalWalkingIKPtr;
 typedef boost::shared_ptr<TorqueControllingStabilizer> TorqueControllingStabilizerPtr;
