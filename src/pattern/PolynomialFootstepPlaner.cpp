@@ -191,6 +191,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
         const double circPerYRight = circumfenceRight / vRightFoot.y();
         const Eigen::Vector3f center(_dAngle > 0 ? -_dRadius : _dRadius, 0, 0);
 
+        // Maybe split loop in left/right for cache speedup
         Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
         Eigen::Matrix4f rightFootPose = Eigen::Matrix4f::Identity();
         Eigen::Vector6f rotatedLeft;

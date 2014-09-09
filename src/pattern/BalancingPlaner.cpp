@@ -63,6 +63,9 @@ void BalancingPlaner::computeStep(double ssTime,
     }
 }
 
+/**
+ * Lift foot and move stepWidth/4 in the lateral direction.
+ */
 void BalancingPlaner::computeInitialStep(double sampleDelta,
                                          double stepWidth,
                                          double stepHeight,
@@ -74,7 +77,7 @@ void BalancingPlaner::computeInitialStep(double sampleDelta,
     for (unsigned i = 0; i < numSamples; i++)
     {
         double t = sampleDelta*i;
-        trajectory(0, i) = lateralDirection * (stepWidth/2 - Bipedal::splinePositionInterpolation(t, T, stepWidth/2, 0, 0));
+        trajectory(0, i) = -lateralDirection * Bipedal::splinePositionInterpolation(t, T, stepWidth/4, 0, 0);
         trajectory(1, i) = 0;
         trajectory(2, i) = Bipedal::splinePositionInterpolation(t, T, stepHeight, 0, 0);
     }
@@ -91,9 +94,9 @@ void BalancingPlaner::computeLastStep(double sampleDelta,
     for (unsigned i = 0; i < numSamples; i++)
     {
         double t = sampleDelta*i;
-        trajectory(0, i) = lateralDirection * Bipedal::splinePositionInterpolation(t, T, stepWidth/2, 0, 0);
+        trajectory(0, i) = lateralDirection * Bipedal::splinePositionInterpolation(t, T, stepWidth/4, 0, 0);
         trajectory(1, i) = 0;
-        trajectory(2, i) = stepHeight - Bipedal::splinePositionInterpolation(t, T, stepHeight, 0, 0);
+        trajectory(2, i) = -Bipedal::splinePositionInterpolation(t, T, stepHeight, 0, 0);
     }
 }
 
@@ -112,6 +115,7 @@ void BalancingPlaner::computeGeneralizedTrajectories()
     _mFootTrajectoryFirst = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
     _mFootTrajectoryLast  = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
 
+
     bool bRightFootLast = _iNumberOfSteps % 2 != 0;
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, 1.0, _mFootTrajectoryLeft);
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, -1.0, _mFootTrajectoryRight);
@@ -121,6 +125,7 @@ void BalancingPlaner::computeGeneralizedTrajectories()
     std::cout << " ok." << std::endl;
 }
 
+// FIXME This only works or exactly 2 steps.
 void BalancingPlaner::computeFeetTrajectories()
 {
     BOOST_ASSERT(_iNumberOfSteps >= 2);
@@ -130,7 +135,7 @@ void BalancingPlaner::computeFeetTrajectories()
     int iSamplesPerStep = iSS + iDS;
     // first/last dual support phase needs to be *long* to warm up the preview control
     int iLDS = _iSampleSize;
-    int iSamples = iSamplesPerStep * _iNumberOfSteps + 2*iLDS;
+    int iSamples = iSamplesPerStep * _iNumberOfSteps + 2*iLDS + 5*iLDS;
 
     std::cout << "Calculating " << _iNumberOfSteps << " using " << iSamplesPerStep << " steps." << std::endl;
     std::cout << "Using " << iLDS << " samples for the start and end DS phase." << std::endl;
@@ -170,9 +175,18 @@ void BalancingPlaner::computeFeetTrajectories()
         _supportIntervals.emplace_back(index,
                                        index + iSS,
                                        bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
-        _supportIntervals.emplace_back(index + iSS,
-                                       index + iSS + iDS,
-                                       Kinematics::SUPPORT_BOTH);
+        if (i == 0 )
+        {
+            _supportIntervals.emplace_back(index + iSS,
+                                           index + iSS + iDS,
+                                           bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+        }
+        else
+        {
+            _supportIntervals.emplace_back(index + iSS,
+                                           index + iSS + iDS,
+                                           Kinematics::SUPPORT_BOTH);
+        }
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
         const Eigen::Matrix6Xf& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps, bool left)
@@ -203,21 +217,35 @@ void BalancingPlaner::computeFeetTrajectories()
             index++;
         }
 
+        // save new foot positions to temporary vectors
+        vLeftFoot = _mLFootTrajectory.col(index - 1);
+        vRightFoot = _mRFootTrajectory.col(index - 1);
+
+        // FIXME Hack to remain on left foot
+        if (i == 0)
+        {
+            _supportIntervals.emplace_back(index,
+                                           index + iLDS*5,
+                                           bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+            for (int j = 0; j < iLDS*5; j++)
+            {
+                _mLFootTrajectory.col(index) = vLeftFoot;
+                _mRFootTrajectory.col(index) = vRightFoot;
+                index++;
+            }
+        }
+
         // switch feet
         // Don't switch after lifting left leg (step 1)
         // or before bringing down the lifted foot (last step)
         if (i != 0 || i != _iNumberOfSteps-2)
             bLeft = !bLeft;
-
-        // save new foot positions to temporary vectors
-        vLeftFoot = _mLFootTrajectory.col(index - 1);
-        vRightFoot = _mRFootTrajectory.col(index - 1);
     }
 
     // insert ending DS-phase
     _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
-    Eigen::Vector6f lastLeftPos  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
-    Eigen::Vector6f lastRightPos = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
+    Eigen::Vector6f lastLeftPos  = _mLFootTrajectory.col(index - 1);
+    Eigen::Vector6f lastRightPos = _mRFootTrajectory.col(index - 1);
     for (int j = 0; j < iLDS; j++) {
         _mLFootTrajectory.col(index) = lastLeftPos;
         _mRFootTrajectory.col(index) = lastRightPos;
