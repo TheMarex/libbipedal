@@ -116,7 +116,7 @@ void BalancingPlaner::computeGeneralizedTrajectories()
     _mFootTrajectoryLast  = Eigen::Matrix6Xf::Zero(6, iSamplesPerStep);
 
 
-    bool bRightFootLast = _iNumberOfSteps % 2 != 0;
+    bool bRightFootLast = _bLeftFootFirst ? (_iNumberOfSteps % 2 != 0) : (_iNumberOfSteps % 2 == 0);
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, 1.0, _mFootTrajectoryLeft);
     computeStep(_dSingleSupportPhase, sampleDelta, _dStepLength, _dStepHeight, -1.0, _mFootTrajectoryRight);
     computeInitialStep(sampleDelta, _dStepWidth, _dStepHeight, _bLeftFootFirst ? -1.0 : 1.0, _mFootTrajectoryFirst);
@@ -128,6 +128,7 @@ void BalancingPlaner::computeGeneralizedTrajectories()
 // FIXME This only works or exactly 2 steps.
 void BalancingPlaner::computeFeetTrajectories()
 {
+    _bLeftFootFirst = false;
     BOOST_ASSERT(_iNumberOfSteps >= 2);
 
     int iSS             = (int) (_iSampleSize * _dSingleSupportPhase);
