@@ -33,50 +33,73 @@ public:
     , leftSupportHull(leftSupportHull)
     , rightSupportHull(rightSupportHull)
     , maxHullDist(200)
+    , lastSupportPhase(Kinematics::SUPPORT_NONE)
+    , contactPoint(Eigen::Vector3f::Zero())
     {
     }
+
+    const Eigen::Vector3f& getCapturePoint() const { return immediateCapturePoint; }
+    const Eigen::Vector3f& getContactPoint() const { return contactPoint; }
 
     virtual bool isFalling(Kinematics::SupportPhase phase, double dt) override
     {
         updateCaputePoint(dt);
 
-        // FIXME actually we could make this work with the convex hull of both support
-        // polygones.
-        if (phase == Kinematics::SUPPORT_BOTH)
+        const auto& supportHull = [this, phase]() {
+            if (phase == Kinematics::SUPPORT_LEFT)
+                return leftSupportHull;
+            if (phase == Kinematics::SUPPORT_RIGHT)
+                return rightSupportHull;
+
+            BOOST_ASSERT(phase == Kinematics::SUPPORT_BOTH);
+
+            // Foot positions changed
+            if (lastSupportPhase != phase)
+            {
+                recomputeDualSupportHull();
+            }
+
+            return dualSupportHull;
+        }();
+        lastSupportPhase = phase;
+        // center of convex hull and orientation should correspond with ground frame
+        const auto& groundFrame = Kinematics::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase);
+
+        Eigen::Vector3f iCPConvexHull = VirtualRobot::MathTools::transformPosition(immediateCapturePoint, groundFrame.inverse());
+
+        // if CP is inside of the CP, we are not falling
+        if (VirtualRobot::MathTools::isInside(iCPConvexHull.head(2), supportHull))
         {
             return false;
         }
 
-        const auto& supportFoot = phase == Kinematics::SUPPORT_LEFT ? leftFoot        : rightFoot;
-        const auto& supportHull = phase == Kinematics::SUPPORT_LEFT ? leftSupportHull : rightSupportHull;
-
-        Eigen::Vector3f iCPSupportFoot = VirtualRobot::MathTools::transformPosition(immediateCapturePoint, supportFoot->getGlobalPose().inverse());
         Eigen::Vector3f contact = Eigen::Vector3f::Zero();
-        contact.head(2) = Walking::computeHullContactPoint(iCPSupportFoot.head(2), supportHull);
+        contact.head(2) = Walking::computeHullContactPoint(iCPConvexHull.head(2), supportHull);
 
-        contactPoint = VirtualRobot::MathTools::transformPosition(contact, supportFoot->getGlobalPose());
+        contactPoint = VirtualRobot::MathTools::transformPosition(contact, groundFrame);
 
-        double dist = (contact-iCPSupportFoot).norm();
+        double dist = (contact-iCPConvexHull).norm();
 
         return dist > maxHullDist;
     }
 
     virtual bool computeRecoveryTrajectory(Kinematics::SupportPhase phase, Eigen::VectorXf& trajectory) override
     {
-        if (phase == Kinematics::SUPPORT_BOTH)
-        {
-            return false;
-        }
+        // chose foot that is closest to CP
+        const double distRight = (immediateCapturePoint - rightFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
+        const double distLeft  = (immediateCapturePoint - leftFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
 
-        const auto& tcp = phase == Kinematics::SUPPORT_LEFT ? rightFoot  : leftFoot;
-        const auto& ik  = phase == Kinematics::SUPPORT_LEFT ? rightLegIK : leftLegIK;
+        const auto& tcp = distRight < distLeft ? rightFoot  : leftFoot;
+        const auto& ik  = distRight < distLeft ? rightLegIK : leftLegIK;
 
         Eigen::VectorXf backup;
         nodes->getJointValues(backup);
-        auto currentPose = tcp->getGlobalPose();
+        const auto& currentPose = tcp->getGlobalPose();
         Eigen::Matrix4f newPose = Eigen::Matrix4f::Identity();
+        Eigen::Vector3f zOffset = Eigen::Vector3f::Zero();
+        zOffset.z() = (currentPose.block(0, 3, 3, 1) - immediateCapturePoint).norm() / 5;
         newPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(currentPose.block(0, 1, 3, 1));
-        newPose.block(0, 3, 3, 1) = immediateCapturePoint;
+        newPose.block(0, 3, 3, 1) = immediateCapturePoint + zOffset;
         ik->setGoal(newPose, tcp, VirtualRobot::IKSolver::All, 0.5f, 0.2f/180.0f*M_PI);
         ik->solveIK();
 
@@ -89,6 +112,24 @@ public:
     }
 
 private:
+
+    void recomputeDualSupportHull()
+    {
+        Eigen::Vector2f offset = rightFoot->getGlobalPose().block(0, 3, 2, 1) - leftFoot->getGlobalPose().block(0, 3, 2, 1);
+
+        std::vector<Eigen::Vector2f> points;
+        for (const auto& v : leftSupportHull->vertices)
+        {
+            points.push_back(v - offset/2);
+        }
+        for (const auto& v : rightSupportHull->vertices)
+        {
+            points.push_back(v + offset/2);
+        }
+
+        dualSupportHull = VirtualRobot::MathTools::createConvexHull2D(points);
+        Walking::CenterConvexHull(dualSupportHull);
+    }
 
     void updateCaputePoint(double dt)
     {
@@ -103,11 +144,13 @@ private:
     }
 
     double maxHullDist;
+    Kinematics::SupportPhase lastSupportPhase;
 
     VirtualRobot::RobotNodePtr leftFoot;
     VirtualRobot::RobotNodePtr rightFoot;
     VirtualRobot::MathTools::ConvexHull2DPtr leftSupportHull;
     VirtualRobot::MathTools::ConvexHull2DPtr rightSupportHull;
+    VirtualRobot::MathTools::ConvexHull2DPtr dualSupportHull;
 
     VirtualRobot::RobotNodeSetPtr nodes;
     VirtualRobot::RobotNodeSetPtr colModelNodes;
