@@ -13,6 +13,13 @@
 
 class CapturePointRecovery : public PushRecovery
 {
+    enum RecoveryState
+    {
+        STATE_RECOVERED  = 0,
+        STATE_RAISE_FOOT = 1,
+        STATE_LOWER_FOOT = 2,
+    };
+
 public:
     CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& nodes,
                          const VirtualRobot::RobotNodeSetPtr& colModelNodes,
@@ -32,9 +39,11 @@ public:
     , rightFoot(rightFoot)
     , leftSupportHull(leftSupportHull)
     , rightSupportHull(rightSupportHull)
-    , maxHullDist(200)
+    , maxHullDist(100)
+    , minHeight(100)
     , lastSupportPhase(Kinematics::SUPPORT_NONE)
     , contactPoint(Eigen::Vector3f::Zero())
+    , state(STATE_RECOVERED)
     {
     }
 
@@ -67,7 +76,7 @@ public:
 
         Eigen::Vector3f iCPConvexHull = VirtualRobot::MathTools::transformPosition(immediateCapturePoint, groundFrame.inverse());
 
-        // if CP is inside of the CP, we are not falling
+        // if CP is inside of the CH, we are not falling
         if (VirtualRobot::MathTools::isInside(iCPConvexHull.head(2), supportHull))
         {
             return false;
@@ -79,12 +88,22 @@ public:
         contactPoint = VirtualRobot::MathTools::transformPosition(contact, groundFrame);
 
         double dist = (contact-iCPConvexHull).norm();
+        bool falling = dist > maxHullDist;
+        if (falling && state == STATE_RECOVERED)
+        {
+            state = STATE_RAISE_FOOT;
+        }
 
-        return dist > maxHullDist;
+        return falling;
     }
 
     virtual bool computeRecoveryTrajectory(Kinematics::SupportPhase phase, Eigen::VectorXf& trajectory) override
     {
+        if (state == STATE_RECOVERED)
+        {
+            return true;
+        }
+
         // chose foot that is closest to CP
         const double distRight = (immediateCapturePoint - rightFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
         const double distLeft  = (immediateCapturePoint - leftFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
@@ -92,12 +111,33 @@ public:
         const auto& tcp = distRight < distLeft ? rightFoot  : leftFoot;
         const auto& ik  = distRight < distLeft ? rightLegIK : leftLegIK;
 
+        const auto& currentPose = tcp->getGlobalPose();
+        Eigen::Vector3f zOffset = Eigen::Vector3f::Zero();
+
+        const double height = currentPose(2, 3);
+
+        if (state == STATE_RAISE_FOOT)
+        {
+            if (height >= minHeight)
+            {
+                state = STATE_LOWER_FOOT;
+            }
+            else
+            {
+                // multiplicator just makes sure we get there faster
+                zOffset.z() = minHeight*2;
+            }
+        }
+        else if (std::abs(height) < 0.5)
+        {
+            std::cout << "Recovered!" << std::endl;
+            state = STATE_RECOVERED;
+            return true;
+        }
+
         Eigen::VectorXf backup;
         nodes->getJointValues(backup);
-        const auto& currentPose = tcp->getGlobalPose();
         Eigen::Matrix4f newPose = Eigen::Matrix4f::Identity();
-        Eigen::Vector3f zOffset = Eigen::Vector3f::Zero();
-        zOffset.z() = (currentPose.block(0, 3, 3, 1) - immediateCapturePoint).norm() / 5;
         newPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(currentPose.block(0, 1, 3, 1));
         newPose.block(0, 3, 3, 1) = immediateCapturePoint + zOffset;
         ik->setGoal(newPose, tcp, VirtualRobot::IKSolver::All, 0.5f, 0.2f/180.0f*M_PI);
@@ -108,7 +148,7 @@ public:
         nodes->getJointValues(trajectory);
         nodes->setJointValues(backup);
 
-        return true;
+        return false;
     }
 
 private:
@@ -144,7 +184,9 @@ private:
     }
 
     double maxHullDist;
+    double minHeight;
     Kinematics::SupportPhase lastSupportPhase;
+    RecoveryState state;
 
     VirtualRobot::RobotNodePtr leftFoot;
     VirtualRobot::RobotNodePtr rightFoot;
