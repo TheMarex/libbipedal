@@ -10,6 +10,7 @@
 
 #include "kajita/FootForceController.h"
 #include "kajita/FootTorqueController.h"
+#include "kajita/ZMPTrackingController.h"
 
 #include "stabilizer/kajita/ForceDistributor.h"
 #include "stabilizer/KajitaStabilizer.h"
@@ -68,6 +69,8 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftFootBody, rightFootBody, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
+// gains from paper
+, zmpTrackingController(new ZMPTrackingController(Eigen::Vector3f(-13, -3, -3.377)))
 /* Adapted frames */
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
@@ -80,6 +83,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , stepAdaptionFrame(Eigen::Matrix4f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 , referenceIK(referenceIK)
+, refCoMVelEstimator(Eigen::Vector2f::Zero(), Eigen::Vector2f::Zero())
 {
     // FIXME Make node name configurable
     Eigen::Vector3f leftHipPos  = robot->getRobotNode("LeftLeg_Joint2")->getGlobalPose().block(0, 3, 3, 1);
@@ -153,6 +157,9 @@ void KajitaStabilizer::update(float dt,
     //leftFootPoseRef  = leftFootPoseRefWorld;
     //rightFootPoseRef = rightFootPoseRefWorld;
 
+    refCoMVelEstimator.update(comPositionRef.head(2), dt);
+    //zmpTrackingController->adaptReferenceZMP(zmpPositionRef.head(2), comPositionRef.head(2), refCoMVelEstimator.estimation,);
+
     Eigen::Matrix4f leftToWorld  = leftFoot->getGlobalPose();
     Eigen::Matrix4f rightToWorld = rightFoot->getGlobalPose();
     ft = forceDistributor->distributeZMP(
@@ -190,7 +197,7 @@ void KajitaStabilizer::update(float dt,
         rightAnkleSensorX->getForce()
     );
 
-    chestPose = chestPostureController->correctPosture(
+    chestPose = chestPoseRef * chestPostureController->correctPosture(
         chestPoseRef,
         chest->getGlobalPose()
     );

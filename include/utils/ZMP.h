@@ -1,12 +1,14 @@
 #ifndef __UTILS_ZMP_H__
 #define __UTILS_ZMP_H__
 
+#include "Estimation.h"
+
 namespace Bipedal
 {
     /*
      * Computes ZMP according to the table cart model.
      */
-    Eigen::Vector2f computeModelZMP(Eigen::Vector3f com, Eigen::Vector3f comAcc, Eigen::Vector3f gravity)
+    inline Eigen::Vector2f computeModelZMP(Eigen::Vector3f com, Eigen::Vector3f comAcc, Eigen::Vector3f gravity)
     {
         Eigen::Vector2f zmp;
         // note that gravity.z() < 0, so we changed the sign of the term
@@ -14,6 +16,56 @@ namespace Bipedal
         zmp.y() = com.y() + com.z() / gravity.z() * comAcc.y();
         return zmp;
     }
+
+    /**
+     * Note: We implicitly assume that the ZMP on a xy-plane at z = 0.
+     */
+    inline Eigen::Vector2f computeMultiBodyZMP(double mass,
+                                               double gravity,
+                                               const Eigen::Vector3f& com,
+                                               const Eigen::Vector3f& linearMomentumDiff,
+                                               const Eigen::Vector3f& angularMomentumDiff)
+    {
+        Eigen::Vector2f zmp;
+        double norm = mass * gravity + linearMomentumDiff.z();
+        zmp.x() = mass * gravity * com.x() - angularMomentumDiff.y();
+        zmp.y() = mass * gravity * com.y() - angularMomentumDiff.x();
+        zmp /= norm;
+
+        return zmp;
+    }
+
+    class MultiBodyZMPEstimator
+    {
+    public:
+        Eigen::Vector2f estimation;
+
+        MultiBodyZMPEstimator(double mass, double gravity)
+        : mass(mass)
+        , gravity(gravity)
+        , estimation(Eigen::Vector2f::Zero())
+        , linearMomentumDiff(Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero())
+        , angularMomentumDiff(Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero())
+        {
+        }
+
+        void update(const Eigen::Vector3f& com,
+                    const Eigen::Vector3f& linearMomentum,
+                    const Eigen::Vector3f& angularMomentum,
+                    double dt)
+        {
+            linearMomentumDiff.update(linearMomentum, dt);
+            angularMomentumDiff.update(angularMomentum, dt);
+
+            estimation = computeMultiBodyZMP(mass, gravity, com, linearMomentumDiff.estimation, angularMomentumDiff.estimation);
+        }
+
+    private:
+        double mass;
+        double gravity;
+        ThirdOrderBackwardDerivationEstimator<Eigen::Vector3f> linearMomentumDiff;
+        ThirdOrderBackwardDerivationEstimator<Eigen::Vector3f> angularMomentumDiff;
+    };
 };
 
 #endif

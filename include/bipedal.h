@@ -49,6 +49,14 @@ namespace Bipedal {
 template<typename T> class CubivBezierCurve;
 typedef CubivBezierCurve<Eigen::Vector3f> CubicBezierCurve3f;
 typedef CubivBezierCurve<Eigen::Vector2f> CubicBezierCurve2f;
+
+template<typename T, unsigned order> class BackwardDerivationEstimator;
+template<typename T> using DerivationEstimator = BackwardDerivationEstimator<T, 1>;
+template<typename T> using ThirdOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 3>;
+template<typename T> using SixthOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 6>;
+
+class MultiBodyZMPEstimator;
+typedef boost::shared_ptr<MultiBodyZMPEstimator> MultiBodyZMPEstimatorPtr;
 }
 
 typedef ControlPointEntry<Eigen::Vector2f>   ControlPointEntry2f;

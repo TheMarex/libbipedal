@@ -1,5 +1,5 @@
-#ifndef __BALANCING_PLANER_H_
-#define __BALANCING_PLANER_H_
+#ifndef __BALANCING_PLANER_H__
+#define __BALANCING_PLANER_H__
 
 #include <boost/shared_ptr.hpp>
 

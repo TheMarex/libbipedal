@@ -9,6 +9,7 @@
 #include <string>
 
 #include "../bipedal.h"
+#include "../utils/Estimation.h"
 
 #include "kajita/ForceDistributor.h"
 
@@ -17,9 +18,11 @@
 
 class FootForceController;
 class FootTorqueController;
+class ZMPTrackingController;
 
 typedef boost::shared_ptr<FootForceController> FootForceControllerPtr;
 typedef boost::shared_ptr<FootTorqueController> FootTorqueControllerPtr;
+typedef boost::shared_ptr<ZMPTrackingController> ZMPTrackingControllerPtr;
 
 class KajitaStabilizer : public FrameAdaptingStabilizer, public TorqueControllingStabilizer
 {
@@ -93,6 +96,7 @@ private:
     // all nodes that are used for the IK
     VirtualRobot::RobotNodeSetPtr nodes;
 
+    ZMPTrackingControllerPtr          zmpTrackingController;
     FootForceControllerPtr             footForceController;
     FootTorqueControllerPtr            footTorqueController;
     TwoDOFPostureControllerPtr         chestPostureController;
@@ -124,6 +128,8 @@ private:
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
     ForceDistributor::ForceTorque ft;
+
+    Bipedal::DerivationEstimator<Eigen::Vector2f> refCoMVelEstimator;
 };
 
 
