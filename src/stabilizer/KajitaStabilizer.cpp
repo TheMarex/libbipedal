@@ -213,6 +213,12 @@ void KajitaStabilizer::update(float dt,
     std::vector<float> angles;
     auto originalRoot = nodes->getRobot()->getGlobalPose();
     nodes->getJointValues(angles);
+
+    VirtualRobot::RobotNodePtr leftArm = nodes->getRobot()->getRobotNode("LeftArm_Joint3");
+    nodes->getRobot()->setJointValue(leftArm, 0.3);
+    VirtualRobot::RobotNodePtr rightArm = nodes->getRobot()->getRobotNode("RightArm_Joint3");
+    nodes->getRobot()->setJointValue(rightArm, -0.3);
+
     bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, comPosition, phase, resultAngles);
     nodes->setJointValues(angles);
     nodes->getRobot()->setGlobalPose(originalRoot);
