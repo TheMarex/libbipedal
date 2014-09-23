@@ -133,6 +133,11 @@ void CartesianStabilizer::update(float dt,
     BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 
+const ReferenceIKPtr& CartesianStabilizer::getReferenceIK()
+{
+    return referenceIK;
+}
+
 std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getControllers()
 {
     std::unordered_map<std::string, DampeningController*> controllers;

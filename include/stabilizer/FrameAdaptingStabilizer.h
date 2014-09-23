@@ -24,6 +24,7 @@ public:
 
     virtual const Eigen::VectorXf& getResultAngles() = 0;
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() = 0;
+    virtual const ReferenceIKPtr& getReferenceIK() = 0;
 
     virtual std::unordered_map<std::string, DampeningController*> getControllers() = 0;
 

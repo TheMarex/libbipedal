@@ -42,6 +42,7 @@ public:
     virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
 
+    const ReferenceIKPtr& getReferenceIK() override;
     virtual std::unordered_map<std::string, DampeningController*> getControllers() override;
 
     virtual void update(float dt,

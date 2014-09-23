@@ -43,6 +43,8 @@ public:
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
                      ReferenceIKPtr referenceIK);
 
+    virtual const ReferenceIKPtr& getReferenceIK() override { return referenceIK; }
+
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
     virtual const Eigen::Matrix4f& getLeftFootPoseRef() override { return leftFootPoseRef; }
