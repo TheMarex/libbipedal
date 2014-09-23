@@ -45,6 +45,12 @@ template<typename T> class ControlPointParser;
 template<typename T> class ControlValueEntry;
 template<typename T> class ControlValueParser;
 
+namespace Bipedal {
+template<typename T> class CubivBezierCurve;
+typedef CubivBezierCurve<Eigen::Vector3f> CubicBezierCurve3f;
+typedef CubivBezierCurve<Eigen::Vector2f> CubicBezierCurve2f;
+}
+
 typedef ControlPointEntry<Eigen::Vector2f>   ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f>  ControlPointParser2f;
 typedef ControlPointEntry<Eigen::Vector3f>   ControlPointEntry3f;

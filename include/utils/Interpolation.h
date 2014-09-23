@@ -66,6 +66,51 @@ inline double polyVelocityInterpolation(double t, double T, double S, double v0,
 	return (a0*x + v0 + pow(x, 4)*(30*S/pow(x, 5) - 5*a0/(2*pow(x, 3)) + 5*a1/(2*pow(x, 3)) - 15*v0/pow(x, 4) - 15*v1/pow(x, 4)) + pow(x, 3)*(-60*S/pow(x, 4) + 6*a0/pow(x, 2) - 4*a1/pow(x, 2) + 32*v0/pow(x, 3) + 28*v1/pow(x, 3)) + pow(x, 2)*(30*S/pow(x, 3) - 9*a0/(2*T) + 3*a1/(2*T) - 18*v0/pow(x, 2) - 12*v1/pow(x, 2)));
 }
 
+template<typename VectorT>
+class CubivBezierCurve
+{
+public:
+    VectorT position;
+    VectorT start;
+    VectorT end;
+    VectorT h1;
+    VectorT h2;
+
+    CubivBezierCurve() = default;
+
+    CubivBezierCurve(const VectorT& start, const VectorT& end, const VectorT& h1, const VectorT& h2, double T)
+    : start(start)
+    , end(end)
+    , h1(h1)
+    , h2(h2)
+    , T(T)
+    , t(0)
+    , position(VectorT::Zero())
+    {
+    }
+
+    inline bool finished() { return t > T; }
+
+    /**
+     * dt is the timestep size.
+     */
+    inline void update(double dt)
+    {
+        const double x = t/T;
+        const double s = 1-x;
+        std::cout << x << " - " << s << std::endl;
+        t += dt;
+        position = s*s*s * start + 3*s*s*x * h1 + 3*s*x*x * h2 + x*x*x * end;
+    }
+
+private:
+    double T;
+    double t;
+};
+
+using CubivBezierCurve3f = CubivBezierCurve<Eigen::Vector3f>;
+using CubivBezierCurve2f = CubivBezierCurve<Eigen::Vector2f>;
+
 }
 
 #endif
