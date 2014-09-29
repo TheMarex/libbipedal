@@ -69,8 +69,8 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftFootBody, rightFootBody, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
-// gains from paper
-, zmpTrackingController(new ZMPTrackingController(Eigen::Vector3f(-13, -3, -3.377)))
+// gains calculated with utils/zmp_gains.ipynote
+, zmpTrackingController(new ZMPTrackingController(Eigen::Vector3f(-0.09150757, -0.02709391, -0.33112892)))
 /* Adapted frames */
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
