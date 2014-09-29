@@ -236,7 +236,7 @@
 		</Transform>
 		<Joint type="revolute">
 			<!-- <DH theta="109.174" alpha="0" a="150.707" d="32.5008" unitsAngle="degree"/> -->
-			<Limits lo="-25" hi="45" unitsAngle="degree"/>
+			<Limits lo="-45" hi="65" unitsAngle="degree"/>
 			<MaxVelocity value="360" unitsAngle="degree"/>
 			<MaxAcceleration value="5000" unitsAngle="rad"/>
 			<MaxTorque value="100"/> 			
