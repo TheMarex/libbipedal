@@ -36,6 +36,9 @@ StabilizerFactory::StabilizerFactory(const Bipedal::RobotConfig& config, const V
 
     auto colModel = robot->getRobotNodeSet(config.COL_NODESET_NAME);
 
+    if (!nodes || !colModel || !leftFoot || !rightFoot || !chest || !pelvis)
+        return;
+
     auto referenceIK = boost::dynamic_pointer_cast<ReferenceIK>(
                 boost::make_shared<DifferentialReferenceIK>(nodes,
                                                             robot,
@@ -46,16 +49,19 @@ StabilizerFactory::StabilizerFactory(const Bipedal::RobotConfig& config, const V
                                                             pelvis)
               );
 
-    kajitaStab = boost::make_shared<KajitaStabilizer>(robot,
-                                                      nodes,
-                                                      chest,
-                                                      leftFoot, rightFoot,
-                                                      leftFootBody, rightFootBody,
-                                                      leftAnkleBody, rightAnkleBody,
-                                                      pelvis,
-                                                      leftAnkleSensorX, rightAnkleSensorX,
-                                                      leftAnkleSensorY, rightAnkleSensorY,
-                                                      referenceIK);
+    if (leftAnkleSensorX && leftAnkleSensorY && rightAnkleSensorX && rightAnkleSensorY)
+    {
+        kajitaStab = boost::make_shared<KajitaStabilizer>(robot,
+                                                          nodes,
+                                                          chest,
+                                                          leftFoot, rightFoot,
+                                                          leftFootBody, rightFootBody,
+                                                          leftAnkleBody, rightAnkleBody,
+                                                          pelvis,
+                                                          leftAnkleSensorX, rightAnkleSensorX,
+                                                          leftAnkleSensorY, rightAnkleSensorY,
+                                                          referenceIK);
+    }
 
     cartesianStab = boost::make_shared<CartesianStabilizer>(robot,
                                                             nodes,

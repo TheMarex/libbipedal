@@ -48,7 +48,13 @@ void TrajectoryPlayer::reset()
 bool TrajectoryPlayer::loadMotion(const std::string& motionPath, const std::string& goalMotionName)
 {
     MMM::MotionReaderXMLPtr reader(new MMM::MotionReaderXML());
+
     std::vector<std::string> motionNames = reader->getMotionNames(motionPath);
+
+    if (motionNames.size() == 0)
+    {
+        return false;
+    }
 
     std::string motionName = goalMotionName;
     if (goalMotionName == "")
