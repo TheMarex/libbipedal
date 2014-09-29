@@ -7,6 +7,9 @@
 #include "../../utils/Kinematics.h"
 #include "../../bipedal.h"
 
+namespace Bipedal
+{
+
 class ZMPReferencePlaner
 {
 public:
@@ -16,7 +19,7 @@ public:
      */
     void generateReference(const Eigen::Matrix6Xf& leftFootTrajectory,
                            const Eigen::Matrix6Xf& rightFootTrajectory,
-                           const std::vector<Kinematics::SupportInterval>& supportIntervals,
+                           const std::vector<Bipedal::SupportInterval>& supportIntervals,
                            Eigen::Matrix2Xf& referenceZMP) const;
 private:
     void shiftZMP(const Eigen::Vector2f& phaseBegin,
@@ -24,9 +27,11 @@ private:
                   unsigned beginIdx,
                   unsigned endIdx,
                   Eigen::Matrix2Xf& referenceZMP) const;
-    Eigen::Vector2f getRefPosition(Kinematics::SupportPhase phase,
+    Eigen::Vector2f getRefPosition(Bipedal::SupportPhase phase,
                                    const Eigen::Vector2f& leftFoot,
                                    const Eigen::Vector2f& rigtFoot) const;
 };
+
+}
 
 #endif

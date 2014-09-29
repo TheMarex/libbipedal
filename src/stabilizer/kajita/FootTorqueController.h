@@ -8,6 +8,9 @@
 
 #include <bipedal/controller/DampeningController.h>
 
+namespace Bipedal
+{
+
 class FootTorqueController
 {
 public:
@@ -58,5 +61,7 @@ public:
     DampeningController rightPhiDC;
     DampeningController rightThetaDC;
 };
+
+}
 
 #endif

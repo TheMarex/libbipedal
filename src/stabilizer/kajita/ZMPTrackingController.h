@@ -3,6 +3,9 @@
 
 #include <Eigen/Dense>
 
+namespace Bipedal
+{
+
 /**
  * Adapts the ZMP reference to follow the real state.
  */
@@ -30,5 +33,7 @@ public:
 private:
     Eigen::Vector3f feedbackGain;
 };
+
+}
 
 #endif

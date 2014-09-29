@@ -6,6 +6,9 @@
 #include "bipedal/ik/HierarchicalWalkingIK.h"
 #include "bipedal/utils/Kinematics.h"
 
+namespace Bipedal
+{
+
 HierarchicalWalkingIK::HierarchicalWalkingIK(const VirtualRobot::RobotPtr& robot,
                                              const VirtualRobot::RobotNodeSetPtr& outputNodeSet,
                                              const VirtualRobot::RobotNodeSetPtr& ikNodeSet,
@@ -68,8 +71,8 @@ void HierarchicalWalkingIK::computeWalkingTrajectory(const Eigen::Matrix3Xf& com
         // since the x-Axsis points in walking direction
         Eigen::Vector3f xAxisChest = (leftFootPose.block(0, 1, 3, 1) + rightFootPose.block(0, 1, 3, 1))/2;
         xAxisChest.normalize();
-        chestPose.block(0, 0, 3, 3) = Kinematics::poseFromXAxis(xAxisChest);
-        pelvisPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(-xAxisChest);
+        chestPose.block(0, 0, 3, 3) = Bipedal::poseFromXAxis(xAxisChest);
+        pelvisPose.block(0, 0, 3, 3) = Bipedal::poseFromYAxis(-xAxisChest);
 
         std::cout << "Frame #" << i << ", ";
         robot->setGlobalPose(leftFootPose);
@@ -145,5 +148,7 @@ void HierarchicalWalkingIK::computeStepConfiguration(const Eigen::Vector3f& targ
     std::cout << (ok ? "IK Ok" : "IK Failed") << std::endl;
 
     outputNodeSet->getJointValues(result);
+}
+
 }
 

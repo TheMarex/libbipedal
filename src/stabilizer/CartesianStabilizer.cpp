@@ -12,6 +12,9 @@
 
 #include "controller/PostureController.h"
 
+namespace Bipedal
+{
+
 /**
  * These controller needs a trajectory with the following control features:
  *
@@ -61,7 +64,7 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 }
 
 void CartesianStabilizer::update(float dt,
-                                 Kinematics::SupportPhase phase,
+                                 Bipedal::SupportPhase phase,
                                  const Eigen::Vector3f& zmpRefWorld,
                                  const Eigen::Matrix4f& chestPoseRefWorld,
                                  const Eigen::Matrix4f& pelvisPoseRefWorld,
@@ -156,4 +159,6 @@ std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getCo
     controllers["Pelvis_Yaw"] = &pelvisPostureController->gammaDC;
 
     return controllers;
+}
+
 }

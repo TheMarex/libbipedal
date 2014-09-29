@@ -14,6 +14,9 @@
 
 #include "utils/Kinematics.h"
 
+namespace Bipedal
+{
+
 class HierarchicalReferenceIK : public ReferenceIK
 {
 public:
@@ -55,7 +58,7 @@ public:
                              const Eigen::Matrix4f& chestPose,
                              const Eigen::Matrix4f& pelvisPose,
                              const Eigen::Vector3f& comPosition,
-                             Kinematics::SupportPhase phase,
+                             Bipedal::SupportPhase phase,
                              Eigen::VectorXf &result) override
     {
         const float ikPrec = 0.1;
@@ -64,7 +67,7 @@ public:
          * If the left foot is not the support foot we have to adapt
          * the target poses, since the left foot will not keep static.
          */
-        if (phase & Kinematics::SUPPORT_RIGHT)
+        if (phase & Bipedal::SUPPORT_RIGHT)
         {
             Eigen::Matrix4f leftSwingAdaption = leftFootTCP->getGlobalPose() * leftFootPose.inverse();
             rightFootIK->setGoal((Eigen::Matrix4f) (leftSwingAdaption * rightFootPose), rightFootTCP);
@@ -149,7 +152,7 @@ public:
 
         double angle;
         const double angleMax = 5.0 / 180 * M_PI;
-        if (phase & Kinematics::SUPPORT_LEFT)
+        if (phase & Bipedal::SUPPORT_LEFT)
         {
             angle = zAxisAngle(leftFootTCP->getGlobalPose());
             if (angle > angleMax)
@@ -158,7 +161,7 @@ public:
                 //correct = false;
             }
         }
-        if (phase & Kinematics::SUPPORT_RIGHT)
+        if (phase & Bipedal::SUPPORT_RIGHT)
         {
             angle = zAxisAngle(rightFootTCP->getGlobalPose());
             if (angle > angleMax)
@@ -198,6 +201,8 @@ private:
     VirtualRobot::CoMIKPtr comIK;
     VirtualRobot::HierarchicalIK hIK;
 };
+
+}
 
 #endif
 

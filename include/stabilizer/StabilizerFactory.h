@@ -5,6 +5,9 @@
 
 #include "../bipedal.h"
 
+namespace Bipedal
+{
+
 class StabilizerFactory
 {
 public:
@@ -13,5 +16,7 @@ public:
     KajitaStabilizerPtr kajitaStab;
     CartesianStabilizerPtr cartesianStab;
 };
+
+}
 
 #endif

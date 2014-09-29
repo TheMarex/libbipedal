@@ -4,6 +4,9 @@
 #include <VirtualRobot/CollisionDetection/CollisionChecker.h>
 #include <VirtualRobot/Visualization/CoinVisualization/CoinVisualizationFactory.h>
 
+namespace Bipedal
+{
+
 PolynomialFootstepPlaner::PolynomialFootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
                                                    const VirtualRobot::RobotNodePtr& rightFootBody)
     : FootstepPlaner(leftFootBody, rightFootBody)
@@ -113,7 +116,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
     vRightFoot.x() = _dStepWidth / 2;
 
     // starting with full DS-Phase
-    _supportIntervals.emplace_back(0, iLDS, Kinematics::SUPPORT_BOTH);
+    _supportIntervals.emplace_back(0, iLDS, Bipedal::SUPPORT_BOTH);
     int index = 0;
     for (int j = 0; j < iLDS; j++)
     {
@@ -128,10 +131,10 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
     {
         _supportIntervals.emplace_back(index,
                                        index + iSS,
-                                       bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+                                       bLeft ? Bipedal::SUPPORT_RIGHT : Bipedal::SUPPORT_LEFT);
         _supportIntervals.emplace_back(index + iSS,
                                        index + iSS + iDS,
-                                       Kinematics::SUPPORT_BOTH);
+                                       Bipedal::SUPPORT_BOTH);
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
         const auto& _currentFootTrajectory = [this](unsigned i, unsigned numberOfSteps)
@@ -169,7 +172,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
     }
 
     // insert ending DS-phase
-    _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
+    _supportIntervals.emplace_back(index, index + iLDS, Bipedal::SUPPORT_BOTH);
     Eigen::Vector6f lastLeftPose  = _mLFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
     Eigen::Vector6f lastRightPose = _mRFootTrajectory.col(iLDS + _iNumberOfSteps*iSamplesPerStep - 1);
     for (int j = 0; j < iLDS; j++) {
@@ -231,5 +234,7 @@ void PolynomialFootstepPlaner::computeFeetTrajectories()
             _mRFootTrajectory.col(k) = rotatedRight;
         }
     }
+}
+
 }
 

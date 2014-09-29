@@ -5,6 +5,9 @@
 
 #include "../bipedal.h"
 
+namespace Bipedal
+{
+
 class WalkingIK
 {
 public:
@@ -48,5 +51,7 @@ protected:
     VirtualRobot::RobotNodePtr leftFootTCP;
     VirtualRobot::RobotNodePtr rightFootTCP;
 };
+
+}
 
 #endif

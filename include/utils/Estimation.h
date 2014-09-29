@@ -8,7 +8,7 @@
 
 namespace Bipedal
 {
-    constexpr std::array<double, 36> coefficientTable  = {
+    constexpr std::array<double, 36> DerivationCoefficientTable  = {
     1,        -1,
     3/2.0,    -2, 1/2.0,
     11/6.0,   -3, 3/2.0,  -1/3.0,
@@ -54,7 +54,7 @@ namespace Bipedal
                 unsigned offset = getCoefficientTableOffset(ORDER);
                 for (unsigned i = 0; i < prevValues.size(); i++)
                 {
-                    estimation += coefficientTable[offset + i] * prevValues[i];
+                    estimation += DerivationCoefficientTable[offset + i] * prevValues[i];
                 }
                 // FIXME We assume dt has ways the same value!
                 estimation /= dt;

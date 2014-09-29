@@ -5,6 +5,9 @@
 
 #include <Eigen/Dense>
 
+namespace Bipedal
+{
+
 /**
  * This class is an interface to push recovery mechanism.
  */
@@ -16,7 +19,7 @@ public:
      * Needs to be called in each iteration of the control loop before
      * the call to isFalling.
      */
-    virtual void update(Kinematics::SupportPhase phase, double dt) = 0;
+    virtual void update(Bipedal::SupportPhase phase, double dt) = 0;
 
     /**
      * Returns true if it was detected that we are falling.
@@ -27,7 +30,9 @@ public:
     virtual const Eigen::Matrix4f& getRightFootPose() const = 0;
     virtual const Eigen::Matrix4f& getChestPose() const = 0;
     virtual const Eigen::Matrix4f& getPelvisPose() const = 0;
-    virtual Kinematics::SupportPhase getSupportPhase() const = 0;
+    virtual Bipedal::SupportPhase getSupportPhase() const = 0;
 };
+
+}
 
 #endif

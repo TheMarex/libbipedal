@@ -6,6 +6,9 @@
 
 #include "DampeningController.h"
 
+namespace Bipedal
+{
+
 /**
  * Implements a dampened controller, that controlls the rotation around the x and y axis
  * of a reference frame.
@@ -68,5 +71,7 @@ struct PostureController
     DampeningController thetaDC;
     DampeningController gammaDC;
 };
+
+}
 
 #endif

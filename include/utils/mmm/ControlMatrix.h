@@ -7,6 +7,9 @@
 #include <MMM/Motion/Motion.h>
 #include <MMM/Motion/MotionReaderXML.h>
 
+namespace Bipedal
+{
+
 /*
  * This implements an extension to MMM to add matrix control values.
  *
@@ -130,5 +133,6 @@ bool GetControlMatrix(const MMM::MotionFramePtr& frame, const std::string& name,
     return true;
 }
 
+}
 
 #endif

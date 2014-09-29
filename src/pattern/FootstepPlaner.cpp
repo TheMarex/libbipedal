@@ -6,6 +6,8 @@
 
 #include <boost/assert.hpp>
 
+namespace Bipedal
+{
 
 FootstepPlaner::FootstepPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
                                const VirtualRobot::RobotNodePtr& rightFootBody)
@@ -61,10 +63,10 @@ void FootstepPlaner::computeFeetShape()
 {
     Eigen::Vector2f vRightCenter;
     Eigen::Vector2f vLeftCenter;
-    cvRight = Walking::ComputeFootContact(_pRightFootBody->getCollisionModel());
-    cvLeft  = Walking::ComputeFootContact(_pLeftFootBody->getCollisionModel());
-    vRightCenter = Walking::CenterConvexHull(cvRight);
-    vLeftCenter  = Walking::CenterConvexHull(cvLeft);
+    cvRight = Bipedal::ComputeFootContact(_pRightFootBody->getCollisionModel());
+    cvLeft  = Bipedal::ComputeFootContact(_pLeftFootBody->getCollisionModel());
+    vRightCenter = Bipedal::CenterConvexHull(cvRight);
+    vLeftCenter  = Bipedal::CenterConvexHull(cvLeft);
     _vRightFootCenter = vRightCenter / 1000.0f;
     _vLeftFootCenter  = vLeftCenter / 1000.0f;
 }
@@ -83,8 +85,8 @@ void FootstepPlaner::transformFootTrajectories(const Eigen::Matrix4f& leftFootPo
 
     // use orientation and position of groundframe to adapt to current pose:
     // the y-axsis always points in walking direction.
-    Eigen::Matrix4f trajectoryGF = Kinematics::computeGroundFrame(trajLeftFootPose, trajRightFootPose, Kinematics::SUPPORT_BOTH);
-    Eigen::Matrix4f currentGF    = Kinematics::computeGroundFrame(leftFootPose, rightFootPose, Kinematics::SUPPORT_BOTH);
+    Eigen::Matrix4f trajectoryGF = Bipedal::computeGroundFrame(trajLeftFootPose, trajRightFootPose, Bipedal::SUPPORT_BOTH);
+    Eigen::Matrix4f currentGF    = Bipedal::computeGroundFrame(leftFootPose, rightFootPose, Bipedal::SUPPORT_BOTH);
 
     Eigen::Matrix4f adaptionFrame = currentGF * trajectoryGF.inverse();
     _mLFootTrajectory.topRows(3) = adaptionFrame.block(0, 0, 3, 3) * _mLFootTrajectory.topRows(3);
@@ -111,9 +113,11 @@ const Eigen::Matrix6Xf& FootstepPlaner::getRightFootTrajectory() const
     return _mRFootTrajectory;
 }
 
-const std::vector<Kinematics::SupportInterval>& FootstepPlaner::getSupportIntervals() const
+const std::vector<Bipedal::SupportInterval>& FootstepPlaner::getSupportIntervals() const
 {
     BOOST_ASSERT(_bGenerated);
     return _supportIntervals;
+}
+
 }
 

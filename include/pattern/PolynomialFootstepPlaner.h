@@ -5,6 +5,8 @@
 
 #include "FootstepPlaner.h"
 
+namespace Bipedal
+{
 
 class PolynomialFootstepPlaner :
     public FootstepPlaner
@@ -31,5 +33,7 @@ protected:
 };
 
 typedef boost::shared_ptr<PolynomialFootstepPlaner> PolynomialFootstepPlanerPtr;
+
+}
 
 #endif

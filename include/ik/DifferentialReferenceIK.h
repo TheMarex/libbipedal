@@ -13,6 +13,8 @@
 
 #include "../utils/Kinematics.h"
 
+namespace Bipedal
+{
 
 class DifferentialReferenceIK : public ReferenceIK
 {
@@ -206,7 +208,7 @@ public:
                              const Eigen::Matrix4f& chestPose,
                              const Eigen::Matrix4f& pelvisPose,
                              const Eigen::Vector3f& comPosition,
-                             Kinematics::SupportPhase phase,
+                             Bipedal::SupportPhase phase,
                              Eigen::VectorXf &result) override
     {
         syncRobotModels(robot, robotReversed);
@@ -215,12 +217,12 @@ public:
         Eigen::VectorXf legsResult;
         switch (phase)
         {
-            case Kinematics::SUPPORT_LEFT:
+            case Bipedal::SUPPORT_LEFT:
                 computeFootIK(leftFootPose, pelvisPose, rightFootPose, leftSupportIKNodes);
                 extractAngles(leftSupportIKNodes.leftToRightNodes, legsResult);
                 rootPose = leftSupportIKNodes.robot->getRobotNode(robot->getRootNode()->getName())->getGlobalPose();
                 break;
-            case Kinematics::SUPPORT_RIGHT:
+            case Bipedal::SUPPORT_RIGHT:
                 computeFootIK(rightFootPose, pelvisPose, leftFootPose, rightSupportIKNodes);
                 extractAngles(rightSupportIKNodes.leftToRightNodes, legsResult);
                 rootPose = rightSupportIKNodes.robot->getRobotNode(robot->getRootNode()->getName())->getGlobalPose();
@@ -260,6 +262,8 @@ private:
     IKNodes leftSupportIKNodes;
     IKNodes rightSupportIKNodes;
 };
+
+}
 
 #endif
 

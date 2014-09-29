@@ -3,6 +3,9 @@
 
 #include <Eigen/Dense>
 
+namespace Bipedal
+{
+
 
 /* Interface to compute IK from reference frames */
 class ReferenceIK
@@ -13,9 +16,11 @@ public:
                              const Eigen::Matrix4f& chestPose,
                              const Eigen::Matrix4f& pelvisPose,
                              const Eigen::Vector3f& comPosition,
-                             Kinematics::SupportPhase phase,
+                             Bipedal::SupportPhase phase,
                              Eigen::VectorXf &result) = 0;
 };
+
+}
 
 #endif
 

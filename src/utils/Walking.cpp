@@ -5,7 +5,7 @@
 
 #include "utils/Walking.h"
 
-namespace Walking
+namespace Bipedal
 {
 
     VirtualRobot::MathTools::ConvexHull2DPtr ComputeFootContact(const VirtualRobot::CollisionModelPtr& colModel)
@@ -84,8 +84,8 @@ namespace Walking
         auto colModel = foot->getCollisionModel()->clone();
         Eigen::Matrix4f relPose = tcp->getGlobalPose().inverse() * colModel->getGlobalPose();
         colModel->setGlobalPose(relPose);
-        auto hull = Walking::ComputeFootContact(colModel);
-        Walking::CenterConvexHull(hull);
+        auto hull = Bipedal::ComputeFootContact(colModel);
+        Bipedal::CenterConvexHull(hull);
         return hull;
     }
 }

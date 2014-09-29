@@ -6,6 +6,9 @@
 #include <MMM/Motion/Motion.h>
 #include <MMM/Motion/MotionFrame.h>
 
+namespace Bipedal
+{
+
 /**
  * Logs the motion that is done by the given robot on the given nodes
  * to an MMM motion for later replay.
@@ -55,6 +58,8 @@ private:
     std::string pathToRobot;
     std::string path;
 };
+
+}
 
 #endif
 

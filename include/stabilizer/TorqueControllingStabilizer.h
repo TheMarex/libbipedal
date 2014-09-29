@@ -3,6 +3,9 @@
 
 #include <Eigen/Dense>
 
+namespace Bipedal
+{
+
 class TorqueControllingStabilizer
 {
 public:
@@ -11,5 +14,7 @@ public:
     virtual const Eigen::Vector3f& getLeftAnkleForce() = 0;
     virtual const Eigen::Vector3f& getRightAnkleForce() = 0;
 };
+
+}
 
 #endif

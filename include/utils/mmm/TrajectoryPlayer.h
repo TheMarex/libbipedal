@@ -5,6 +5,9 @@
 
 #include "../../bipedal.h"
 
+namespace Bipedal
+{
+
 class TrajectoryException : std::exception
 {
 public:
@@ -73,5 +76,7 @@ private:
 };
 
 typedef boost::shared_ptr<TrajectoryPlayer> TrajectoryPlayerPtr;
+
+}
 
 #endif

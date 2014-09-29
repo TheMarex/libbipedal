@@ -7,6 +7,9 @@
 #include <MMM/Motion/Motion.h>
 #include <MMM/Motion/MotionReaderXML.h>
 
+namespace Bipedal
+{
+
 /*
  * This implements an extension to the MMM motion format adding cartesian control
  * points to the frame.
@@ -246,6 +249,8 @@ bool GetControlPointAcceleration(const MMM::MotionFramePtr& frame, const std::st
 
     acc = r->acceleration;
     return true;
+}
+
 }
 
 #endif

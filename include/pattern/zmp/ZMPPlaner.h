@@ -9,6 +9,9 @@
 #include "../FootstepPlaner.h"
 #include "ZMPReferencePlaner.h"
 
+namespace Bipedal
+{
+
 class ZMPPlaner
 {
 public:
@@ -75,9 +78,10 @@ protected:
     Eigen::Matrix3Xf _mCoMAcc;                     // computed CoM acceleration
     Eigen::Matrix2Xf _mZMP;                        // computed "real" ZMP (resulting from CoM)
     Eigen::Matrix2Xf _mReference;                  // reference ZMP
-    std::vector<Kinematics::SupportPhase> _mPhase; // contains information about which leg should be in contact with the floor
+    std::vector<Bipedal::SupportPhase> _mPhase; // contains information about which leg should be in contact with the floor
 };
 
+}
 
 #endif
 

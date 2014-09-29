@@ -3,6 +3,9 @@
 
 #include "ZMPPlaner.h"
 
+namespace Bipedal
+{
+
 class ZMPPreviewControl : public ZMPPlaner
 {
 public:
@@ -18,6 +21,8 @@ protected:
 
     int _nPreviewCount;
 };
+
+}
 
 #endif
 

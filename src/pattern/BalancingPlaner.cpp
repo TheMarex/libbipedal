@@ -6,6 +6,9 @@
 
 #include "utils/Interpolation.h"
 
+namespace Bipedal
+{
+
 BalancingPlaner::BalancingPlaner(const VirtualRobot::RobotNodePtr& leftFootBody,
                                  const VirtualRobot::RobotNodePtr& rightFootBody)
     : FootstepPlaner(leftFootBody, rightFootBody)
@@ -160,7 +163,7 @@ void BalancingPlaner::computeFeetTrajectories()
     vRightFoot.x() = _dStepWidth / 2;
 
     // starting with full DS-Phase
-    _supportIntervals.emplace_back(0, iLDS, Kinematics::SUPPORT_BOTH);
+    _supportIntervals.emplace_back(0, iLDS, Bipedal::SUPPORT_BOTH);
     int index = 0;
     for (int j = 0; j < iLDS; j++)
     {
@@ -175,18 +178,18 @@ void BalancingPlaner::computeFeetTrajectories()
     {
         _supportIntervals.emplace_back(index,
                                        index + iSS,
-                                       bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+                                       bLeft ? Bipedal::SUPPORT_RIGHT : Bipedal::SUPPORT_LEFT);
         if (i == 0 )
         {
             _supportIntervals.emplace_back(index + iSS,
                                            index + iSS + iDS,
-                                           bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+                                           bLeft ? Bipedal::SUPPORT_RIGHT : Bipedal::SUPPORT_LEFT);
         }
         else
         {
             _supportIntervals.emplace_back(index + iSS,
                                            index + iSS + iDS,
-                                           Kinematics::SUPPORT_BOTH);
+                                           Bipedal::SUPPORT_BOTH);
         }
         // Complex const initialization using a lambda function
         // C++11 fuck yeah.
@@ -227,7 +230,7 @@ void BalancingPlaner::computeFeetTrajectories()
         {
             _supportIntervals.emplace_back(index,
                                            index + iLDS*5,
-                                           bLeft ? Kinematics::SUPPORT_RIGHT : Kinematics::SUPPORT_LEFT);
+                                           bLeft ? Bipedal::SUPPORT_RIGHT : Bipedal::SUPPORT_LEFT);
             for (int j = 0; j < iLDS*5; j++)
             {
                 _mLFootTrajectory.col(index) = vLeftFoot;
@@ -244,7 +247,7 @@ void BalancingPlaner::computeFeetTrajectories()
     }
 
     // insert ending DS-phase
-    _supportIntervals.emplace_back(index, index + iLDS, Kinematics::SUPPORT_BOTH);
+    _supportIntervals.emplace_back(index, index + iLDS, Bipedal::SUPPORT_BOTH);
     Eigen::Vector6f lastLeftPos  = _mLFootTrajectory.col(index - 1);
     Eigen::Vector6f lastRightPos = _mRFootTrajectory.col(index - 1);
     for (int j = 0; j < iLDS; j++) {
@@ -252,5 +255,7 @@ void BalancingPlaner::computeFeetTrajectories()
         _mRFootTrajectory.col(index) = lastRightPos;
         index++;
     }
+}
+
 }
 

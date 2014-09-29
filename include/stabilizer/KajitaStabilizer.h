@@ -16,6 +16,9 @@
 #include "FrameAdaptingStabilizer.h"
 #include "TorqueControllingStabilizer.h"
 
+namespace Bipedal
+{
+
 class FootForceController;
 class FootTorqueController;
 class ZMPTrackingController;
@@ -68,7 +71,7 @@ public:
     virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
 
     virtual void update(float dt,
-                Kinematics::SupportPhase phase,
+                Bipedal::SupportPhase phase,
                 const Eigen::Vector3f& zmp,
                 const Eigen::Matrix4f& chestPoseRef,
                 const Eigen::Matrix4f& pelvisPoseRef,
@@ -134,5 +137,6 @@ private:
     Bipedal::DerivationEstimator<Eigen::Vector2f> refCoMVelEstimator;
 };
 
+}
 
 #endif

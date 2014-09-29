@@ -4,6 +4,9 @@
 #include "utils/Walking.h"
 #include "utils/Kinematics.h"
 
+namespace Bipedal
+{
+
 ForceDistributor::ForceDistributor(double mass, Eigen::Vector3f gravity,
                  VirtualRobot::RobotNodePtr leftFoot,
                  VirtualRobot::RobotNodePtr rightFoot,
@@ -12,8 +15,8 @@ ForceDistributor::ForceDistributor(double mass, Eigen::Vector3f gravity,
 : mass(mass)
 , gravity(gravity)
 {
-    leftConvexHull  = Walking::computeConvexHull(leftFoot, leftFootTCP);
-    rightConvexHull = Walking::computeConvexHull(rightFoot, rightFootTCP);
+    leftConvexHull  = Bipedal::computeConvexHull(leftFoot, leftFootTCP);
+    rightConvexHull = Bipedal::computeConvexHull(rightFoot, rightFootTCP);
 }
 
 /**
@@ -24,23 +27,23 @@ double ForceDistributor::computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
                                        const Eigen::Vector3f& refZMP,
                                        const Eigen::Vector2f& relZMPLeft,
                                        const Eigen::Vector2f& relZMPRight,
-                                       Kinematics::SupportPhase phase)
+                                       Bipedal::SupportPhase phase)
 {
     double alpha;
     Eigen::Vector2f leftContact, rightContact;
     Eigen::Vector2f pAlpha;
     switch (phase)
     {
-        case Kinematics::SUPPORT_LEFT:
+        case Bipedal::SUPPORT_LEFT:
             alpha = 0.0;
             break;
-        case Kinematics::SUPPORT_RIGHT:
+        case Bipedal::SUPPORT_RIGHT:
             alpha = 1.0;
             break;
-        case Kinematics::SUPPORT_BOTH:
+        case Bipedal::SUPPORT_BOTH:
             // get contact points in world coordinates
-            leftContact  = VirtualRobot::MathTools::transformPosition(Walking::computeHullContactPoint(relZMPLeft, leftConvexHull), groundPoseLeft);
-            rightContact = VirtualRobot::MathTools::transformPosition(Walking::computeHullContactPoint(relZMPRight, rightConvexHull), groundPoseRight);
+            leftContact  = VirtualRobot::MathTools::transformPosition(Bipedal::computeHullContactPoint(relZMPLeft, leftConvexHull), groundPoseLeft);
+            rightContact = VirtualRobot::MathTools::transformPosition(Bipedal::computeHullContactPoint(relZMPRight, rightConvexHull), groundPoseRight);
             pAlpha = VirtualRobot::MathTools::nearestPointOnSegment(
                             leftContact, rightContact,
                             Eigen::Vector2f(refZMP.head(2))
@@ -56,10 +59,10 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
                                                               const Eigen::Matrix4f& leftFootTCP,
                                                               const Eigen::Matrix4f& rightFootTCP,
                                                               const Eigen::Vector3f& refZMP,
-                                                              Kinematics::SupportPhase phase)
+                                                              Bipedal::SupportPhase phase)
 {
-    Eigen::Matrix4f groundPoseLeft  = Kinematics::projectPoseToGround(leftFootTCP);
-    Eigen::Matrix4f groundPoseRight = Kinematics::projectPoseToGround(rightFootTCP);
+    Eigen::Matrix4f groundPoseLeft  = Bipedal::projectPoseToGround(leftFootTCP);
+    Eigen::Matrix4f groundPoseRight = Bipedal::projectPoseToGround(rightFootTCP);
     Eigen::Vector3f groundRefZMP(refZMP.x(), refZMP.y(), 0);
     Eigen::Vector3f localZMPLeft    = VirtualRobot::MathTools::transformPosition(groundRefZMP, groundPoseLeft.inverse());
     Eigen::Vector3f localZMPRight   = VirtualRobot::MathTools::transformPosition(groundRefZMP, groundPoseRight.inverse());
@@ -138,4 +141,6 @@ ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vecto
     //std::cout << "rightTorque: " << ft.rightTorque.transpose() << std::endl;
 
     return ft;
+}
+
 }

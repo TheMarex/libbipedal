@@ -11,6 +11,9 @@
 
 #include <boost/make_shared.hpp>
 
+namespace Bipedal
+{
+
 StabilizerFactory::StabilizerFactory(const Bipedal::RobotConfig& config, const VirtualRobot::RobotPtr& robot)
 {
     VirtualRobot::RobotNodePtr chest          = robot->getRobotNode(config.CHEST_NODE_NAME);
@@ -60,5 +63,7 @@ StabilizerFactory::StabilizerFactory(const Bipedal::RobotConfig& config, const V
                                                             leftFoot, rightFoot,
                                                             pelvis,
                                                             referenceIK);
+}
+
 }
 

@@ -10,6 +10,9 @@
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/MathTools.h>
 
+namespace Bipedal
+{
+
 class CapturePointRecovery : public PushRecovery
 {
     enum RecoveryState
@@ -33,9 +36,9 @@ public:
     virtual const Eigen::Matrix4f& getRightFootPose() const override;
     virtual const Eigen::Matrix4f& getChestPose() const override;
     virtual const Eigen::Matrix4f& getPelvisPose() const override;
-    virtual Kinematics::SupportPhase getSupportPhase() const override;
+    virtual Bipedal::SupportPhase getSupportPhase() const override;
     virtual bool isFalling() const override;
-    virtual void update(Kinematics::SupportPhase phase, double dt) override;
+    virtual void update(Bipedal::SupportPhase phase, double dt) override;
 
     const Eigen::Vector3f& getContactPoint() const;
     const Bipedal::CubicBezierCurve3f& getCaptureTrajectory() const;
@@ -51,7 +54,7 @@ public:
     Eigen::Vector3f getImmediateCapturePoint() const;
 
 private:
-    void initializeRecovery(Kinematics::SupportPhase phase);
+    void initializeRecovery(Bipedal::SupportPhase phase);
 
     void recomputeDualSupportHull();
 
@@ -60,8 +63,8 @@ private:
     double minTime;
     unsigned minFallingFrames;
     unsigned fallingFrameCounter;
-    Kinematics::SupportPhase lastSupportPhase;
-    Kinematics::SupportPhase recoverySupportPhase;
+    Bipedal::SupportPhase lastSupportPhase;
+    Bipedal::SupportPhase recoverySupportPhase;
     Bipedal::CubivBezierCurve3f recoveryTrajectory;
     RecoveryState state;
 
@@ -82,5 +85,7 @@ private:
     Bipedal::DerivationEstimator<Eigen::Vector3f> velocityEstimator;
     Eigen::Vector3f contactPoint;
 };
+
+}
 
 #endif

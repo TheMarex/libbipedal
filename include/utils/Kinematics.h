@@ -6,7 +6,7 @@
 #include <VirtualRobot/RobotNodeSet.h>
 #include <Eigen/Dense>
 
-namespace Kinematics
+namespace Bipedal
 {
 
 enum SupportPhase : unsigned short

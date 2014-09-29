@@ -21,6 +21,9 @@
 #include "utils/mmm/ControlValue.h"
 #include "utils/Estimation.h"
 
+namespace Bipedal
+{
+
 void TrajectoryExporter::exportToMMM(const std::string& path)
 {
     boost::filesystem::path targetPath(path);
@@ -109,5 +112,7 @@ void TrajectoryExporter::exportToMMM(const std::string& path)
     out << "<MMM>"
         << motion->toXML()
         << "</MMM>";
+}
+
 }
 

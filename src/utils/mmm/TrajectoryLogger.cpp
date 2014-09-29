@@ -13,6 +13,8 @@
 
 #include "utils/mmm/TrajectoryLogger.h"
 
+namespace Bipedal
+{
 
 void TrajectoryLogger::start()
 {
@@ -67,3 +69,4 @@ void TrajectoryLogger::update(float dt)
     time += dt;
 }
 
+}

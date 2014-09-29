@@ -9,6 +9,9 @@
 #include "../bipedal.h"
 #include "../utils/Kinematics.h"
 
+namespace Bipedal
+{
+
 class FootstepPlaner
 {
 public:
@@ -28,7 +31,7 @@ public:
     const Eigen::Matrix6Xf& getLeftFootTrajectory() const;
     const Eigen::Matrix6Xf& getRightFootTrajectory() const;
 
-    const std::vector<Kinematics::SupportInterval>& getSupportIntervals() const;
+    const std::vector<Bipedal::SupportInterval>& getSupportIntervals() const;
 
     unsigned getSamplesPerSecond() const { return _iSampleSize; };
     double getStepHeight() const { return _dStepHeight; };
@@ -52,7 +55,7 @@ protected:
     Eigen::Matrix6Xf _mLFootTrajectory;
     Eigen::Matrix6Xf _mRFootTrajectory;
 
-    std::vector<Kinematics::SupportInterval> _supportIntervals;
+    std::vector<Bipedal::SupportInterval> _supportIntervals;
 
     VirtualRobot::MathTools::ConvexHull2DPtr cvRight;
     VirtualRobot::MathTools::ConvexHull2DPtr cvLeft;
@@ -92,5 +95,7 @@ protected:
 };
 
 typedef boost::shared_ptr<FootstepPlaner> FootstepPlanerPtr;
+
+}
 
 #endif

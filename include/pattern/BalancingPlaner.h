@@ -5,6 +5,9 @@
 
 #include "FootstepPlaner.h"
 
+namespace Bipedal
+{
+
 class BalancingPlaner :
     public FootstepPlaner
 {
@@ -41,5 +44,7 @@ protected:
 };
 
 typedef boost::shared_ptr<BalancingPlaner> BalancingPlanerPtr;
+
+}
 
 #endif

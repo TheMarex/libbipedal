@@ -10,6 +10,9 @@
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <VirtualRobot/MathTools.h>
 
+namespace Bipedal
+{
+
 CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& colModelNodes,
                                            const VirtualRobot::RobotNodePtr& leftFoot,
                                            const VirtualRobot::RobotNodePtr& rightFoot,
@@ -30,7 +33,7 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& 
 , minTime(0.3)
 , minFallingFrames(10)
 , fallingFrameCounter(0)
-, lastSupportPhase(Kinematics::SUPPORT_NONE)
+, lastSupportPhase(Bipedal::SUPPORT_NONE)
 , contactPoint(Eigen::Vector3f::Zero())
 , state(STATE_INITIAL)
 , leftFootPose(Eigen::Matrix4f::Identity())
@@ -44,7 +47,7 @@ const Eigen::Matrix4f& CapturePointRecovery::getLeftFootPose() const { return le
 const Eigen::Matrix4f& CapturePointRecovery::getRightFootPose() const { return rightFootPose; }
 const Eigen::Matrix4f& CapturePointRecovery::getChestPose() const { return chestPose; }
 const Eigen::Matrix4f& CapturePointRecovery::getPelvisPose() const { return pelvisPose; }
-Kinematics::SupportPhase CapturePointRecovery::getSupportPhase() const { return lastSupportPhase; }
+Bipedal::SupportPhase CapturePointRecovery::getSupportPhase() const { return lastSupportPhase; }
 
 const Eigen::Vector3f& CapturePointRecovery::getContactPoint() const { return contactPoint; }
 const Bipedal::CubicBezierCurve3f& CapturePointRecovery::getCaptureTrajectory() const { return recoveryTrajectory; }
@@ -87,19 +90,19 @@ bool CapturePointRecovery::isFalling() const
     return state == STATE_FALLING;
 }
 
-void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
+void CapturePointRecovery::update(Bipedal::SupportPhase phase, double dt)
 {
     // update the dynamics estimation
     const auto& com = colModelNodes->getCoM();
     velocityEstimator.update(com, dt);
 
     const auto& supportHull = [this, phase]() {
-        if (phase == Kinematics::SUPPORT_LEFT)
+        if (phase == Bipedal::SUPPORT_LEFT)
             return leftSupportHull;
-        if (phase == Kinematics::SUPPORT_RIGHT)
+        if (phase == Bipedal::SUPPORT_RIGHT)
             return rightSupportHull;
 
-        BOOST_ASSERT(phase == Kinematics::SUPPORT_BOTH);
+        BOOST_ASSERT(phase == Bipedal::SUPPORT_BOTH);
 
         // Foot positions changed
         if (lastSupportPhase != phase)
@@ -111,7 +114,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
     }();
     lastSupportPhase = phase;
     // center of convex hull and orientation should correspond with ground frame
-    const auto& groundFrame = Kinematics::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase);
+    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase);
     const auto& iCP = getImmediateCapturePoint();
 
     Eigen::Vector3f iCPConvexHull = VirtualRobot::MathTools::transformPosition(iCP, groundFrame.inverse());
@@ -125,7 +128,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
     else
     {
         Eigen::Vector3f contact = Eigen::Vector3f::Zero();
-        contact.head(2) = Walking::computeHullContactPoint(iCPConvexHull.head(2), supportHull);
+        contact.head(2) = Bipedal::computeHullContactPoint(iCPConvexHull.head(2), supportHull);
 
         contactPoint = VirtualRobot::MathTools::transformPosition(contact, groundFrame);
 
@@ -165,15 +168,15 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
         }
         else
         {
-            const auto& recoveryFoot = recoverySupportPhase == Kinematics::SUPPORT_LEFT ? rightFoot : leftFoot;
-            const auto& standingFoot = recoverySupportPhase == Kinematics::SUPPORT_LEFT ? leftFoot  : rightFoot;
+            const auto& recoveryFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? rightFoot : leftFoot;
+            const auto& standingFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? leftFoot  : rightFoot;
 
             recoveryTrajectory.update(dt);
 
             Eigen::Matrix4f recoveryFootPose = recoveryFoot->getGlobalPose().inverse();
             recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
 
-            if (recoverySupportPhase == Kinematics::SUPPORT_LEFT)
+            if (recoverySupportPhase == Bipedal::SUPPORT_LEFT)
             {
                 rightFootPose = recoveryFootPose;
             }
@@ -185,7 +188,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
     }
 }
 
-void CapturePointRecovery::initializeRecovery(Kinematics::SupportPhase phase)
+void CapturePointRecovery::initializeRecovery(Bipedal::SupportPhase phase)
 {
     leftFootPose  = leftFoot->getGlobalPose();
     rightFootPose = leftFoot->getGlobalPose();
@@ -193,20 +196,20 @@ void CapturePointRecovery::initializeRecovery(Kinematics::SupportPhase phase)
     chestPose     = chest->getGlobalPose();
 
     // we need to chose which foot we will use to recover
-    if (phase == Kinematics::SUPPORT_BOTH)
+    if (phase == Bipedal::SUPPORT_BOTH)
     {
         const auto& iCP = getImmediateCapturePoint();
         const double distRight = (iCP - rightFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
         const double distLeft  = (iCP - leftFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
-        recoverySupportPhase = (distLeft > distRight) ? Kinematics::SUPPORT_LEFT : Kinematics::SUPPORT_RIGHT;
+        recoverySupportPhase = (distLeft > distRight) ? Bipedal::SUPPORT_LEFT : Bipedal::SUPPORT_RIGHT;
     }
     // in single support we can only use the non-supporting one
     else
     {
         recoverySupportPhase = phase;
     }
-    const auto& recoveryFoot = recoverySupportPhase == Kinematics::SUPPORT_LEFT ? rightFoot : leftFoot;
-    const auto& standingFoot = recoverySupportPhase == Kinematics::SUPPORT_LEFT ? leftFoot  : rightFoot;
+    const auto& recoveryFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? rightFoot : leftFoot;
+    const auto& standingFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? leftFoot  : rightFoot;
 
     const Eigen::Vector3f& start = recoveryFoot->getGlobalPose().block(0, 3, 3, 1);
     const Eigen::Vector3f& end   = getFutureCapturePoint(standingFoot, minTime);
@@ -235,6 +238,8 @@ void CapturePointRecovery::recomputeDualSupportHull()
     }
 
     dualSupportHull = VirtualRobot::MathTools::createConvexHull2D(points);
-    Walking::CenterConvexHull(dualSupportHull);
+    Bipedal::CenterConvexHull(dualSupportHull);
+}
+
 }
 

@@ -5,6 +5,9 @@
 
 #include <unordered_map>
 
+namespace Bipedal
+{
+
 class DampeningController;
 
 class FrameAdaptingStabilizer
@@ -29,7 +32,7 @@ public:
     virtual std::unordered_map<std::string, DampeningController*> getControllers() = 0;
 
     virtual void update(float dt,
-                        Kinematics::SupportPhase phase,
+                        Bipedal::SupportPhase phase,
                         const Eigen::Vector3f& zmp,
                         const Eigen::Matrix4f& chestPoseRef,
                         const Eigen::Matrix4f& pelvisPoseRef,
@@ -37,5 +40,7 @@ public:
                         const Eigen::Matrix4f& rightFootPoseRef,
                         const Eigen::Vector3f& comPositionRef) = 0;
 };
+
+}
 
 #endif

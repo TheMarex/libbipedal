@@ -4,14 +4,14 @@
 #include <Eigen/Dense>
 #include <boost/shared_ptr.hpp>
 
-namespace Kinematics {
-    enum SupportPhase : unsigned short;
-};
-
 namespace Eigen {
     typedef Matrix<float, 6, Dynamic> Matrix6Xf;
     typedef Matrix<float, 6, 1> Vector6f;
 };
+
+namespace Bipedal {
+
+enum SupportPhase : unsigned short;
 
 template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
@@ -38,6 +38,7 @@ class TrajectoryExporter;
 class ReferenceIK;
 class KajitaStabilizer;
 class DampeningController;
+class MultiBodyZMPEstimator;
 template<typename T> class ControlMatrixEntry;
 template<typename T> class ControlMatrixParser;
 template<typename T> class ControlPointEntry;
@@ -45,7 +46,6 @@ template<typename T> class ControlPointParser;
 template<typename T> class ControlValueEntry;
 template<typename T> class ControlValueParser;
 
-namespace Bipedal {
 template<typename T> class CubivBezierCurve;
 typedef CubivBezierCurve<Eigen::Vector3f> CubicBezierCurve3f;
 typedef CubivBezierCurve<Eigen::Vector2f> CubicBezierCurve2f;
@@ -54,10 +54,6 @@ template<typename T, unsigned order> class BackwardDerivationEstimator;
 template<typename T> using DerivationEstimator = BackwardDerivationEstimator<T, 1>;
 template<typename T> using ThirdOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 3>;
 template<typename T> using SixthOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 6>;
-
-class MultiBodyZMPEstimator;
-typedef boost::shared_ptr<MultiBodyZMPEstimator> MultiBodyZMPEstimatorPtr;
-}
 
 typedef ControlPointEntry<Eigen::Vector2f>   ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f>  ControlPointParser2f;
@@ -88,5 +84,8 @@ typedef boost::shared_ptr<ThreeDOFPostureController>   ThreeDOFPostureController
 typedef boost::shared_ptr<ZMPPlaner>                   ZMPPlanerPtr;
 typedef boost::shared_ptr<ZMPReferencePlaner>          ZMPReferencePlanerPtr;
 typedef boost::shared_ptr<ZMPPreviewControl>           ZMPPreviewControlPtr;
+typedef boost::shared_ptr<MultiBodyZMPEstimator>       MultiBodyZMPEstimatorPtr;
+
+}
 
 #endif

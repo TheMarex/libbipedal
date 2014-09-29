@@ -10,6 +10,9 @@
 #include <VirtualRobot/IK/CoMIK.h>
 #include <VirtualRobot/IK/HierarchicalIK.h>
 
+namespace Bipedal
+{
+
 ZMPPreviewControl::ZMPPreviewControl(const FootstepPlanerPtr& footstepPlaner,
                                      const ZMPReferencePlanerPtr& refPlaner,
                                      double comHeight)
@@ -262,4 +265,4 @@ void ZMPPreviewControl::computeCoMTrajectory()
     std::cout << "########################  End ZMPref.x, CoM.x, ZMP.x output  ########################" << std::endl;
 }
 
-
+}

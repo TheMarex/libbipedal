@@ -8,6 +8,9 @@
 #include "../Kinematics.h"
 #include "../../bipedal.h"
 
+namespace Bipedal
+{
+
 class TrajectoryExporter
 {
 public:
@@ -23,7 +26,7 @@ public:
                        const std::vector<Eigen::Matrix4f>& rightFootTrajectory,
                        const std::vector<Eigen::Matrix4f>& chestTrajectory,
                        const std::vector<Eigen::Matrix4f>& pelvisTrajectory,
-                       const std::vector<Kinematics::SupportInterval>& intervals,
+                       const std::vector<Bipedal::SupportInterval>& intervals,
                        float timestep)
         : pathToRobot(pathToRobot)
         , jointNames(jointNames)
@@ -58,8 +61,10 @@ private:
     const std::vector<Eigen::Matrix4f>& rightFootTrajectory;
     const std::vector<Eigen::Matrix4f>& chestTrajectory;
     const std::vector<Eigen::Matrix4f>& pelvisTrajectory;
-    const std::vector<Kinematics::SupportInterval>& intervals;
+    const std::vector<Bipedal::SupportInterval>& intervals;
     float timestep;
 };
+
+}
 
 #endif

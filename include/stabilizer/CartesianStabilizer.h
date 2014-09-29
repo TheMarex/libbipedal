@@ -13,7 +13,8 @@
 
 #include "FrameAdaptingStabilizer.h"
 
-
+namespace Bipedal
+{
 
 class CartesianStabilizer : public FrameAdaptingStabilizer
 {
@@ -46,7 +47,7 @@ public:
     virtual std::unordered_map<std::string, DampeningController*> getControllers() override;
 
     virtual void update(float dt,
-                Kinematics::SupportPhase phase,
+                Bipedal::SupportPhase phase,
                 const Eigen::Vector3f& zmp,
                 const Eigen::Matrix4f& chestPoseRef,
                 const Eigen::Matrix4f& pelvisPoseRef,
@@ -96,5 +97,6 @@ private:
     Eigen::VectorXf resultAngles;
 };
 
+}
 
 #endif

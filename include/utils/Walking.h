@@ -3,7 +3,7 @@
 
 #include <VirtualRobot/MathTools.h>
 
-namespace Walking
+namespace Bipedal
 {
     /*
      * Returns the convex hull of the contact points in global coordinates.

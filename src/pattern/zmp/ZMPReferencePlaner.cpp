@@ -1,8 +1,11 @@
 #include "pattern/zmp/ZMPReferencePlaner.h"
 
+namespace Bipedal
+{
+
 void ZMPReferencePlaner::generateReference(const Eigen::Matrix6Xf& leftFootTrajectory,
                                            const Eigen::Matrix6Xf& rightFootTrajectory,
-                                           const std::vector<Kinematics::SupportInterval>& supportIntervals,
+                                           const std::vector<Bipedal::SupportInterval>& supportIntervals,
                                            Eigen::Matrix2Xf& referenceZMP) const
 {
     unsigned columns = supportIntervals.back().endIdx;
@@ -20,7 +23,7 @@ void ZMPReferencePlaner::generateReference(const Eigen::Matrix6Xf& leftFootTraje
 
         switch (interval.phase)
         {
-            case Kinematics::SUPPORT_BOTH:
+            case Bipedal::SUPPORT_BOTH:
                 // shift ZMP from last support foot to next support foot
                 shiftZMP(getRefPosition(prevInterval.phase, currentLeft, currentRight),
                          getRefPosition(nextInterval.phase, currentLeft, currentRight),
@@ -28,14 +31,14 @@ void ZMPReferencePlaner::generateReference(const Eigen::Matrix6Xf& leftFootTraje
                          interval.endIdx,
                          referenceZMP);
             break;
-            case Kinematics::SUPPORT_LEFT:
+            case Bipedal::SUPPORT_LEFT:
                 // ZMP needs to remain at left foot
                 for (unsigned j = interval.beginIdx; j < interval.endIdx; j++)
                 {
                     referenceZMP.block(0, j, 2, 1) = currentLeft;
                 }
             break;
-            case Kinematics::SUPPORT_RIGHT:
+            case Bipedal::SUPPORT_RIGHT:
                 // ZMP needs to remain at right foot
                 for (unsigned j = interval.beginIdx; j < interval.endIdx; j++)
                 {
@@ -46,20 +49,20 @@ void ZMPReferencePlaner::generateReference(const Eigen::Matrix6Xf& leftFootTraje
     }
 }
 
-Eigen::Vector2f ZMPReferencePlaner::getRefPosition(Kinematics::SupportPhase phase,
+Eigen::Vector2f ZMPReferencePlaner::getRefPosition(Bipedal::SupportPhase phase,
                                                    const Eigen::Vector2f& leftFoot,
                                                    const Eigen::Vector2f& rightFoot) const
 {
     Eigen::Vector2f zmp;
     switch (phase)
     {
-        case Kinematics::SUPPORT_LEFT:
+        case Bipedal::SUPPORT_LEFT:
             zmp = leftFoot;
         break;
-        case Kinematics::SUPPORT_RIGHT:
+        case Bipedal::SUPPORT_RIGHT:
             zmp = rightFoot;
         break;
-        case Kinematics::SUPPORT_BOTH:
+        case Bipedal::SUPPORT_BOTH:
             zmp = (leftFoot + rightFoot) / 2;
         break;
     }
@@ -87,4 +90,5 @@ void ZMPReferencePlaner::shiftZMP(const Eigen::Vector2f& begin,
     }
 }
 
+}
 

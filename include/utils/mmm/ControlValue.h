@@ -8,6 +8,9 @@
 #include <MMM/Motion/Motion.h>
 #include <MMM/Motion/MotionReaderXML.h>
 
+namespace Bipedal
+{
+
 /*
  * This implements an extension to MMM to add scalar control values.
  */
@@ -88,6 +91,8 @@ bool GetControlValue(const MMM::MotionFramePtr& frame, const std::string& name, 
 
     value = r->value;
     return true;
+}
+
 }
 
 #endif

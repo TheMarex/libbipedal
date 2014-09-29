@@ -5,6 +5,9 @@
 
 #include <VirtualRobot/MathTools.h>
 
+namespace Bipedal
+{
+
 /**
  * Implements the force distributor proposed by Kajita in his 2010 paper.
  */
@@ -37,14 +40,14 @@ public:
                         const Eigen::Vector3f& refZMP,
                         const Eigen::Vector2f& refZMPLeft,
                         const Eigen::Vector2f& refZMPRight,
-                        Kinematics::SupportPhase phase);
+                        Bipedal::SupportPhase phase);
 
     ForceTorque distributeZMP(const Eigen::Vector3f& leftAnklePosition,
                               const Eigen::Vector3f& rightAnklePosition,
                               const Eigen::Matrix4f& leftFootTCP,
                               const Eigen::Matrix4f& rightFootTCP,
                               const Eigen::Vector3f& refZMP,
-                              Kinematics::SupportPhase phase);
+                              Bipedal::SupportPhase phase);
 
 private:
     double mass;
@@ -54,5 +57,7 @@ private:
 };
 
 typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
+
+}
 
 #endif

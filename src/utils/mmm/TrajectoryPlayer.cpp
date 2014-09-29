@@ -7,6 +7,9 @@
 #include "utils/mmm/ControlValue.h"
 #include "utils/mmm/ControlMatrix.h"
 
+namespace Bipedal
+{
+
 bool TrajectoryPlayer::update(float dt)
 {
     if (isRunning && frameCounter <= motion->getMotionFrames().size())
@@ -89,5 +92,7 @@ bool TrajectoryPlayer::loadMotion(const std::string& motionPath, const std::stri
     reset();
 
     return true;
+}
+
 }
 

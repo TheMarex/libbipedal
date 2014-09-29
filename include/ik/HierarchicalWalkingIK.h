@@ -6,6 +6,9 @@
 
 #include "WalkingIK.h"
 
+namespace Bipedal
+{
+
 /**
  * Computes the trajetories for the given joints to realize the given COM and foot
  * trajectories while maintaining an upright body posture.
@@ -42,5 +45,7 @@ private:
     VirtualRobot::DifferentialIKPtr straightPelvisIK;
     VirtualRobot::DifferentialIKPtr rightFootIK;
 };
+
+}
 
 #endif

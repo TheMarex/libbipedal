@@ -27,13 +27,13 @@ namespace Bipedal
         if (!GetControlMatrix(frame, "RightFoot", rightFootPose))
             return ret;
 
-        Kinematics::SupportPhase phase;
+        Bipedal::SupportPhase phase;
         int val;
         if (!GetControlValue(frame, "SupportPhase", val))
             return ret;
-        phase = static_cast<Kinematics::SupportPhase>(val);
+        phase = static_cast<Bipedal::SupportPhase>(val);
 
-        Eigen::Matrix4f groundFrame = Kinematics::computeGroundFrame(leftFootPose, rightFootPose, phase);
+        Eigen::Matrix4f groundFrame = Bipedal::computeGroundFrame(leftFootPose, rightFootPose, phase);
         Eigen::Vector3f inGlobalFrame = VirtualRobot::MathTools::transformPosition(inGroundFrame, groundFrame);
         ret.reset(inGlobalFrame);
 

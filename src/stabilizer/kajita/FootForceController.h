@@ -8,6 +8,9 @@
 
 #include <bipedal/controller/DampeningController.h>
 
+namespace Bipedal
+{
+
 /**
  * Controlls the force difference in booth feet using the rotation of the pelvis link.
  */
@@ -38,5 +41,7 @@ public:
     double hipJointDistance;
     DampeningController zCtrlDC;
 };
+
+}
 
 #endif

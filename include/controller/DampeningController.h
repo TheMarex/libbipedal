@@ -1,6 +1,9 @@
 #ifndef __DAMPENING_CONTROLLER_H__
 #define __DAMPENING_CONTROLLER_H__
 
+namespace Bipedal
+{
+
 struct DampeningController
 {
     double D;
@@ -14,6 +17,8 @@ struct DampeningController
         lastError = error;
     }
 };
+
+}
 
 #endif
 
