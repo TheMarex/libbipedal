@@ -28,10 +28,12 @@ namespace Bipedal
     public:
         ValueT estimation;
         ValueT zeroValue;
+        unsigned initializationCounter;
 
         BackwardDerivationEstimator(ValueT zeroValue, ValueT initEstimation)
         : estimation(initEstimation)
         , zeroValue(zeroValue)
+        , initializationCounter(0)
         {
             std::fill(prevValues.begin(), prevValues.end(), zeroValue);
         }
@@ -45,14 +47,22 @@ namespace Bipedal
             std::rotate(prevValues.rbegin(), prevValues.rbegin()+1, prevValues.rend());
             prevValues[0] = val;
 
-            estimation = zeroValue;
-            unsigned offset = getCoefficientTableOffset(ORDER);
-            for (unsigned i = 0; i < prevValues.size(); i++)
+            // use initial estimation until we have enough values
+            if (initializationCounter >= ORDER)
             {
-                estimation += coefficientTable[offset + i] * prevValues[i];
+                estimation = zeroValue;
+                unsigned offset = getCoefficientTableOffset(ORDER);
+                for (unsigned i = 0; i < prevValues.size(); i++)
+                {
+                    estimation += coefficientTable[offset + i] * prevValues[i];
+                }
+                // FIXME We assume dt has ways the same value!
+                estimation /= dt;
             }
-            // FIXME We assume dt has ways the same value!
-            estimation /= dt;
+            else
+            {
+                initializationCounter++;
+            }
         }
     private:
         std::array<ValueT, ORDER+1> prevValues;
@@ -68,7 +78,7 @@ namespace Bipedal
         Eigen::VectorXf initialEstimation(start.rows());
         initialEstimation.fill(0);
 
-        DerivationEstimator<Eigen::VectorXf> estimator(start, initialEstimation);
+        DerivationEstimator<Eigen::VectorXf> estimator(initialEstimation, initialEstimation);
 
         for (int i = 0; i < trajectory.cols() - 1; i++)
         {
