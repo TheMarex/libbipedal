@@ -92,13 +92,21 @@ public:
     inline bool finished() { return t > T; }
 
     /**
+     * Use a spline for time.
+     * This makes sure we have zero velocity at start and end.
+     */
+    inline double getTime() const
+    {
+        return spline(t/T, 0, T, 0, 1, 0, 0);
+    }
+
+    /**
      * dt is the timestep size.
      */
     inline void update(double dt)
     {
-        const double x = t/T;
+        const double x = getTime();
         const double s = 1-x;
-        std::cout << x << " - " << s << std::endl;
         t += dt;
         position = s*s*s * start + 3*s*s*x * h1 + 3*s*x*x * h2 + x*x*x * end;
     }

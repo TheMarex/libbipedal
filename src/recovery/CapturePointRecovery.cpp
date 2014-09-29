@@ -28,11 +28,11 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& 
 , maxHullDist(50)
 , minHeight(100)
 , minTime(0.3)
-, minFallingFrames(5)
+, minFallingFrames(10)
 , fallingFrameCounter(0)
 , lastSupportPhase(Kinematics::SUPPORT_NONE)
 , contactPoint(Eigen::Vector3f::Zero())
-, state(STATE_RECOVERED)
+, state(STATE_INITIAL)
 , leftFootPose(Eigen::Matrix4f::Identity())
 , rightFootPose(Eigen::Matrix4f::Identity())
 , chestPose(Eigen::Matrix4f::Identity())
@@ -133,7 +133,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
         falling = dist > maxHullDist;
     }
 
-    if (falling && state == STATE_RECOVERED)
+    if (falling && state == STATE_INITIAL)
     {
         fallingFrameCounter++;
         if (fallingFrameCounter > minFallingFrames)
@@ -143,7 +143,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
         }
     }
 
-    if (!falling && state == STATE_FALLING)
+    if (!falling && state == STATE_FALLING && recoveryTrajectory.finished())
     {
         if (fallingFrameCounter > 0)
         {
@@ -160,6 +160,7 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
     {
         if (recoveryTrajectory.finished())
         {
+            state = STATE_FAILED;
             std::cout << "Recovery failed!" << std::endl;
         }
         else
@@ -169,21 +170,15 @@ void CapturePointRecovery::update(Kinematics::SupportPhase phase, double dt)
 
             recoveryTrajectory.update(dt);
 
-            Eigen::Matrix4f recoveryFootPose = recoveryFoot->getGlobalPose();
-            recoveryFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(recoveryFootPose.block(0, 1, 3, 1));
+            Eigen::Matrix4f recoveryFootPose = recoveryFoot->getGlobalPose().inverse();
             recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
-
-            Eigen::Matrix4f standingFootPose = standingFoot->getGlobalPose();
-            standingFootPose.block(0, 0, 3, 3) = Kinematics::poseFromYAxis(standingFootPose.block(0, 1, 3, 1));
 
             if (recoverySupportPhase == Kinematics::SUPPORT_LEFT)
             {
-                leftFootPose = standingFootPose;
                 rightFootPose = recoveryFootPose;
             }
             else
             {
-                rightFootPose = standingFootPose;
                 leftFootPose = recoveryFootPose;
             }
         }
@@ -215,13 +210,12 @@ void CapturePointRecovery::initializeRecovery(Kinematics::SupportPhase phase)
 
     const Eigen::Vector3f& start = recoveryFoot->getGlobalPose().block(0, 3, 3, 1);
     const Eigen::Vector3f& end   = getFutureCapturePoint(standingFoot, minTime);
-    Eigen::Vector3f diff = end - start;
-    diff.z() = 0;
-    diff.normalize();
-    double smoothing = 0.5;
+    //Eigen::Vector3f diff = end - start;
+    //diff.z() = 0;
+    //diff.normalize();
     Eigen::Vector3f h1(start.x(), start.y(), minHeight);
-    //Eigen::Vector3f h2(end.x(), end.y(), minHeight);
-    Eigen::Vector3f h2 = end - diff * minHeight;
+    Eigen::Vector3f h2(end.x(), end.y(), minHeight);
+    //Eigen::Vector3f h2 = end - diff;
 
     recoveryTrajectory = Bipedal::CubivBezierCurve3f(start, end, h1, h2, minTime);
 }

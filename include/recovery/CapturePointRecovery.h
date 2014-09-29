@@ -14,8 +14,10 @@ class CapturePointRecovery : public PushRecovery
 {
     enum RecoveryState
     {
-        STATE_RECOVERED  = 0,
-        STATE_FALLING    = 1
+        STATE_INITIAL   = 0,
+        STATE_FALLING   = 1,
+        STATE_RECOVERED = 2,
+        STATE_FAILED    = 4,
     };
 
 public:
