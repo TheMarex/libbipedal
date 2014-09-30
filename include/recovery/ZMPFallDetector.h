@@ -38,14 +38,9 @@ public:
      */
     virtual bool isFalling() const override;
 
-    VirtualRobot::MathTools::ConvexHull2DPtr getLeftSupportPolygone() const;
-    VirtualRobot::MathTools::ConvexHull2DPtr getRightSupportPolygone() const;
-    VirtualRobot::MathTools::ConvexHull2DPtr getDualSupportPolygone() const;
-    Bipedal::SupportPhase getSupportPhase() const;
     const Eigen::Vector3f& getContactPoint() const;
 
 private:
-    void recomputeDualSupportHull();
     bool getStabilityInidcator(SupportPhase phase);
 
     bool falling;

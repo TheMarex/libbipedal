@@ -37,6 +37,7 @@ ZMPFallDetector::ZMPFallDetector(const VirtualRobot::RobotNodeSetPtr& colModelNo
 {
 }
 
+/*
 VirtualRobot::MathTools::ConvexHull2DPtr ZMPFallDetector::getLeftSupportPolygone() const
 {
     auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*leftSupportHull);
@@ -47,28 +48,8 @@ VirtualRobot::MathTools::ConvexHull2DPtr ZMPFallDetector::getLeftSupportPolygone
     Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
     return transformedHull;
 }
-VirtualRobot::MathTools::ConvexHull2DPtr ZMPFallDetector::getRightSupportPolygone() const
-{
-    auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*rightSupportHull);
-    Eigen::Matrix3f transformationMatrix;
-    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_RIGHT);
-    transformationMatrix.block(0, 0, 2, 2) = groundFrame.block(0, 0, 2, 2);
-    transformationMatrix.block(0, 2, 2, 1) = groundFrame.block(0, 3, 2, 1);
-    Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
-    return transformedHull;
-}
-VirtualRobot::MathTools::ConvexHull2DPtr ZMPFallDetector::getDualSupportPolygone() const
-{
-    auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*dualSupportHull);
-    Eigen::Matrix3f transformationMatrix;
-    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_BOTH);
-    transformationMatrix.block(0, 0, 2, 2) = groundFrame.block(0, 0, 2, 2);
-    transformationMatrix.block(0, 2, 2, 1) = groundFrame.block(0, 3, 2, 1);
-    Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
-    return transformedHull;
-}
+*/
 
-Bipedal::SupportPhase ZMPFallDetector::getSupportPhase() const { return supportPhaseSensor->phase; }
 const Eigen::Vector3f& ZMPFallDetector::getContactPoint() const { return contactPoint; }
 
 bool ZMPFallDetector::isFalling() const
@@ -95,7 +76,11 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase)
         // Foot positions changed
         if (lastSupportPhase != phase)
         {
-            recomputeDualSupportHull();
+            dualSupportHull = computeSupportPolygone(leftFoot->getGlobalPose(),
+                                                     rightFoot->getGlobalPose(),
+                                                     leftSupportHull,
+                                                     rightSupportHull,
+                                                     phase);
         }
         lastSupportPhase = phase;
 
@@ -158,24 +143,6 @@ void ZMPFallDetector::update(double dt)
             falling = false;
         }
     }
-}
-
-void ZMPFallDetector::recomputeDualSupportHull()
-{
-    Eigen::Vector2f offset = rightFoot->getGlobalPose().block(0, 3, 2, 1) - leftFoot->getGlobalPose().block(0, 3, 2, 1);
-
-    std::vector<Eigen::Vector2f> points;
-    for (const auto& v : leftSupportHull->vertices)
-    {
-        points.push_back(v - offset/2);
-    }
-    for (const auto& v : rightSupportHull->vertices)
-    {
-        points.push_back(v + offset/2);
-    }
-
-    dualSupportHull = VirtualRobot::MathTools::createConvexHull2D(points);
-    Bipedal::CenterConvexHull(dualSupportHull);
 }
 
 }

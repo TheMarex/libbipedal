@@ -1,6 +1,8 @@
 #ifndef __WALKING_H__
 #define __WALKING_H__
 
+#include "../bipedal.h"
+
 #include <VirtualRobot/MathTools.h>
 
 namespace Bipedal
@@ -46,6 +48,18 @@ namespace Bipedal
      */
     VirtualRobot::MathTools::ConvexHull2DPtr computeConvexHull(const VirtualRobot::RobotNodePtr& foot,
                                                                const VirtualRobot::RobotNodePtr& tcp);
+
+    /**
+     * Computes the support polygone given the convex hull of the contact point of both
+     * feet and the support phase.
+     *
+     * Convex hull is centered around the ground frame of the support phase.
+     */
+    VirtualRobot::MathTools::ConvexHull2DPtr computeSupportPolygone(const Eigen::Matrix4f& leftFootPose,
+                                                                    const Eigen::Matrix4f& rightFootPose,
+                                                                    const VirtualRobot::MathTools::ConvexHull2DPtr& leftFootHull,
+                                                                    const VirtualRobot::MathTools::ConvexHull2DPtr& rightFootHull,
+                                                                    Bipedal::SupportPhase phase);
 }
 
 #endif
