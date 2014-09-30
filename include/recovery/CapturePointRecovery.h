@@ -34,6 +34,9 @@ public:
                          const VirtualRobot::MathTools::ConvexHull2DPtr& leftSupportHull,
                          const VirtualRobot::MathTools::ConvexHull2DPtr& rightSupportHull);
 
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getLeftSupportPolygone() const override;
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getRightSupportPolygone() const override;
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getDualSupportPolygone() const override;
     virtual const Eigen::Matrix4f& getLeftFootPose() const override;
     virtual const Eigen::Matrix4f& getRightFootPose() const override;
     virtual const Eigen::Matrix4f& getChestPose() const override;

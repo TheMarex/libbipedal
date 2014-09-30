@@ -28,6 +28,11 @@ public:
      */
     virtual bool isFalling() const = 0;
 
+    // For debugging
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getLeftSupportPolygone() const = 0;
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getRightSupportPolygone() const = 0;
+    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getDualSupportPolygone() const = 0;
+
     virtual const Eigen::Matrix4f& getLeftFootPose() const = 0;
     virtual const Eigen::Matrix4f& getRightFootPose() const = 0;
     virtual const Eigen::Matrix4f& getChestPose() const = 0;

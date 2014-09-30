@@ -10,6 +10,8 @@
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <VirtualRobot/MathTools.h>
 
+#include <boost/make_shared.hpp>
+
 namespace Bipedal
 {
 
@@ -48,6 +50,28 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& 
 , initialChestPose(Eigen::Matrix4f::Identity())
 , initialPelvisPose(Eigen::Matrix4f::Identity())
 {
+}
+
+const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getLeftSupportPolygone() const
+{
+    auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*leftSupportHull);
+    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_LEFT);
+    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    return transformedHull;
+}
+const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getRightSupportPolygone() const
+{
+    auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*rightSupportHull);
+    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_RIGHT);
+    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    return transformedHull;
+}
+const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getDualSupportPolygone() const
+{
+    auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*dualSupportHull);
+    const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_BOTH);
+    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    return transformedHull;
 }
 
 const Eigen::Matrix4f& CapturePointRecovery::getLeftFootPose() const { return leftFootPose; }
