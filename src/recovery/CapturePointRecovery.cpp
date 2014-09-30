@@ -33,7 +33,7 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& 
 , leftSupportHull(leftSupportHull)
 , rightSupportHull(rightSupportHull)
 , supportPhaseSensor(new SupportPhaseSensor(leftFootContactSensor, rightFootContactSensor))
-, maxHullDist(50)
+, maxHullDist(100)
 , minHeight(100)
 , minTime(0.3)
 , minFallingFrames(10)
@@ -55,22 +55,31 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& 
 const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getLeftSupportPolygone() const
 {
     auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*leftSupportHull);
+    Eigen::Matrix3f transformationMatrix;
     const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_LEFT);
-    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    transformationMatrix.block(0, 0, 2, 2) = groundFrame.block(0, 0, 2, 2);
+    transformationMatrix.block(0, 2, 2, 1) = groundFrame.block(0, 3, 2, 1);
+    Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
     return transformedHull;
 }
 const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getRightSupportPolygone() const
 {
     auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*rightSupportHull);
+    Eigen::Matrix3f transformationMatrix;
     const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_RIGHT);
-    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    transformationMatrix.block(0, 0, 2, 2) = groundFrame.block(0, 0, 2, 2);
+    transformationMatrix.block(0, 2, 2, 1) = groundFrame.block(0, 3, 2, 1);
+    Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
     return transformedHull;
 }
 const VirtualRobot::MathTools::ConvexHull2DPtr CapturePointRecovery::getDualSupportPolygone() const
 {
     auto transformedHull = boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*dualSupportHull);
+    Eigen::Matrix3f transformationMatrix;
     const auto& groundFrame = Bipedal::computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), SUPPORT_BOTH);
-    Bipedal::OffsetConvexHull(transformedHull, (Eigen::Vector2f) groundFrame.block(0,3,2,1));
+    transformationMatrix.block(0, 0, 2, 2) = groundFrame.block(0, 0, 2, 2);
+    transformationMatrix.block(0, 2, 2, 1) = groundFrame.block(0, 3, 2, 1);
+    Bipedal::TransformConvexHull(transformedHull, transformationMatrix);
     return transformedHull;
 }
 

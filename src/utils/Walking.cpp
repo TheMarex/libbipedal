@@ -45,12 +45,12 @@ namespace Bipedal
         return center;
     }
 
-    void OffsetConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull, const Eigen::Vector2f& vector)
+    void TransformConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull, const Eigen::Matrix3f& frame)
     {
         // translate points of FootShape so, that center of convex hull is (0|0)
         for (unsigned i =  0; i < hull->vertices.size(); i++)
         {
-            hull->vertices[i] += vector;
+            hull->vertices[i] = frame.block(0, 0, 2, 2) * hull->vertices[i] + frame.block(0, 2, 2, 1);
         }
     }
 
