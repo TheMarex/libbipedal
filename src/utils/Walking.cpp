@@ -45,6 +45,15 @@ namespace Bipedal
         return center;
     }
 
+    void OffsetConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull, const Eigen::Vector2f& vector)
+    {
+        // translate points of FootShape so, that center of convex hull is (0|0)
+        for (unsigned i =  0; i < hull->vertices.size(); i++)
+        {
+            hull->vertices[i] += vector;
+        }
+    }
+
     Eigen::Matrix2f ComputeWalkingDirection(const Eigen::Vector2f& leftFootCenter, const Eigen::Vector2f& rightFootCenter)
     {
         Eigen::Vector2f center = (leftFootCenter + rightFootCenter) * 0.5;

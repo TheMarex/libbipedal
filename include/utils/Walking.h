@@ -19,6 +19,11 @@ namespace Bipedal
     Eigen::Vector2f CenterConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull);
 
     /**
+     * Offset convex hull by the given vector.
+     */
+    void OffsetConvexHull(const VirtualRobot::MathTools::ConvexHull2DPtr& hull, const Eigen::Vector2f& vector);
+
+    /**
      * Get walking direction as 2D oriantation
      * Units: mm
      */
