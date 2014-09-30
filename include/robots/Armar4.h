@@ -21,6 +21,8 @@ const Bipedal::RobotConfig ARMAR4_CONFIG = {
 "RightLeg_AnkleSensorX",
 "LeftLeg_AnkleSensorY",
 "RightLeg_AnkleSensorY",
+"LeftLeg_FootSensor",
+"RightLeg_FootSensor",
 "LeftLeg_BodyAnkle2",
 "RightLeg_BodyAnkle2",
 "LeftLeg_BodyAnkle1",

@@ -1,6 +1,7 @@
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/Robot.h>
 #include <VirtualRobot/RobotNodeSet.h>
+#include <VirtualRobot/Nodes/ContactSensor.h>
 #include <VirtualRobot/IK/HierarchicalIK.h>
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <VirtualRobot/IK/CoMIK.h>
@@ -64,6 +65,75 @@ void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
         homVec(3, 0) = 1;
         homVec.block(0, 0, 3, 1) = trajectory.col(i) * 1000;
         relativeTrajectory.col(i) = worldToRef.colPivHouseholderQr().solve(homVec).block(0, 0, 3, 1) / 1000.0;
+    }
+}
+
+
+SupportPhaseSensor::SupportPhaseSensor(const VirtualRobot::ContactSensorPtr& leftFootSensor,
+                                       const VirtualRobot::ContactSensorPtr& rightFootSensor)
+: sameStateThreshold(0.02)
+, sameStateTime(0)
+, phase(SUPPORT_NONE)
+, nextPhase(SUPPORT_NONE)
+, initialized(false)
+, leftFootSensor(leftFootSensor)
+, rightFootSensor(rightFootSensor)
+{
+}
+
+SupportPhase SupportPhaseSensor::getContactPhase() const
+{
+    auto floorComp = [](const VirtualRobot::ContactSensor::ContactForce& f)
+                     {
+                         return f.bodyName == "Floor";
+                     };
+    bool leftContact = std::any_of(leftFootSensor->getContacts().forces.begin(),
+                                   leftFootSensor->getContacts().forces.end(),
+                                    floorComp);
+    bool rightContact = std::any_of(rightFootSensor->getContacts().forces.begin(),
+                                    rightFootSensor->getContacts().forces.end(),
+                                    floorComp);
+    if (leftContact && rightContact)
+        return SUPPORT_BOTH;
+    if (leftContact)
+        return SUPPORT_LEFT;
+    if (rightContact)
+        return SUPPORT_RIGHT;
+    return SUPPORT_NONE;
+}
+
+void SupportPhaseSensor::update(float dt)
+{
+    SupportPhase sensorPhase = getContactPhase();
+
+    if (sensorPhase == nextPhase)
+    {
+        sameStateTime += dt;
+    }
+    else
+    {
+        if (sameStateTime > 0)
+        {
+            sameStateTime -= dt;
+        }
+        else
+        {
+            sameStateTime = 0;
+            nextPhase = sensorPhase;
+        }
+    }
+
+    if (sameStateTime >= sameStateThreshold)
+    {
+        phase = nextPhase;
+        sameStateTime = 0;
+        initialized = true;
+    }
+
+    // before the phase has setteled just return the unfiltered values
+    if (!initialized)
+    {
+        phase = sensorPhase;
     }
 }
 

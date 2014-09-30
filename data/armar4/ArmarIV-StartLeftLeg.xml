@@ -38,6 +38,7 @@
 			<!--IgnoreCollision name="LeftLeg_BodyToe"/-->
 		</Physics> 
 		<Child name="LeftLeg_Joint6tmp"/>
+        <Sensor name="LeftLeg_FootSensor" type="contact"/>
 	</RobotNode> 
 
 	<RobotNode name="LeftLeg_Joint6tmp">

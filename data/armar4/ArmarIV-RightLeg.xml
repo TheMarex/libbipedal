@@ -278,6 +278,7 @@
 		</Physics> 
 		<Child name="RightLeg_Joint7"/>
 		<Child name="RightLeg_TCP"/>
+        <Sensor name="RightLeg_FootSensor" type="contact"/>
 	</RobotNode>
 	
 	<RobotNode name="RightLeg_TCP">

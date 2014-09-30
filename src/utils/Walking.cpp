@@ -37,7 +37,7 @@ namespace Bipedal
         Eigen::Vector2f center = VirtualRobot::MathTools::getConvexHullCenter(hull);
 
         // translate points of FootShape so, that center of convex hull is (0|0)
-        for (int i =  0; i < hull->vertices.size(); i++)
+        for (unsigned i =  0; i < hull->vertices.size(); i++)
         {
             hull->vertices[i] -= center;
         }
@@ -88,4 +88,5 @@ namespace Bipedal
         Bipedal::CenterConvexHull(hull);
         return hull;
     }
+
 }

@@ -29,6 +29,27 @@ struct SupportInterval
     SupportPhase phase;
 };
 
+class SupportPhaseSensor
+{
+public:
+    SupportPhase phase;
+
+    SupportPhaseSensor(const VirtualRobot::ContactSensorPtr& leftFootSensor,
+                       const VirtualRobot::ContactSensorPtr& rightFootSensor);
+
+    SupportPhase getContactPhase() const;
+
+    void update(float dt);
+
+private:
+    VirtualRobot::ContactSensorPtr leftFootSensor;
+    VirtualRobot::ContactSensorPtr rightFootSensor;
+    double sameStateThreshold;
+    double sameStateTime;
+    SupportPhase nextPhase;
+    bool initialized;
+};
+
 /**
  * Extract a vector of poses of the given node as the robot follows the given
  * angle trajectories.

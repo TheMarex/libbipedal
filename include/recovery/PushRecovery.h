@@ -5,6 +5,8 @@
 
 #include <Eigen/Dense>
 
+#include <VirtualRobot/VirtualRobot.h>
+
 namespace Bipedal
 {
 
@@ -19,7 +21,7 @@ public:
      * Needs to be called in each iteration of the control loop before
      * the call to isFalling.
      */
-    virtual void update(Bipedal::SupportPhase phase, double dt) = 0;
+    virtual void update(double dt) = 0;
 
     /**
      * Returns true if it was detected that we are falling.

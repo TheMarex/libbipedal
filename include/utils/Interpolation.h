@@ -97,7 +97,8 @@ public:
      */
     inline double getTime() const
     {
-        return spline(t/T, 0, T, 0, 1, 0, 0);
+        const double x = t/T;
+        return x*x*x*(6.0*x*x - 15.0*x + 10.0);
     }
 
     /**

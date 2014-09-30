@@ -29,6 +29,8 @@ public:
                          const VirtualRobot::RobotNodePtr& rightFoot,
                          const VirtualRobot::RobotNodePtr& chest,
                          const VirtualRobot::RobotNodePtr& pelvis,
+                         const VirtualRobot::ContactSensorPtr& leftFootContactSensor,
+                         const VirtualRobot::ContactSensorPtr& rightFootContactSensor,
                          const VirtualRobot::MathTools::ConvexHull2DPtr& leftSupportHull,
                          const VirtualRobot::MathTools::ConvexHull2DPtr& rightSupportHull);
 
@@ -38,7 +40,7 @@ public:
     virtual const Eigen::Matrix4f& getPelvisPose() const override;
     virtual Bipedal::SupportPhase getSupportPhase() const override;
     virtual bool isFalling() const override;
-    virtual void update(Bipedal::SupportPhase phase, double dt) override;
+    virtual void update(double dt) override;
 
     const Eigen::Vector3f& getContactPoint() const;
     const Bipedal::CubicBezierCurve3f& getCaptureTrajectory() const;
@@ -66,12 +68,17 @@ private:
     Bipedal::SupportPhase lastSupportPhase;
     Bipedal::SupportPhase recoverySupportPhase;
     Bipedal::CubivBezierCurve3f recoveryTrajectory;
+    Bipedal::SupportPhaseSensorPtr supportPhaseSensor;
     RecoveryState state;
 
     Eigen::Matrix4f leftFootPose;
     Eigen::Matrix4f rightFootPose;
     Eigen::Matrix4f chestPose;
     Eigen::Matrix4f pelvisPose;
+    Eigen::Matrix4f initialLeftFootPose;
+    Eigen::Matrix4f initialRightFootPose;
+    Eigen::Matrix4f initialChestPose;
+    Eigen::Matrix4f initialPelvisPose;
 
     VirtualRobot::RobotNodePtr leftFoot;
     VirtualRobot::RobotNodePtr rightFoot;
