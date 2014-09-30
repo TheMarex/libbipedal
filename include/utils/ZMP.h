@@ -8,12 +8,12 @@ namespace Bipedal
     /*
      * Computes ZMP according to the table cart model.
      */
-    inline Eigen::Vector2f computeModelZMP(Eigen::Vector3f com, Eigen::Vector3f comAcc, Eigen::Vector3f gravity)
+    inline Eigen::Vector2f computeModelZMP(Eigen::Vector3f com, Eigen::Vector3f comAcc, double gravity)
     {
         Eigen::Vector2f zmp;
         // note that gravity.z() < 0, so we changed the sign of the term
-        zmp.x() = com.x() + com.z() / gravity.z() * comAcc.x();
-        zmp.y() = com.y() + com.z() / gravity.z() * comAcc.y();
+        zmp.x() = com.x() + com.z() / gravity * comAcc.x();
+        zmp.y() = com.y() + com.z() / gravity * comAcc.y();
         return zmp;
     }
 
@@ -65,6 +65,27 @@ namespace Bipedal
         double gravity;
         ThirdOrderBackwardDerivationEstimator<Eigen::Vector3f> linearMomentumDiff;
         ThirdOrderBackwardDerivationEstimator<Eigen::Vector3f> angularMomentumDiff;
+    };
+
+    class CartTableZMPEstimator
+    {
+    public:
+        Eigen::Vector2f estimation;
+
+        CartTableZMPEstimator(double gravity)
+        : gravity(gravity)
+        , accelerationEstimator(Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero())
+        {
+        }
+
+        void update(const Eigen::Vector3f& com, double dt)
+        {
+            estimation = computeModelZMP(com, accelerationEstimator.estimation, gravity);
+        }
+
+    private:
+        double gravity;
+        SecondDerivativeEstimator<Eigen::Vector3f> accelerationEstimator;
     };
 };
 

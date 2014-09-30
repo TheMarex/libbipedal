@@ -17,6 +17,8 @@ template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
 
+class FallDetector;
+class ZMPFallDetector;
 class SupportPhaseSensor;
 class PushRecovery;
 class CapturePointRecovery;
@@ -40,6 +42,7 @@ class ReferenceIK;
 class KajitaStabilizer;
 class DampeningController;
 class MultiBodyZMPEstimator;
+class CartTableZMPEstimator;
 template<typename T> class ControlMatrixEntry;
 template<typename T> class ControlMatrixParser;
 template<typename T> class ControlPointEntry;
@@ -51,10 +54,12 @@ template<typename T> class CubivBezierCurve;
 typedef CubivBezierCurve<Eigen::Vector3f> CubicBezierCurve3f;
 typedef CubivBezierCurve<Eigen::Vector2f> CubicBezierCurve2f;
 
-template<typename T, unsigned order> class BackwardDerivationEstimator;
-template<typename T> using DerivationEstimator = BackwardDerivationEstimator<T, 1>;
-template<typename T> using ThirdOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 3>;
-template<typename T> using SixthOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 6>;
+template<typename T, unsigned order, unsigned derivative> class BackwardDerivationEstimator;
+template<typename T> using DerivationEstimator = BackwardDerivationEstimator<T, 1, 1>;
+template<typename T> using ThirdOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 3, 1>;
+template<typename T> using SixthOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 6, 1>;
+template<typename T, unsigned ACCURACY=3> using FirstDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 1>;
+template<typename T, unsigned ACCURACY=3> using SecondDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 2>;
 
 typedef ControlPointEntry<Eigen::Vector2f>   ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f>  ControlPointParser2f;
@@ -63,6 +68,8 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
+typedef boost::shared_ptr<ZMPFallDetector>             ZMPFallDetectorPtr;
+typedef boost::shared_ptr<FallDetector>                FallDetectorPtr;
 typedef boost::shared_ptr<SupportPhaseSensor>          SupportPhaseSensorPtr;
 typedef boost::shared_ptr<PushRecovery>                PushRecoveryPtr;
 typedef boost::shared_ptr<CapturePointRecovery>        CapturePointRecoveryPtr;

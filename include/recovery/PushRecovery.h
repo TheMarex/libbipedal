@@ -5,8 +5,6 @@
 
 #include <Eigen/Dense>
 
-#include <VirtualRobot/VirtualRobot.h>
-
 namespace Bipedal
 {
 
@@ -17,27 +15,23 @@ class PushRecovery
 {
 public:
     /**
-     * dt is the time in seconds since the last call to this function
-     * Needs to be called in each iteration of the control loop before
-     * the call to isFalling.
+     * This needs to be called continiously to update the internal state to track
+     * the CoM movement.
      */
     virtual void update(double dt) = 0;
 
     /**
-     * Returns true if it was detected that we are falling.
+     * Computes the trajectory to recover from the current state to a full stop.
+     * After each call to update() the target poses can be extracted by the getters
+     * below.
      */
-    virtual bool isFalling() const = 0;
-
-    // For debugging
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getLeftSupportPolygone() const = 0;
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getRightSupportPolygone() const = 0;
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getDualSupportPolygone() const = 0;
+    virtual void startRecovering(Bipedal::SupportPhase currentPhase) = 0;
+    virtual bool isRecovering() const = 0;
 
     virtual const Eigen::Matrix4f& getLeftFootPose() const = 0;
     virtual const Eigen::Matrix4f& getRightFootPose() const = 0;
     virtual const Eigen::Matrix4f& getChestPose() const = 0;
     virtual const Eigen::Matrix4f& getPelvisPose() const = 0;
-    virtual Bipedal::SupportPhase getSupportPhase() const = 0;
 };
 
 }

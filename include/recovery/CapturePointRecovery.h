@@ -15,37 +15,22 @@ namespace Bipedal
 
 class CapturePointRecovery : public PushRecovery
 {
-    enum RecoveryState
-    {
-        STATE_INITIAL   = 0,
-        STATE_FALLING   = 1,
-        STATE_RECOVERED = 2,
-        STATE_FAILED    = 4,
-    };
-
 public:
     CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& colModelNodes,
                          const VirtualRobot::RobotNodePtr& leftFoot,
                          const VirtualRobot::RobotNodePtr& rightFoot,
                          const VirtualRobot::RobotNodePtr& chest,
-                         const VirtualRobot::RobotNodePtr& pelvis,
-                         const VirtualRobot::ContactSensorPtr& leftFootContactSensor,
-                         const VirtualRobot::ContactSensorPtr& rightFootContactSensor,
-                         const VirtualRobot::MathTools::ConvexHull2DPtr& leftSupportHull,
-                         const VirtualRobot::MathTools::ConvexHull2DPtr& rightSupportHull);
+                         const VirtualRobot::RobotNodePtr& pelvis);
 
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getLeftSupportPolygone() const override;
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getRightSupportPolygone() const override;
-    virtual const VirtualRobot::MathTools::ConvexHull2DPtr getDualSupportPolygone() const override;
+    virtual void update(double dt) override;
+    virtual void startRecovering(Bipedal::SupportPhase currentPhase) override;
+    virtual bool isRecovering() const override;
+
     virtual const Eigen::Matrix4f& getLeftFootPose() const override;
     virtual const Eigen::Matrix4f& getRightFootPose() const override;
     virtual const Eigen::Matrix4f& getChestPose() const override;
     virtual const Eigen::Matrix4f& getPelvisPose() const override;
-    virtual Bipedal::SupportPhase getSupportPhase() const override;
-    virtual bool isFalling() const override;
-    virtual void update(double dt) override;
 
-    const Eigen::Vector3f& getContactPoint() const;
     const Bipedal::CubicBezierCurve3f& getCaptureTrajectory() const;
 
     /**
@@ -59,20 +44,10 @@ public:
     Eigen::Vector3f getImmediateCapturePoint() const;
 
 private:
-    void initializeRecovery(Bipedal::SupportPhase phase);
-
-    void recomputeDualSupportHull();
-
-    double maxHullDist;
     double minHeight;
     double minTime;
-    unsigned minFallingFrames;
-    unsigned fallingFrameCounter;
-    Bipedal::SupportPhase lastSupportPhase;
     Bipedal::SupportPhase recoverySupportPhase;
     Bipedal::CubivBezierCurve3f recoveryTrajectory;
-    Bipedal::SupportPhaseSensorPtr supportPhaseSensor;
-    RecoveryState state;
 
     Eigen::Matrix4f leftFootPose;
     Eigen::Matrix4f rightFootPose;
@@ -87,13 +62,9 @@ private:
     VirtualRobot::RobotNodePtr rightFoot;
     VirtualRobot::RobotNodePtr chest;
     VirtualRobot::RobotNodePtr pelvis;
-    VirtualRobot::MathTools::ConvexHull2DPtr leftSupportHull;
-    VirtualRobot::MathTools::ConvexHull2DPtr rightSupportHull;
-    VirtualRobot::MathTools::ConvexHull2DPtr dualSupportHull;
 
     VirtualRobot::RobotNodeSetPtr colModelNodes;
     Bipedal::DerivationEstimator<Eigen::Vector3f> velocityEstimator;
-    Eigen::Vector3f contactPoint;
 };
 
 }

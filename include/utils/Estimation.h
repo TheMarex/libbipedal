@@ -8,21 +8,34 @@
 
 namespace Bipedal
 {
-    constexpr std::array<double, 36> DerivationCoefficientTable  = {
+    using CoefficientTableT = std::array<double, 72>;
+
+    constexpr CoefficientTableT DerivationCoefficientTable  = {
+    // first derivative
     1,        -1,
     3/2.0,    -2, 1/2.0,
     11/6.0,   -3, 3/2.0,  -1/3.0,
     25/12.0,  -4, 3.0,    -4/3.0,   1/4.0,
     137/60.0, -5, 5.0,    -10/3.0,  5/4.0,  -1/5.0,
-    49/20.0,  -6, 15/2.0, -20/3.0,  15/4.0, -6/5.0, 1/6.0
+    49/20.0,  -6, 15/2.0, -20/3.0,  15/4.0, -6/5.0, 1/6.0,
+    // second derivative
+    2,        -1,
+    -2,        5,        -4,        1,
+    -35/12.0,  26/3.0,   -19/2.0,   14/3.0,   -11/12.0,
+    -15/4.0,   77/6.0,   -107/6.0,  13,       -61/12.0, 5/6.0,
+    -203/45.0, 87/5.0,   -117/4.0,  254/9.0,  -33/2.0,  27/5.0,   -137/180.0,
+    -469/90.0, 223/10.0, -879/20.0, 949/18.0, -41,      201/10.0, -1019/180.0, 7/10.0,
     };
 
-    constexpr unsigned getCoefficientTableOffset(unsigned order)
+    /**
+     * derivate is the order of the derivative and order the order of accuracy.
+     */
+    constexpr unsigned getCoefficientTableOffset(unsigned derivative, unsigned order)
     {
-        return order <= 1 ? 0 : (order + getCoefficientTableOffset(order-1));
+        return order <= 1 ? (derivative - 1)*36 : (order + getCoefficientTableOffset(derivative, order-1));
     }
 
-    template<typename ValueT, unsigned ORDER>
+    template<typename ValueT, unsigned ORDER, unsigned DERIVATIVE>
     class BackwardDerivationEstimator
     {
     public:
@@ -51,7 +64,7 @@ namespace Bipedal
             if (initializationCounter >= ORDER)
             {
                 estimation = zeroValue;
-                unsigned offset = getCoefficientTableOffset(ORDER);
+                unsigned offset = getCoefficientTableOffset(DERIVATIVE, ORDER);
                 for (unsigned i = 0; i < prevValues.size(); i++)
                 {
                     estimation += DerivationCoefficientTable[offset + i] * prevValues[i];
