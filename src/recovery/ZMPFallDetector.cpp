@@ -27,7 +27,7 @@ ZMPFallDetector::ZMPFallDetector(const VirtualRobot::RobotNodePtr& leftFoot,
 , rightSupportHull(rightSupportHull)
 , supportPhaseSensor(new SupportPhaseSensor(leftFootContactSensor, rightFootContactSensor))
 , maxHullDist(10)
-, minFallingFrames(10)
+, minFallingFrames(20)
 , fallingFrameCounter(0)
 , lastSupportPhase(Bipedal::SUPPORT_NONE)
 , contactPoint(Eigen::Vector3f::Zero())
@@ -61,7 +61,7 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
         BOOST_ASSERT(phase == Bipedal::SUPPORT_BOTH);
 
         // Foot positions changed
-        if (lastSupportPhase != phase)
+        //if (lastSupportPhase != phase)
         {
             dualSupportHull = computeSupportPolygone(leftFootPose,
                                                      rightFootPose,
@@ -84,7 +84,7 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
     if (VirtualRobot::MathTools::isInside(zmpConvexHull.head(2), supportHull))
     {
         stillFalling = false;
-        std::cout << "(" << phase << ") ZMP is inside the CH. " << std::endl;
+        //std::cout << "(" << phase << ") ZMP is inside the CH. " << std::endl;
     }
     else
     {
@@ -94,7 +94,7 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
         contactPoint = VirtualRobot::MathTools::transformPosition(contact, groundFrame);
 
         double dist = (contact-zmpConvexHull).norm();
-        std::cout << "(" << phase << ") ZMP is outside the CH: " << dist << std::endl;
+        //std::cout << "(" << phase << ") ZMP is outside the CH: " << dist << std::endl;
         stillFalling = dist > maxHullDist;
     }
 

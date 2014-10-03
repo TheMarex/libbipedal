@@ -25,7 +25,7 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodePtr& lef
 , chest(chest)
 , pelvis(pelvis)
 , minHeight(100)
-, minTime(0.4)
+, minTime(0.35)
 , gravity(9.81)
 , recovering(false)
 , leftFootPose(Eigen::Matrix4f::Identity())
