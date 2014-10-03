@@ -134,7 +134,7 @@ private:
     Eigen::VectorXf resultAngles;
     ForceDistributor::ForceTorque ft;
 
-    Bipedal::DerivationEstimator<Eigen::Vector2f> refCoMVelEstimator;
+    Bipedal::FirstDerivativeEstimator<Eigen::Vector2f> refCoMVelEstimator;
 };
 
 }

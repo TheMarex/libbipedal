@@ -19,8 +19,7 @@ namespace Bipedal
 class ZMPFallDetector : public FallDetector
 {
 public:
-    ZMPFallDetector(const VirtualRobot::RobotNodeSetPtr& colModelNodes,
-                    const VirtualRobot::RobotNodePtr& leftFoot,
+    ZMPFallDetector(const VirtualRobot::RobotNodePtr& leftFoot,
                     const VirtualRobot::RobotNodePtr& rightFoot,
                     const VirtualRobot::ContactSensorPtr& leftFootContactSensor,
                     const VirtualRobot::ContactSensorPtr& rightFootContactSensor,
@@ -31,7 +30,9 @@ public:
      * Needs to be called in each iteration of the control loop before
      * the call to isFalling.
      */
-    virtual void update(double dt) override;
+    virtual void update(const Eigen::Vector3f& com,
+                        const Eigen::Vector3f& comVel,
+                        double dt) override;
 
     /**
      * Returns true if it was detected that we are falling.
@@ -41,7 +42,9 @@ public:
     const Eigen::Vector3f& getContactPoint() const;
 
 private:
-    bool getStabilityInidcator(SupportPhase phase);
+    bool getStabilityInidcator(SupportPhase phase,
+                               const Eigen::Matrix4f& leftFootPose,
+                               const Eigen::Matrix4f& rightFootPose);
 
     bool falling;
     double maxHullDist;
@@ -56,7 +59,6 @@ private:
     VirtualRobot::MathTools::ConvexHull2DPtr rightSupportHull;
     VirtualRobot::MathTools::ConvexHull2DPtr dualSupportHull;
 
-    VirtualRobot::RobotNodeSetPtr colModelNodes;
     Bipedal::CartTableZMPEstimator zmpEstimator;
     Eigen::Vector3f contactPoint;
 };

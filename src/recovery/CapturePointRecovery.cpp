@@ -5,6 +5,7 @@
 #include "utils/Estimation.h"
 #include "utils/Walking.h"
 #include "utils/Interpolation.h"
+#include "utils/CapturePoint.h"
 
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/IK/DifferentialIK.h>
@@ -15,19 +16,18 @@
 namespace Bipedal
 {
 
-CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodeSetPtr& colModelNodes,
-                                           const VirtualRobot::RobotNodePtr& leftFoot,
+CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodePtr& leftFoot,
                                            const VirtualRobot::RobotNodePtr& rightFoot,
                                            const VirtualRobot::RobotNodePtr& chest,
                                            const VirtualRobot::RobotNodePtr& pelvis)
-: colModelNodes(colModelNodes)
-, velocityEstimator(Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero())
-, leftFoot(leftFoot)
+: leftFoot(leftFoot)
 , rightFoot(rightFoot)
 , chest(chest)
 , pelvis(pelvis)
 , minHeight(100)
 , minTime(0.3)
+, gravity(9.81)
+, recovering(false)
 , leftFootPose(Eigen::Matrix4f::Identity())
 , rightFootPose(Eigen::Matrix4f::Identity())
 , chestPose(Eigen::Matrix4f::Identity())
@@ -43,49 +43,19 @@ const Eigen::Matrix4f& CapturePointRecovery::getLeftFootPose() const { return le
 const Eigen::Matrix4f& CapturePointRecovery::getRightFootPose() const { return rightFootPose; }
 const Eigen::Matrix4f& CapturePointRecovery::getChestPose() const { return chestPose; }
 const Eigen::Matrix4f& CapturePointRecovery::getPelvisPose() const { return pelvisPose; }
+Bipedal::SupportPhase CapturePointRecovery::getSupportPhase() const { return recoverySupportPhase; }
 const Bipedal::CubicBezierCurve3f& CapturePointRecovery::getCaptureTrajectory() const { return recoveryTrajectory; }
 
-/**
- * Estimates the position of the iCP at time + t
- */
-Eigen::Vector3f CapturePointRecovery::getFutureCapturePoint(const VirtualRobot::RobotNodePtr& ankleNode, double t) const
+void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vector3f& comVel, double dt)
 {
-    const auto& com = colModelNodes->getCoM(); // in mm
-    double g = 9.81 * 1000; // mm/s^2
-    double omega0 = sqrt(g / com.z());
-
-    // both in mm
-    Eigen::Vector3f iCP   = getImmediateCapturePoint();
-    Eigen::Vector3f ankle = Eigen::Vector3f::Zero();
-    ankle.head(2) = ankleNode->getGlobalPose().block(0, 3, 2, 1);
-
-    Eigen::Vector3f futureCP = (iCP -  ankle) * exp(t * omega0) + ankle;
-
-    return futureCP;
-}
-
-/**
- * Get the current iCP
- */
-Eigen::Vector3f CapturePointRecovery::getImmediateCapturePoint() const
-{
-    const auto& com = colModelNodes->getCoM(); // in mm
-    const auto& comVel = velocityEstimator.estimation; // in mm/s
-    double gravity = 9.81 * 1000; // in mm/s^2
-    Eigen::Vector3f iCP = Eigen::Vector3f::Zero();
-    iCP.head(2) = com.head(2) + comVel.head(2) * sqrt(com.z() / gravity);
-
-    return iCP;
-}
-
-void CapturePointRecovery::update(double dt)
-{
-    // update the dynamics estimation
-    const auto& com = colModelNodes->getCoM();
-    velocityEstimator.update(com, dt);
+    comPosition = com;
+    comVelocity = comVel;
 
     if (recoveryTrajectory.finished())
+    {
+        recovering = false;
         return;
+    }
 
     recoveryTrajectory.update(dt);
 
@@ -113,8 +83,14 @@ void CapturePointRecovery::update(double dt)
     }
 }
 
+bool CapturePointRecovery::isRecovering() const
+{
+    return recovering;
+}
+
 void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
 {
+    recovering = true;
     initialLeftFootPose  = leftFoot->getGlobalPose();
     initialRightFootPose = leftFoot->getGlobalPose();
     initialPelvisPose    = pelvis->getGlobalPose();
@@ -123,7 +99,7 @@ void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
     // we need to chose which foot we will use to recover
     if (phase == Bipedal::SUPPORT_BOTH)
     {
-        const auto& iCP = getImmediateCapturePoint();
+        const auto& iCP = computeImmediateCapturePoint(comPosition/1000.0, comVelocity/1000.0, gravity) * 1000.0;
         const double distRight = (iCP - rightFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
         const double distLeft  = (iCP - leftFoot->getGlobalPose().block(0, 3, 3, 1)).norm();
         recoverySupportPhase = (distLeft > distRight) ? Bipedal::SUPPORT_LEFT : Bipedal::SUPPORT_RIGHT;
@@ -137,7 +113,11 @@ void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
     const auto& standingFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? leftFoot  : rightFoot;
 
     const Eigen::Vector3f& start = recoveryFoot->getGlobalPose().block(0, 3, 3, 1);
-    const Eigen::Vector3f& end   = getFutureCapturePoint(standingFoot, minTime);
+    const Eigen::Vector3f& end   = computeFutureCapturePoint(comPosition/1000.0,
+                                                             comVelocity/1000.0,
+                                                             standingFoot->getGlobalPose().block(0, 3, 3, 1)/1000.0,
+                                                             gravity,
+                                                             minTime) * 1000.0;
     Eigen::Vector3f diff = end - start;
     diff.z() = 0;
     //diff.normalize();

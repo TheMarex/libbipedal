@@ -17,6 +17,7 @@ template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
 
+class CoMProvider;
 class FallDetector;
 class ZMPFallDetector;
 class SupportPhaseSensor;
@@ -55,11 +56,8 @@ typedef CubivBezierCurve<Eigen::Vector3f> CubicBezierCurve3f;
 typedef CubivBezierCurve<Eigen::Vector2f> CubicBezierCurve2f;
 
 template<typename T, unsigned order, unsigned derivative> class BackwardDerivationEstimator;
-template<typename T> using DerivationEstimator = BackwardDerivationEstimator<T, 1, 1>;
-template<typename T> using ThirdOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 3, 1>;
-template<typename T> using SixthOrderBackwardDerivationEstimator = BackwardDerivationEstimator<T, 6, 1>;
-template<typename T, unsigned ACCURACY=3> using FirstDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 1>;
-template<typename T, unsigned ACCURACY=3> using SecondDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 2>;
+template<typename T, unsigned ACCURACY=1> using FirstDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 1>;
+template<typename T, unsigned ACCURACY=1> using SecondDerivativeEstimator = BackwardDerivationEstimator<T, ACCURACY, 2>;
 
 typedef ControlPointEntry<Eigen::Vector2f>   ControlPointEntry2f;
 typedef ControlPointParser<Eigen::Vector2f>  ControlPointParser2f;
@@ -68,6 +66,7 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
+typedef boost::shared_ptr<CoMProvider>                 CoMProviderPtr;
 typedef boost::shared_ptr<ZMPFallDetector>             ZMPFallDetectorPtr;
 typedef boost::shared_ptr<FallDetector>                FallDetectorPtr;
 typedef boost::shared_ptr<SupportPhaseSensor>          SupportPhaseSensorPtr;
@@ -94,6 +93,7 @@ typedef boost::shared_ptr<ZMPPlaner>                   ZMPPlanerPtr;
 typedef boost::shared_ptr<ZMPReferencePlaner>          ZMPReferencePlanerPtr;
 typedef boost::shared_ptr<ZMPPreviewControl>           ZMPPreviewControlPtr;
 typedef boost::shared_ptr<MultiBodyZMPEstimator>       MultiBodyZMPEstimatorPtr;
+typedef boost::shared_ptr<CartTableZMPEstimator>       CartTableZMPEstimatorPtr;
 
 }
 

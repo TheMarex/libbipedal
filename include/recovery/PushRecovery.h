@@ -18,7 +18,7 @@ public:
      * This needs to be called continiously to update the internal state to track
      * the CoM movement.
      */
-    virtual void update(double dt) = 0;
+    virtual void update(const Eigen::Vector3f& com, const Eigen::Vector3f& comVel, double dt) = 0;
 
     /**
      * Computes the trajectory to recover from the current state to a full stop.
@@ -32,6 +32,7 @@ public:
     virtual const Eigen::Matrix4f& getRightFootPose() const = 0;
     virtual const Eigen::Matrix4f& getChestPose() const = 0;
     virtual const Eigen::Matrix4f& getPelvisPose() const = 0;
+    virtual Bipedal::SupportPhase getSupportPhase() const = 0;
 };
 
 }

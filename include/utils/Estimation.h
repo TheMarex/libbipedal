@@ -6,9 +6,19 @@
 #include <array>
 #include <iostream>
 
+/**
+ * This implements estimating the derivative from a discrete input signal.
+ *
+ * The methode is based on finite differences outlined here:
+ * https://en.wikipedia.org/wiki/Finite_difference_coefficient
+ *
+ * Beware: Only use higher order estimations if you know what you are doing.
+ * In some cases it will cause a lot of noise (e.g. observed when trying to estimate the CoM acceleration)
+ *
+ */
 namespace Bipedal
 {
-    using CoefficientTableT = std::array<double, 72>;
+    using CoefficientTableT = std::array<double, 60>;
 
     constexpr CoefficientTableT DerivationCoefficientTable  = {
     // first derivative
@@ -19,12 +29,16 @@ namespace Bipedal
     137/60.0, -5, 5.0,    -10/3.0,  5/4.0,  -1/5.0,
     49/20.0,  -6, 15/2.0, -20/3.0,  15/4.0, -6/5.0, 1/6.0,
     // second derivative
-    2,        -1,
+    -1,        2,        -1,
     -2,        5,        -4,        1,
     -35/12.0,  26/3.0,   -19/2.0,   14/3.0,   -11/12.0,
     -15/4.0,   77/6.0,   -107/6.0,  13,       -61/12.0, 5/6.0,
     -203/45.0, 87/5.0,   -117/4.0,  254/9.0,  -33/2.0,  27/5.0,   -137/180.0,
     -469/90.0, 223/10.0, -879/20.0, 949/18.0, -41,      201/10.0, -1019/180.0, 7/10.0,
+    };
+    constexpr std::array<unsigned, 12> DerivationCoefficientOffsets = {
+    0,   2,  5,  9, 14, 20,
+    27, 30, 34, 39, 45, 52,
     };
 
     /**
@@ -32,7 +46,7 @@ namespace Bipedal
      */
     constexpr unsigned getCoefficientTableOffset(unsigned derivative, unsigned order)
     {
-        return order <= 1 ? (derivative - 1)*36 : (order + getCoefficientTableOffset(derivative, order-1));
+        return DerivationCoefficientOffsets[(derivative-1)*6 + (order-1)];
     }
 
     template<typename ValueT, unsigned ORDER, unsigned DERIVATIVE>
@@ -61,7 +75,7 @@ namespace Bipedal
             prevValues[0] = val;
 
             // use initial estimation until we have enough values
-            if (initializationCounter >= ORDER)
+            if (initializationCounter >= prevValues.size())
             {
                 estimation = zeroValue;
                 unsigned offset = getCoefficientTableOffset(DERIVATIVE, ORDER);
@@ -70,7 +84,7 @@ namespace Bipedal
                     estimation += DerivationCoefficientTable[offset + i] * prevValues[i];
                 }
                 // FIXME We assume dt has ways the same value!
-                estimation /= dt;
+                estimation /= pow(dt, DERIVATIVE);
             }
             else
             {
@@ -78,7 +92,7 @@ namespace Bipedal
             }
         }
     private:
-        std::array<ValueT, ORDER+1> prevValues;
+        std::array<ValueT, ORDER+DERIVATIVE> prevValues;
     };
 
     inline Eigen::MatrixXf slopeEstimation(const Eigen::MatrixXf& trajectory, float timestep)
@@ -91,7 +105,7 @@ namespace Bipedal
         Eigen::VectorXf initialEstimation(start.rows());
         initialEstimation.fill(0);
 
-        DerivationEstimator<Eigen::VectorXf> estimator(initialEstimation, initialEstimation);
+        FirstDerivativeEstimator<Eigen::VectorXf> estimator(initialEstimation, initialEstimation);
 
         for (int i = 0; i < trajectory.cols() - 1; i++)
         {

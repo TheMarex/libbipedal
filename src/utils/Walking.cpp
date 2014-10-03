@@ -3,6 +3,8 @@
 #include <VirtualRobot/MathTools.h>
 #include <VirtualRobot/CollisionDetection/CollisionChecker.h>
 
+#include <boost/make_shared.hpp>
+
 #include "utils/Walking.h"
 #include "utils/Kinematics.h"
 
@@ -106,29 +108,32 @@ VirtualRobot::MathTools::ConvexHull2DPtr computeSupportPolygone(const Eigen::Mat
                                                                 Bipedal::SupportPhase phase)
 {
     if (phase == SUPPORT_LEFT)
-        return leftFootHull;
+        return boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*leftFootHull);
 
     if (phase == SUPPORT_RIGHT)
-        return rightFootHull;
+        return boost::make_shared<VirtualRobot::MathTools::ConvexHull2D>(*rightFootHull);
 
-    BOOST_ASSERT(phase == SUPPORT_BOTH);
-
-    Eigen::Vector2f offset = rightFootPose.block(0, 3, 2, 1) - leftFootPose.block(0, 3, 2, 1);
-
-    std::vector<Eigen::Vector2f> points;
-    for (const auto& v : leftFootHull->vertices)
+    if (phase == SUPPORT_BOTH)
     {
-        points.push_back(v - offset/2);
-    }
-    for (const auto& v : rightFootHull->vertices)
-    {
-        points.push_back(v + offset/2);
+        Eigen::Vector2f offset = rightFootPose.block(0, 3, 2, 1) - leftFootPose.block(0, 3, 2, 1);
+
+        std::vector<Eigen::Vector2f> points;
+        for (const auto& v : leftFootHull->vertices)
+        {
+            points.push_back(v - offset/2);
+        }
+        for (const auto& v : rightFootHull->vertices)
+        {
+            points.push_back(v + offset/2);
+        }
+
+        auto dualSupportHull = VirtualRobot::MathTools::createConvexHull2D(points);
+        Bipedal::CenterConvexHull(dualSupportHull);
+
+        return dualSupportHull;
     }
 
-    auto dualSupportHull = VirtualRobot::MathTools::createConvexHull2D(points);
-    Bipedal::CenterConvexHull(dualSupportHull);
-
-    return dualSupportHull;
+    return VirtualRobot::MathTools::ConvexHull2DPtr();
 }
 
 }

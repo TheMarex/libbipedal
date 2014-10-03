@@ -17,7 +17,9 @@ public:
      * Needs to be called in each iteration of the control loop before
      * the call to isFalling.
      */
-    virtual void update(double dt) = 0;
+    virtual void update(const Eigen::Vector3f& com,
+                        const Eigen::Vector3f& comVel,
+                        double dt) = 0;
 
     /**
      * Returns true if it was detected that we are falling.
