@@ -25,7 +25,7 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodePtr& lef
 , chest(chest)
 , pelvis(pelvis)
 , minHeight(100)
-, minTime(0.3)
+, minTime(0.4)
 , gravity(9.81)
 , recovering(false)
 , leftFootPose(Eigen::Matrix4f::Identity())
@@ -56,30 +56,29 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
         recovering = false;
         return;
     }
-
-    recoveryTrajectory.update(dt);
+    else
+    {
+        recoveryTrajectory.update(dt);
+    }
 
     const auto& recoveryFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? rightFoot : leftFoot;
     const auto& standingFoot = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? leftFoot  : rightFoot;
 
-    Eigen::Matrix4f recoveryFootPose = recoveryFoot->getGlobalPose().inverse();
-    Eigen::Matrix4f standingFootPose = standingFoot->getGlobalPose();
+    const auto& initialRecoveryFootPose = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? initialRightFootPose : initialLeftFootPose;
+    const auto& initialStandingFootPose = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? initialLeftFootPose  : initialRightFootPose;
+
+    Eigen::Matrix4f recoveryFootPose = Eigen::Matrix4f::Identity();
     recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
-    standingFootPose.block(0, 3, 3, 1) = standingFoot->getGlobalPose().block(0, 3, 3, 1);
 
     if (recoverySupportPhase == Bipedal::SUPPORT_LEFT)
     {
-        rightFootPose = recoveryFootPose;
-        leftFootPose = standingFootPose;
-        chestPose = leftFootPose * initialLeftFootPose.inverse() * initialChestPose;
-        pelvisPose = leftFootPose * initialLeftFootPose.inverse() * initialPelvisPose;
+        leftFootPose = initialStandingFootPose;
+        rightFootPose = leftFootPose * standingFoot->getGlobalPose().inverse() * recoveryFootPose;
     }
     else
     {
-        leftFootPose = recoveryFootPose;
-        rightFootPose = standingFootPose;
-        chestPose = rightFootPose * initialRightFootPose.inverse() * initialChestPose;
-        pelvisPose = rightFootPose * initialRightFootPose.inverse() * initialPelvisPose;
+        rightFootPose = initialStandingFootPose;
+        leftFootPose = rightFootPose * standingFoot->getGlobalPose().inverse() * recoveryFootPose;
     }
 }
 
@@ -95,6 +94,8 @@ void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
     initialRightFootPose = leftFoot->getGlobalPose();
     initialPelvisPose    = pelvis->getGlobalPose();
     initialChestPose     = chest->getGlobalPose();
+    chestPose = initialChestPose;
+    pelvisPose = initialPelvisPose;
 
     // we need to chose which foot we will use to recover
     if (phase == Bipedal::SUPPORT_BOTH)
@@ -122,8 +123,8 @@ void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
     diff.z() = 0;
     //diff.normalize();
     Eigen::Vector3f h1(start.x(), start.y(), minHeight);
-    //Eigen::Vector3f h2(end.x(), end.y(), minHeight/2);
-    Eigen::Vector3f h2 = end - diff/2;
+    Eigen::Vector3f h2(end.x(), end.y(), minHeight/4);
+    //Eigen::Vector3f h2 = end - diff/2;
 
     recoveryTrajectory = Bipedal::CubivBezierCurve3f(start, end, h1, h2, minTime);
 }

@@ -26,7 +26,7 @@ ZMPFallDetector::ZMPFallDetector(const VirtualRobot::RobotNodePtr& leftFoot,
 , leftSupportHull(leftSupportHull)
 , rightSupportHull(rightSupportHull)
 , supportPhaseSensor(new SupportPhaseSensor(leftFootContactSensor, rightFootContactSensor))
-, maxHullDist(100)
+, maxHullDist(10)
 , minFallingFrames(10)
 , fallingFrameCounter(0)
 , lastSupportPhase(Bipedal::SUPPORT_NONE)
@@ -84,6 +84,7 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
     if (VirtualRobot::MathTools::isInside(zmpConvexHull.head(2), supportHull))
     {
         stillFalling = false;
+        std::cout << "(" << phase << ") ZMP is inside the CH. " << std::endl;
     }
     else
     {
@@ -93,6 +94,7 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
         contactPoint = VirtualRobot::MathTools::transformPosition(contact, groundFrame);
 
         double dist = (contact-zmpConvexHull).norm();
+        std::cout << "(" << phase << ") ZMP is outside the CH: " << dist << std::endl;
         stillFalling = dist > maxHullDist;
     }
 
@@ -112,6 +114,7 @@ void ZMPFallDetector::update(const Eigen::Vector3f& com, const Eigen::Vector3f& 
                                               leftFoot->getGlobalPose(),
                                               rightFoot->getGlobalPose());
 
+
     if (stillFalling && !falling)
     {
         fallingFrameCounter++;
@@ -121,14 +124,15 @@ void ZMPFallDetector::update(const Eigen::Vector3f& com, const Eigen::Vector3f& 
         }
     }
 
-    if (!stillFalling && falling)
+    if (!stillFalling)
     {
-        if (fallingFrameCounter > 0)
+        if (fallingFrameCounter > minFallingFrames/2.0)
         {
             fallingFrameCounter--;
         }
         else
         {
+            fallingFrameCounter = 0;
             falling = false;
         }
     }

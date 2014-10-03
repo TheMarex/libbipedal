@@ -76,7 +76,16 @@ public:
     VectorT h1;
     VectorT h2;
 
-    CubivBezierCurve() = default;
+    CubivBezierCurve()
+    : position(VectorT::Zero())
+    , start(VectorT::Zero())
+    , end(VectorT::Zero())
+    , h1(VectorT::Zero())
+    , h2(VectorT::Zero())
+    , T(0)
+    , t(0)
+    {
+    }
 
     CubivBezierCurve(const VectorT& start, const VectorT& end, const VectorT& h1, const VectorT& h2, double T)
     : start(start)
