@@ -82,6 +82,7 @@ public:
         rightSupportIKNodes.swingFoot = robotReversed->getRobotNode(leftFootTCP->getName());
     }
 
+private:
     // FIXME move to simox
     VirtualRobot::RobotNodeSetPtr getNodeSubset(VirtualRobot::RobotNodeSetPtr set, const std::string& startName, const std::string& endName)
     {
@@ -210,6 +211,9 @@ public:
             BOOST_ASSERT(targetNode->getJointValue() == rn->getJointValue());
         }
     }
+
+public:
+    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
 
     virtual bool computeStep(const Eigen::Matrix4f& leftFootPose,
                              const Eigen::Matrix4f& rightFootPose,

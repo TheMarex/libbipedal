@@ -2,6 +2,7 @@
 #define __REFERENCE_IK_H__
 
 #include <Eigen/Dense>
+#include <VirtualRobot/VirtualRobot.h>
 
 namespace Bipedal
 {
@@ -18,6 +19,8 @@ public:
                              const Eigen::Vector3f& comPosition,
                              Bipedal::SupportPhase phase,
                              Eigen::VectorXf &result) = 0;
+
+    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() = 0;
 };
 
 }

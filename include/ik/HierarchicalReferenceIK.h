@@ -53,6 +53,8 @@ public:
         jacobiDefinitions.push_back(jChest);
     }
 
+    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
+
     virtual bool computeStep(const Eigen::Matrix4f& leftFootPose,
                              const Eigen::Matrix4f& rightFootPose,
                              const Eigen::Matrix4f& chestPose,
