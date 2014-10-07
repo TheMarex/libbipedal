@@ -10,15 +10,15 @@
 namespace Bipedal
 {
 
-bool TrajectoryPlayer::update(float dt)
+bool TrajectoryPlayer::update(double dt)
 {
     if (isRunning && frameCounter <= motion->getMotionFrames().size())
     {
         time += dt;
 
-        float remaining = nextFrame->timestep - time;
+        double remaining = nextFrame->timestep - time;
 
-        if (remaining < 0)
+        if (remaining < std::numeric_limits<float>::epsilon())
         {
             if (frameCounter < motion->getMotionFrames().size())
             {
@@ -39,9 +39,9 @@ bool TrajectoryPlayer::update(float dt)
 void TrajectoryPlayer::reset()
 {
     isRunning = false;
-    nextFrame    = motion->getMotionFrame(0);
+    nextFrame    = motion->getMotionFrame(1);
     currentFrame = motion->getMotionFrame(0);
-    frameCounter = 1;
+    frameCounter = 2;
     time = 0;
 }
 

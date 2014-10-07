@@ -46,7 +46,7 @@ public:
      *
      * Returns true as long as the is a control trajectory.
      */
-    bool update(float timestep);
+    bool update(double timestep);
 
     /**
      * Start control sequence.
@@ -65,7 +65,7 @@ public:
 
 public:
     bool isRunning;
-    float time;
+    double time;
     int frameCounter;
     MMM::MotionPtr motion;
     MMM::MotionFramePtr nextFrame;
