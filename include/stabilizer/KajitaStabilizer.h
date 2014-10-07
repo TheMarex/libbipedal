@@ -31,7 +31,6 @@ class KajitaStabilizer : public FrameAdaptingStabilizer, public TorqueControllin
 {
 public:
     KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-                     const VirtualRobot::RobotNodeSetPtr& nodes,
                      const VirtualRobot::RobotNodePtr& chest,
                      const VirtualRobot::RobotNodePtr& leftFoot,
                      const VirtualRobot::RobotNodePtr& rightFoot,
@@ -43,10 +42,7 @@ public:
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
-                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
-                     ReferenceIKPtr referenceIK);
-
-    virtual const ReferenceIKPtr& getReferenceIK() override { return referenceIK; }
+                     const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY);
 
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
@@ -66,9 +62,6 @@ public:
     virtual const Eigen::Vector3f& getRightAnkleTorque() override { return ft.rightTorque;}
     virtual const Eigen::Vector3f& getLeftAnkleForce() override { return ft.leftForce;}
     virtual const Eigen::Vector3f& getRightAnkleForce() override { return ft.rightForce;}
-
-    virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
-    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
 
     virtual void update(float dt,
                 Bipedal::SupportPhase phase,
@@ -98,8 +91,6 @@ private:
     VirtualRobot::RobotNodePtr leftFoot;
     // TCP on right foot
     VirtualRobot::RobotNodePtr rightFoot;
-    // all nodes that are used for the IK
-    VirtualRobot::RobotNodeSetPtr nodes;
 
     ZMPTrackingControllerPtr          zmpTrackingController;
     FootForceControllerPtr             footForceController;
@@ -110,9 +101,6 @@ private:
     VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorX;
     VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorY;
     VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorY;
-    ReferenceIKPtr                     referenceIK;
-
-    std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;
 
     Eigen::Matrix4f chestPoseRef;
     Eigen::Matrix4f pelvisPoseRef;

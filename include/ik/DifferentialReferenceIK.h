@@ -16,6 +16,14 @@
 namespace Bipedal
 {
 
+/**
+ * This class computes a differtial IK from the current support foot
+ * to the pelvis, from the pevlis to the chest and swing foot.
+ *
+ * TODO: Much of this code should be in Simox.
+ * Most of the node names can be obtained from a RobotConfig.
+ * They should not be initialized by hard coded names.
+ */
 class DifferentialReferenceIK : public ReferenceIK
 {
     struct IKNodes
@@ -39,7 +47,6 @@ public:
                             const VirtualRobot::RobotNodePtr& chest,
                             const VirtualRobot::RobotNodePtr& pelvis)
     : robot(robot)
-    // TODO Simox needs ::cloneReversed to clone + reverse all nodes
     , robotReversed(VirtualRobot::RobotFactory::cloneInversed(robot, rightFootTCP->getName()))
     , nodes(nodes)
     , chest(chest)
@@ -52,12 +59,12 @@ public:
         BOOST_ASSERT(robotReversed);
         BOOST_ASSERT(robot);
 
+        // FIXME don't hardcore joint names
         VirtualRobot::RobotNodeSetPtr leftToRight = robot->getRobotNodeSet("Left2RightLeg");
         VirtualRobot::RobotNodeSetPtr rightToLeft = constructReverseSet("RighToLeftLeg", robotReversed, leftToRight);
 
         leftSupportIKNodes.robot = robot;
         leftSupportIKNodes.leftToRightNodes = leftToRight->getAllRobotNodes();
-        // FIXME don't hardcore joint names
         leftSupportIKNodes.supportToPelvisNodes = getNodeSubset(leftToRight, "LeftLeg_Joint6", "LeftLeg_Joint1");
         leftSupportIKNodes.pelvisToSwingNodes = getNodeSubset(leftToRight, "RightLeg_Joint1", "RightLeg_Joint6");
         leftSupportIKNodes.pelvis = pelvis;
@@ -75,6 +82,7 @@ public:
         rightSupportIKNodes.swingFoot = robotReversed->getRobotNode(leftFootTCP->getName());
     }
 
+    // FIXME move to simox
     VirtualRobot::RobotNodeSetPtr getNodeSubset(VirtualRobot::RobotNodeSetPtr set, const std::string& startName, const std::string& endName)
     {
         std::vector<VirtualRobot::RobotNodePtr> subsetNodes;
@@ -192,7 +200,7 @@ public:
         VirtualRobot::RobotNodePtr root = target->getRootNode();
         target->setGlobalPose(source->getRobotNode(root->getName())->getGlobalPose());
 
-        //FIXME this is not really fast
+        //FIXME this is not really fast, we could pre-compute a mapping
         for (auto& rn : source->getRobotNodes())
         {
             auto targetNode = target->getRobotNode(rn->getName());

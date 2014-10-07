@@ -25,10 +25,6 @@ public:
     virtual const Eigen::Matrix4f& getLeftFootPose() = 0;
     virtual const Eigen::Matrix4f& getRightFootPose() = 0;
 
-    virtual const Eigen::VectorXf& getResultAngles() = 0;
-    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() = 0;
-    virtual const ReferenceIKPtr& getReferenceIK() = 0;
-
     virtual std::unordered_map<std::string, DampeningController*> getControllers() = 0;
 
     virtual void update(float dt,

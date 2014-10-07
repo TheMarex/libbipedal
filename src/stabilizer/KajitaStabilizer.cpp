@@ -15,8 +15,6 @@
 #include "stabilizer/kajita/ForceDistributor.h"
 #include "stabilizer/KajitaStabilizer.h"
 
-#include "ik/DifferentialReferenceIK.h"
-
 #include "controller/PostureController.h"
 
 namespace Bipedal
@@ -38,7 +36,6 @@ namespace Bipedal
  *  - Reference ZMP
  */
 KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
-                                   const VirtualRobot::RobotNodeSetPtr& nodes,
                                    const VirtualRobot::RobotNodePtr& chest,
                                    const VirtualRobot::RobotNodePtr& leftFoot,
                                    const VirtualRobot::RobotNodePtr& rightFoot,
@@ -50,8 +47,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
                                    const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorX,
                                    const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorX,
                                    const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
-                                   const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY,
-                                   ReferenceIKPtr referenceIK)
+                                   const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY)
 /* Nodes */
 : chest(chest)
 , leftFoot(leftFoot)
@@ -65,7 +61,6 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , rightAnkleSensorX(rightAnkleSensorX)
 , leftAnkleSensorY(leftAnkleSensorY)
 , rightAnkleSensorY(rightAnkleSensorY)
-, nodes(nodes)
 /* Controllers */
 , chestPostureController(new TwoDOFPostureController(40, 5, 80, 5))
 , forceDistributor(new ForceDistributor(robot->getMass(),
@@ -85,7 +80,6 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , zmpPositionRef(Eigen::Vector3f::Zero())
 , stepAdaptionFrame(Eigen::Matrix4f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
-, referenceIK(referenceIK)
 , refCoMVelEstimator(Eigen::Vector2f::Zero(), Eigen::Vector2f::Zero())
 {
     // FIXME Make node name configurable
@@ -95,7 +89,6 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
     footForceController = FootForceControllerPtr(new FootForceController(hipJointDistance));
 
     BOOST_ASSERT(robot);
-    BOOST_ASSERT(nodes);
     BOOST_ASSERT(chest);
     BOOST_ASSERT(leftFoot);
     BOOST_ASSERT(rightFoot);
@@ -108,27 +101,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
     BOOST_ASSERT(rightAnkleSensorX);
     BOOST_ASSERT(leftAnkleSensorY);
     BOOST_ASSERT(rightAnkleSensorY);
-    BOOST_ASSERT(referenceIK);
 
-/*
-    std::cout
-     << "KajitaStabilizer nodes:" << std::endl
-     << "robot: " << robot->getName() << std::endl
-     << "nodes: " << nodes->getName() << std::endl
-     << "chest: " << chest->getName() << std::endl
-     << "leftFoot: " << leftFoot->getName() << std::endl
-     << "rightFoot: " << rightFoot->getName() << std::endl
-     << "leftFootBody: " << leftFootBody->getName() << std::endl
-     << "rightFootBody: " << rightFootBody->getName() << std::endl
-     << "leftAnkleBody: " << leftAnkleBody->getName() << std::endl
-     << "rightAnkleBody: " << rightAnkleBody->getName() << std::endl
-     << "pelvis: " << pelvis->getName() << std::endl
-     << "leftAnkleSensorX: " << leftAnkleSensorX->getName() << std::endl
-     << "rightAnkleSensorX: " << rightAnkleSensorX->getName() << std::endl
-     << "leftAnkleSensorY: " << leftAnkleSensorY->getName() << std::endl
-     << "rightAnkleSensorY: " << rightAnkleSensorY->getName() << std::endl
-     << std::endl;
-*/
 }
 
 void KajitaStabilizer::update(float dt,
@@ -140,6 +113,7 @@ void KajitaStabilizer::update(float dt,
                               const Eigen::Matrix4f& rightFootPoseRefWorld,
                               const Eigen::Vector3f& comRefWorld)
 {
+    // orient reference trajectory to initial orientation of robot
     if (stepAdaptionFrame == Eigen::Matrix4f::Zero())
     {
         std::cout << "Initializing step adaption frame..." << std::endl;
@@ -212,20 +186,6 @@ void KajitaStabilizer::update(float dt,
     pelvisPose    = pelvisPoseRef;
 */
     comPosition   = comPositionRef;
-
-    std::vector<float> angles;
-    auto originalRoot = nodes->getRobot()->getGlobalPose();
-    nodes->getJointValues(angles);
-
-    VirtualRobot::RobotNodePtr leftArm = nodes->getRobot()->getRobotNode("LeftArm_Joint3");
-    nodes->getRobot()->setJointValue(leftArm, 0.3);
-    VirtualRobot::RobotNodePtr rightArm = nodes->getRobot()->getRobotNode("RightArm_Joint3");
-    nodes->getRobot()->setJointValue(rightArm, -0.3);
-
-    bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, comPosition, phase, resultAngles);
-    nodes->setJointValues(angles);
-    nodes->getRobot()->setGlobalPose(originalRoot);
-    BOOST_ASSERT(!std::isnan(resultAngles[0]));
 }
 
 std::unordered_map<std::string, DampeningController*> KajitaStabilizer::getControllers()

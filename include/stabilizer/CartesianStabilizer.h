@@ -21,12 +21,10 @@ class CartesianStabilizer : public FrameAdaptingStabilizer
 public:
 
     CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
-                        const VirtualRobot::RobotNodeSetPtr& nodes,
                         const VirtualRobot::RobotNodePtr& chest,
                         const VirtualRobot::RobotNodePtr& leftFoot,
                         const VirtualRobot::RobotNodePtr& rightFoot,
-                        const VirtualRobot::RobotNodePtr& pelvis,
-                        ReferenceIKPtr referenceIK);
+                        const VirtualRobot::RobotNodePtr& pelvis);
 
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
@@ -40,10 +38,6 @@ public:
     virtual const Eigen::Matrix4f& getLeftFootPose() override { return leftFootPose; }
     virtual const Eigen::Matrix4f& getRightFootPose() override { return rightFootPose; }
 
-    virtual const Eigen::VectorXf& getResultAngles() override { return resultAngles; }
-    virtual const VirtualRobot::RobotNodeSetPtr& getNodes() override { return nodes; }
-
-    const ReferenceIKPtr& getReferenceIK() override;
     virtual std::unordered_map<std::string, DampeningController*> getControllers() override;
 
     virtual void update(float dt,
@@ -66,16 +60,11 @@ private:
     VirtualRobot::RobotNodePtr leftFoot;
     // TCP on right foot
     VirtualRobot::RobotNodePtr rightFoot;
-    // all nodes that are used for the IK
-    VirtualRobot::RobotNodeSetPtr nodes;
 
     ThreeDOFPostureControllerPtr chestPostureController;
     ThreeDOFPostureControllerPtr leftFootPostureController;
     ThreeDOFPostureControllerPtr rightFootPostureController;
     ThreeDOFPostureControllerPtr pelvisPostureController;
-    ReferenceIKPtr             referenceIK;
-
-    std::vector<VirtualRobot::RobotNodePtr> trajectoryNodes;
 
     Eigen::Matrix4f chestPoseRef;
     Eigen::Matrix4f pelvisPoseRef;

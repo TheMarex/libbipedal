@@ -7,8 +7,7 @@
 #include <boost/make_shared.hpp>
 
 #include "stabilizer/CartesianStabilizer.h"
-
-#include "ik/DifferentialReferenceIK.h"
+#include "utils/Kinematics.h"
 
 #include "controller/PostureController.h"
 
@@ -31,12 +30,10 @@ namespace Bipedal
  *  - Reference ZMP
  */
 CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
-                                         const VirtualRobot::RobotNodeSetPtr& nodes,
                                          const VirtualRobot::RobotNodePtr& chest,
                                          const VirtualRobot::RobotNodePtr& leftFoot,
                                          const VirtualRobot::RobotNodePtr& rightFoot,
-                                         const VirtualRobot::RobotNodePtr& pelvis,
-                                         ReferenceIKPtr referenceIK)
+                                         const VirtualRobot::RobotNodePtr& pelvis)
 : chest(chest)
 , leftFoot(leftFoot)
 , rightFoot(rightFoot)
@@ -45,8 +42,6 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 , leftFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
 , rightFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
 , pelvisPostureController(new ThreeDOFPostureController(8, 12, 8, 12, 8, 12))
-, nodes(nodes)
-, referenceIK(referenceIK)
 , chestPose(Eigen::Matrix4f::Identity())
 , pelvisPose(Eigen::Matrix4f::Identity())
 , leftFootPose(Eigen::Matrix4f::Identity())
@@ -121,24 +116,6 @@ void CartesianStabilizer::update(float dt,
     //chestPose     = chestPoseRef;
     //pelvisPose    = pelvisPoseRef;
     comPosition   = comPositionRef;
-
-    VirtualRobot::RobotNodePtr leftArm = nodes->getRobot()->getRobotNode("LeftArm_Joint3");
-    nodes->getRobot()->setJointValue(leftArm, 0.3);
-    VirtualRobot::RobotNodePtr rightArm = nodes->getRobot()->getRobotNode("RightArm_Joint3");
-    nodes->getRobot()->setJointValue(rightArm, -0.3);
-
-    std::vector<float> angles;
-    auto originalRoot = nodes->getRobot()->getGlobalPose();
-    nodes->getJointValues(angles);
-    bool success = referenceIK->computeStep(leftFootPose, rightFootPose, chestPose, pelvisPose, comPosition, phase, resultAngles);
-    nodes->setJointValues(angles);
-    nodes->getRobot()->setGlobalPose(originalRoot);
-    BOOST_ASSERT(!std::isnan(resultAngles[0]));
-}
-
-const ReferenceIKPtr& CartesianStabilizer::getReferenceIK()
-{
-    return referenceIK;
 }
 
 std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getControllers()
