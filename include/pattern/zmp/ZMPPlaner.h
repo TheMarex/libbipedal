@@ -26,27 +26,27 @@ public:
     {
     }
 
-    Eigen::Matrix3Xf getCoMTrajectory()
+    const Eigen::Matrix3Xf& getCoMTrajectory()
     {
         BOOST_ASSERT(_bComputed);
         return _mCoM;
     }
-    Eigen::Matrix3Xf getCoMVelocity()
+    const Eigen::Matrix3Xf& getCoMVelocity()
     {
         BOOST_ASSERT(_bComputed);
         return _mCoMVel;
     }
-    Eigen::Matrix3Xf getCoMAcceleration()
+    const Eigen::Matrix3Xf& getCoMAcceleration()
     {
         BOOST_ASSERT(_bComputed);
         return _mCoMAcc;
     }
-    Eigen::Matrix2Xf getReferenceZMPTrajectory()
+    const Eigen::Matrix2Xf& getReferenceZMPTrajectory()
     {
         BOOST_ASSERT(_bComputed);
         return _mReference;
     }
-    Eigen::Matrix2Xf getComputedZMPTrajectory()
+    const Eigen::Matrix2Xf& getComputedZMPTrajectory()
     {
         BOOST_ASSERT(_bComputed);
         return _mZMP;
