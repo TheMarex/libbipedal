@@ -144,15 +144,43 @@ inline Eigen::Matrix4f computeGroundFrame(const Eigen::Matrix4f& leftFootPose,
  *
  * Both trajectory and relativeTrajectory are in m.
  */
- void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
-                                       const Eigen::Matrix3Xf& leftFootTrajectory,
-                                       VirtualRobot::RobotNodePtr leftFoot,
-                                       VirtualRobot::RobotNodePtr rightFoot,
-                                       VirtualRobot::RobotNodeSetPtr bodyJoints,
-                                       const Eigen::MatrixXf& bodyTrajectory,
-                                       const Eigen::Matrix3Xf& trajectory,
-                                       const std::vector<SupportInterval>& intervals,
-                                       Eigen::Matrix3Xf& relativeTrajectory);
+template<typename MatrixT>
+inline void transformTrajectoryToGroundFrame(const VirtualRobot::RobotPtr& robot,
+                                             const Eigen::Matrix3Xf& leftFootTrajectory,
+                                             const VirtualRobot::RobotNodePtr& leftFoot,
+                                             const VirtualRobot::RobotNodePtr& rightFoot,
+                                             const VirtualRobot::RobotNodeSetPtr& bodyJoints,
+                                             const Eigen::MatrixXf& bodyTrajectory,
+                                             const MatrixT& trajectory,
+                                             const std::vector<SupportInterval>& intervals,
+                                             MatrixT& relativeTrajectory)
+{
+    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
+    int N = trajectory.cols();
+    int M = trajectory.rows();
+    relativeTrajectory.resize(M, N);
+
+    BOOST_ASSERT(M > 0 && M <= 3);
+
+    auto intervalIter = intervals.begin();
+    for (int i = 0; i < N; i++)
+    {
+        while (i >= intervalIter->endIdx)
+        {
+            intervalIter = std::next(intervalIter);
+        }
+        // Move basis along with the left foot
+        Eigen::Matrix4f leftFootPose = leftInitialPose;
+        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
+        robot->setGlobalPose(leftFootPose);
+        bodyJoints->setJointValues(bodyTrajectory.col(i));
+        Eigen::Matrix4f worldToRef = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), intervalIter->phase);
+        Eigen::Vector4f homVec = Eigen::Vector4f::Zero();
+        homVec(3, 0) = 1;
+        homVec.block(0, 0, M, 1) = trajectory.col(i) * 1000;
+        relativeTrajectory.block(0, i, M, 1) = worldToRef.colPivHouseholderQr().solve(homVec).block(0, 0, M, 1) / 1000.0;
+    }
+}
 
 /**
  * Set correct initial robot position *before* calling this function.

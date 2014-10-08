@@ -34,39 +34,6 @@ void extractControlFrames(VirtualRobot::RobotPtr robot,
     }
 }
 
-void transformTrajectoryToGroundFrame(VirtualRobot::RobotPtr robot,
-                                      const Eigen::Matrix3Xf& leftFootTrajectory,
-                                      VirtualRobot::RobotNodePtr leftFoot,
-                                      VirtualRobot::RobotNodePtr rightFoot,
-                                      VirtualRobot::RobotNodeSetPtr bodyJoints,
-                                      const Eigen::MatrixXf& bodyTrajectory,
-                                      const Eigen::Matrix3Xf& trajectory,
-                                      const std::vector<Bipedal::SupportInterval>& intervals,
-                                      Eigen::Matrix3Xf& relativeTrajectory)
-{
-    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
-    int N = trajectory.cols();
-    relativeTrajectory.resize(3, N);
-
-    auto intervalIter = intervals.begin();
-    for (int i = 0; i < N; i++)
-    {
-        while (i >= intervalIter->endIdx)
-        {
-            intervalIter = std::next(intervalIter);
-        }
-        // Move basis along with the left foot
-        Eigen::Matrix4f leftFootPose = leftInitialPose;
-        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
-        robot->setGlobalPose(leftFootPose);
-        bodyJoints->setJointValues(bodyTrajectory.col(i));
-        Eigen::Matrix4f worldToRef = computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), intervalIter->phase);
-        Eigen::Vector4f homVec;
-        homVec(3, 0) = 1;
-        homVec.block(0, 0, 3, 1) = trajectory.col(i) * 1000;
-        relativeTrajectory.col(i) = worldToRef.colPivHouseholderQr().solve(homVec).block(0, 0, 3, 1) / 1000.0;
-    }
-}
 
 
 SupportPhaseSensor::SupportPhaseSensor(const VirtualRobot::ContactSensorPtr& leftFootSensor,
