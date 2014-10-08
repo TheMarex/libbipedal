@@ -110,6 +110,9 @@ public:
     VectorT position;
     VectorT velocity;
     VectorT acceleration;
+
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 template<typename VectorT>

@@ -46,6 +46,8 @@ public:
     }
 
     MatrixT matrix;
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 template<typename MatrixT>
