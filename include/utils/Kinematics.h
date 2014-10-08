@@ -183,6 +183,21 @@ inline void transformTrajectoryToGroundFrame(const VirtualRobot::RobotPtr& robot
 }
 
 /**
+ * Transforms orientation of vector to ground frame.
+ *
+ * Both trajectory and relativeTrajectory are in m.
+ */
+void transformOrientationToGroundFrame(const VirtualRobot::RobotPtr& robot,
+                                       const Eigen::Matrix3Xf& leftFootTrajectory,
+                                       const VirtualRobot::RobotNodePtr& leftFoot,
+                                       const VirtualRobot::RobotNodePtr& rightFoot,
+                                       const VirtualRobot::RobotNodeSetPtr& bodyJoints,
+                                       const Eigen::MatrixXf& bodyTrajectory,
+                                       const Eigen::Matrix3Xf& trajectory,
+                                       const std::vector<SupportInterval>& intervals,
+                                       Eigen::Matrix3Xf& relativeTrajectory);
+
+/**
  * Set correct initial robot position *before* calling this function.
  * For example, extend the arms so they won't collide with the body.
  *

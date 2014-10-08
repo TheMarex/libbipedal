@@ -34,7 +34,41 @@ void extractControlFrames(VirtualRobot::RobotPtr robot,
     }
 }
 
+void transformOrientationToGroundFrame(const VirtualRobot::RobotPtr& robot,
+                                       const Eigen::Matrix3Xf& leftFootTrajectory,
+                                       const VirtualRobot::RobotNodePtr& leftFoot,
+                                       const VirtualRobot::RobotNodePtr& rightFoot,
+                                       const VirtualRobot::RobotNodeSetPtr& bodyJoints,
+                                       const Eigen::MatrixXf& bodyTrajectory,
+                                       const Eigen::Matrix3Xf& trajectory,
+                                       const std::vector<SupportInterval>& intervals,
+                                       Eigen::Matrix3Xf& relativeTrajectory)
+{
+    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
+    int N = trajectory.cols();
+    int M = trajectory.rows();
+    relativeTrajectory.resize(M, N);
 
+    BOOST_ASSERT(M > 0 && M <= 3);
+
+    auto intervalIter = intervals.begin();
+    for (int i = 0; i < N; i++)
+    {
+        while (i >= intervalIter->endIdx)
+        {
+            intervalIter = std::next(intervalIter);
+        }
+        // Move basis along with the left foot
+        Eigen::Matrix4f leftFootPose = leftInitialPose;
+        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
+        robot->setGlobalPose(leftFootPose);
+        bodyJoints->setJointValues(bodyTrajectory.col(i));
+        Eigen::Matrix3f worldToRef = computeGroundFrame(leftFoot->getGlobalPose(),
+                                                        rightFoot->getGlobalPose(),
+                                                        intervalIter->phase).block(0, 0, 3, 3);
+        relativeTrajectory.block(0, i, M, 1) = worldToRef.colPivHouseholderQr().solve(trajectory.col(i)).block(0, 0, M, 1);
+    }
+}
 
 SupportPhaseSensor::SupportPhaseSensor(const VirtualRobot::ContactSensorPtr& leftFootSensor,
                                        const VirtualRobot::ContactSensorPtr& rightFootSensor)
