@@ -24,17 +24,23 @@ public:
     virtual const Eigen::Matrix4f& getPelvisPose() = 0;
     virtual const Eigen::Matrix4f& getLeftFootPose() = 0;
     virtual const Eigen::Matrix4f& getRightFootPose() = 0;
+    virtual const Eigen::Vector3f& getCoMPosition() = 0;
+    virtual const Eigen::Vector3f& getZMPPosition() = 0;
 
     virtual std::unordered_map<std::string, DampeningController*> getControllers() = 0;
 
     virtual void update(float dt,
+                        const Eigen::Vector3f& comPosition,
+                        const Eigen::Vector3f& comVelocity,
+                        const Eigen::Vector3f& zmpPosition,
                         Bipedal::SupportPhase phase,
-                        const Eigen::Vector3f& zmp,
                         const Eigen::Matrix4f& chestPoseRef,
                         const Eigen::Matrix4f& pelvisPoseRef,
                         const Eigen::Matrix4f& leftFootPoseRef,
                         const Eigen::Matrix4f& rightFootPoseRef,
-                        const Eigen::Vector3f& comPositionRef) = 0;
+                        const Eigen::Vector3f& comPositionRef,
+                        const Eigen::Vector3f& comVelocityRef,
+                        const Eigen::Vector3f& zmpPositionRef) = 0;
 };
 
 }

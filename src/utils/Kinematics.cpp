@@ -13,20 +13,20 @@ namespace Bipedal
 {
 
 void extractControlFrames(VirtualRobot::RobotPtr robot,
-                          const Eigen::Matrix3Xf& leftFootTrajectory,
+                          const Eigen::Matrix6Xf& leftFootTrajectory,
                           const Eigen::MatrixXf&  bodyTrajectory,
                           VirtualRobot::RobotNodeSetPtr bodyJoints,
                           VirtualRobot::RobotNodePtr node,
                           std::vector<Eigen::Matrix4f>& controlFrames)
 {
-    Eigen::Matrix4f leftInitialPose = bodyJoints->getKinematicRoot()->getGlobalPose();
     int N = leftFootTrajectory.cols();
 
     for (int i = 0; i < N; i++)
     {
         // Move basis along with the left foot
-        Eigen::Matrix4f leftFootPose = leftInitialPose;
-        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
+        Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
+        VirtualRobot::MathTools::posrpy2eigen4f(1000 * leftFootTrajectory.block(0, i, 3, 1),
+                                                leftFootTrajectory.block(3, i, 3, 1),  leftFootPose);
         robot->setGlobalPose(leftFootPose);
         bodyJoints->setJointValues(bodyTrajectory.col(i));
 
@@ -35,7 +35,7 @@ void extractControlFrames(VirtualRobot::RobotPtr robot,
 }
 
 void transformOrientationToGroundFrame(const VirtualRobot::RobotPtr& robot,
-                                       const Eigen::Matrix3Xf& leftFootTrajectory,
+                                       const Eigen::Matrix6Xf& leftFootTrajectory,
                                        const VirtualRobot::RobotNodePtr& leftFoot,
                                        const VirtualRobot::RobotNodePtr& rightFoot,
                                        const VirtualRobot::RobotNodeSetPtr& bodyJoints,
@@ -59,8 +59,9 @@ void transformOrientationToGroundFrame(const VirtualRobot::RobotPtr& robot,
             intervalIter = std::next(intervalIter);
         }
         // Move basis along with the left foot
-        Eigen::Matrix4f leftFootPose = leftInitialPose;
-        leftFootPose.block(0, 3, 3, 1) = 1000 * leftFootTrajectory.col(i);
+        Eigen::Matrix4f leftFootPose = Eigen::Matrix4f::Identity();
+        VirtualRobot::MathTools::posrpy2eigen4f(1000 * leftFootTrajectory.block(0, i, 3, 1),
+                                                leftFootTrajectory.block(3, i, 3, 1),  leftFootPose);
         robot->setGlobalPose(leftFootPose);
         bodyJoints->setJointValues(bodyTrajectory.col(i));
         Eigen::Matrix3f worldToRef = computeGroundFrame(leftFoot->getGlobalPose(),

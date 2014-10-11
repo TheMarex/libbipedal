@@ -28,6 +28,8 @@ public:
         Eigen::Vector2f adaptedZMP;
         adaptedZMP.x() = feedbackGain.dot(refStateX - stateX) + refZMP.x();
         adaptedZMP.y() = feedbackGain.dot(refStateY - stateY) + refZMP.y();
+
+        return adaptedZMP;
     }
 
 private:

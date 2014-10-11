@@ -44,17 +44,31 @@ public:
                      const VirtualRobot::ForceTorqueSensorPtr& leftAnkleSensorY,
                      const VirtualRobot::ForceTorqueSensorPtr& rightAnkleSensorY);
 
+    //! in global frame
     virtual const Eigen::Matrix4f& getChestPoseRef() override { return chestPoseRef; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getPelvisPoseRef() override { return pelvisPoseRef; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getLeftFootPoseRef() override { return leftFootPoseRef; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getRightFootPoseRef() override { return rightFootPoseRef; }
+    //! in ground frame
     virtual const Eigen::Vector3f& getCoMPositionRef() override { return comPositionRef; }
+    //! in ground frame
     virtual const Eigen::Vector3f& getZMPPositionRef() override { return zmpPositionRef; }
 
+    //! in global frame
     virtual const Eigen::Matrix4f& getChestPose() override { return chestPose; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getPelvisPose() override { return pelvisPose; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getLeftFootPose() override { return leftFootPose; }
+    //! in global frame
     virtual const Eigen::Matrix4f& getRightFootPose() override { return rightFootPose; }
+    //! in ground frame
+    virtual const Eigen::Vector3f& getCoMPosition() override { return comPosition; }
+    //! in ground frame
+    virtual const Eigen::Vector3f& getZMPPosition() override { return zmpPosition; }
 
     virtual std::unordered_map<std::string, DampeningController*> getControllers();
 
@@ -64,13 +78,17 @@ public:
     virtual const Eigen::Vector3f& getRightAnkleForce() override { return ft.rightForce;}
 
     virtual void update(float dt,
-                Bipedal::SupportPhase phase,
-                const Eigen::Vector3f& zmp,
-                const Eigen::Matrix4f& chestPoseRef,
-                const Eigen::Matrix4f& pelvisPoseRef,
-                const Eigen::Matrix4f& leftFootPoseRef,
-                const Eigen::Matrix4f& rightFootPoseRef,
-                const Eigen::Vector3f& comPositionRef) override;
+                        const Eigen::Vector3f& comPosition,
+                        const Eigen::Vector3f& comVelocity,
+                        const Eigen::Vector3f& zmpPosition,
+                        Bipedal::SupportPhase phase,
+                        const Eigen::Matrix4f& chestPoseRef,
+                        const Eigen::Matrix4f& pelvisPoseRef,
+                        const Eigen::Matrix4f& leftFootPoseRef,
+                        const Eigen::Matrix4f& rightFootPoseRef,
+                        const Eigen::Vector3f& comPositionRef,
+                        const Eigen::Vector3f& comVelocityRef,
+                        const Eigen::Vector3f& zmpPositionRef) override;
 
 private:
     void adaptFrame(Eigen::Matrix4f& frame);
@@ -83,10 +101,6 @@ private:
     VirtualRobot::RobotNodePtr leftFootBody;
     // joint + body of right foot
     VirtualRobot::RobotNodePtr rightFootBody;
-    // joint + body of left ankle
-    VirtualRobot::RobotNodePtr leftAnkleBody;
-    // joint + body of right ankle
-    VirtualRobot::RobotNodePtr rightAnkleBody;
     // TCP on left foot
     VirtualRobot::RobotNodePtr leftFoot;
     // TCP on right foot
@@ -118,11 +132,10 @@ private:
 
     Eigen::Matrix4f stepAdaptionFrame;
 
-    Eigen::Matrix4f rootPose;
-    Eigen::VectorXf resultAngles;
-    ForceDistributor::ForceTorque ft;
+    Eigen::Vector3f leftAnkleOffset;
+    Eigen::Vector3f rightAnkleOffset;
 
-    Bipedal::FirstDerivativeEstimator<Eigen::Vector2f> refCoMVelEstimator;
+    ForceDistributor::ForceTorque ft;
 };
 
 }

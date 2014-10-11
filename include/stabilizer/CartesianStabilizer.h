@@ -37,17 +37,25 @@ public:
     virtual const Eigen::Matrix4f& getPelvisPose() override { return pelvisPose; }
     virtual const Eigen::Matrix4f& getLeftFootPose() override { return leftFootPose; }
     virtual const Eigen::Matrix4f& getRightFootPose() override { return rightFootPose; }
+    //! Since we don't adapt this, it is always equal to the reference
+    virtual const Eigen::Vector3f& getCoMPosition() override { return comPosition; }
+    //! Since we don't adapt this, it is always equal to the reference
+    virtual const Eigen::Vector3f& getZMPPosition() override { return zmpPosition; }
 
     virtual std::unordered_map<std::string, DampeningController*> getControllers() override;
 
     virtual void update(float dt,
-                Bipedal::SupportPhase phase,
-                const Eigen::Vector3f& zmp,
-                const Eigen::Matrix4f& chestPoseRef,
-                const Eigen::Matrix4f& pelvisPoseRef,
-                const Eigen::Matrix4f& leftFootPoseRef,
-                const Eigen::Matrix4f& rightFootPoseRef,
-                const Eigen::Vector3f& comPositionRef) override;
+                        const Eigen::Vector3f& comPosition,
+                        const Eigen::Vector3f& comVelocity,
+                        const Eigen::Vector3f& zmpPosition,
+                        Bipedal::SupportPhase phase,
+                        const Eigen::Matrix4f& chestPoseRef,
+                        const Eigen::Matrix4f& pelvisPoseRef,
+                        const Eigen::Matrix4f& leftFootPoseRef,
+                        const Eigen::Matrix4f& rightFootPoseRef,
+                        const Eigen::Vector3f& comPositionRef,
+                        const Eigen::Vector3f& comVelictyRef,
+                        const Eigen::Vector3f& zmpPositionRef) override;
 
 private:
     void adaptFrame(Eigen::Matrix4f& frame);

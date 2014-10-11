@@ -26,8 +26,6 @@ namespace Bipedal
  * Values:
  *  - support phase
  *
- * Points:
- *  - Reference ZMP
  */
 CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
                                          const VirtualRobot::RobotNodePtr& chest,
@@ -52,6 +50,7 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 , rightFootPoseRef(Eigen::Matrix4f::Identity())
 , rootPose(Eigen::Matrix4f::Identity())
 , comPosition(Eigen::Vector3f::Zero())
+, zmpPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
 , zmpPositionRef(Eigen::Vector3f::Zero())
 , stepAdaptionFrame(Eigen::Matrix4f::Zero())
@@ -59,13 +58,17 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 }
 
 void CartesianStabilizer::update(float dt,
+                                 const Eigen::Vector3f& comActualWorld,
+                                 const Eigen::Vector3f& comVelocityActualWorld,
+                                 const Eigen::Vector3f& zmpActualWorld,
                                  Bipedal::SupportPhase phase,
-                                 const Eigen::Vector3f& zmpRefWorld,
                                  const Eigen::Matrix4f& chestPoseRefWorld,
                                  const Eigen::Matrix4f& pelvisPoseRefWorld,
                                  const Eigen::Matrix4f& leftFootPoseRefWorld,
                                  const Eigen::Matrix4f& rightFootPoseRefWorld,
-                                 const Eigen::Vector3f& comRefWorld)
+                                 const Eigen::Vector3f& comRefGroundFrame,
+                                 const Eigen::Vector3f& comVelocityRefGroundFrame,
+                                 const Eigen::Vector3f& zmpRefGroundFrame)
 {
     if (stepAdaptionFrame == Eigen::Matrix4f::Zero())
     {
@@ -80,8 +83,6 @@ void CartesianStabilizer::update(float dt,
     pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
     leftFootPoseRef  = stepAdaptionFrame * leftFootPoseRefWorld;
     rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
-    zmpPositionRef   = VirtualRobot::MathTools::transformPosition(zmpRefWorld, stepAdaptionFrame);
-    comPositionRef   = VirtualRobot::MathTools::transformPosition(comRefWorld, stepAdaptionFrame);
 
     // Reference coordinate system for orientations is the ground frame
     // not the global frame
@@ -111,11 +112,10 @@ void CartesianStabilizer::update(float dt,
     leftFootPose = leftFootPoseRef * leftCorrection;
     rightFootPose = rightFootPoseRef * rightCorrection;
 
-    //leftFootPose  = leftFootPoseRef;
-    //rightFootPose = rightFootPoseRef;
-    //chestPose     = chestPoseRef;
-    //pelvisPose    = pelvisPoseRef;
+    comPositionRef = comRefGroundFrame;
+    zmpPositionRef = zmpRefGroundFrame;
     comPosition   = comPositionRef;
+    zmpPosition   = zmpPositionRef;
 }
 
 std::unordered_map<std::string, DampeningController*> CartesianStabilizer::getControllers()
