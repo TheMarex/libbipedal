@@ -187,12 +187,23 @@ void KajitaStabilizer::update(float dt,
         rightFootPose
     );
 
+/* FIXME RobotConfig needs a flag for deciding what to use
     pelvisPose = footForceController->correctPelvisOrientation(
         pelvisPoseRef,
         ft.leftForce,
         ft.rightForce,
         -leftAnkleSensorX->getForce(),
         rightAnkleSensorX->getForce()
+    );
+*/
+    pelvisPose = pelvisPoseRef;
+    footForceController->correctFootHeight(
+        ft.leftForce,
+        ft.rightForce,
+        -leftAnkleSensorX->getForce(),
+        rightAnkleSensorX->getForce(),
+        leftFootPose,
+        rightFootPose
     );
 
     chestPose = chestPoseRef * chestPostureController->correctPosture(

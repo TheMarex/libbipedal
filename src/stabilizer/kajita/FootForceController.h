@@ -24,6 +24,9 @@ public:
         BOOST_ASSERT(hipJointDistance > 0);
     }
 
+    /**
+     * For robots that can compensate a tilt pelvis.
+     */
     Eigen::Matrix4f correctPelvisOrientation(const Eigen::Matrix4f& orientationRef,
                                              const Eigen::Vector3f& leftFootForceRef,
                                              const Eigen::Vector3f& rightFootForceRef,
@@ -35,6 +38,20 @@ public:
         Eigen::Matrix4f correctionMatrix = Eigen::Matrix4f::Zero();
         VirtualRobot::MathTools::rpy2eigen4f(0, zCtrlDC.delta / hipJointDistance, 0, correctionMatrix);
         return orientationRef * correctionMatrix;
+    }
+
+    void correctFootHeight(const Eigen::Vector3f& leftFootForceRef,
+                           const Eigen::Vector3f& rightFootForceRef,
+                           const Eigen::Vector3f& leftFootForce,
+                           const Eigen::Vector3f& rightFootForce,
+                           Eigen::Matrix4f& leftFootPose,
+                           Eigen::Matrix4f& rightFootPose)
+    {
+        zCtrlDC.update((leftFootForceRef.z() - rightFootForceRef.z()) - (leftFootForce.z() - rightFootForce.z()));
+
+        leftFootPose(2, 3)  = leftFootPose(3, 2) - zCtrlDC.delta / 2.0;
+        rightFootPose(2, 3) = rightFootPose(3, 2) + zCtrlDC.delta / 2.0;
+
     }
 
 public:
