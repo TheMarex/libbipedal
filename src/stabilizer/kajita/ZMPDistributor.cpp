@@ -1,5 +1,5 @@
 
-#include "stabilizer/kajita/ForceDistributor.h"
+#include "stabilizer/kajita/ZMPDistributor.h"
 
 #include "utils/Walking.h"
 #include "utils/Kinematics.h"
@@ -7,7 +7,7 @@
 namespace Bipedal
 {
 
-ForceDistributor::ForceDistributor(double mass, Eigen::Vector3f gravity,
+ZMPDistributor::ZMPDistributor(double mass, Eigen::Vector3f gravity,
                  VirtualRobot::RobotNodePtr leftFoot,
                  VirtualRobot::RobotNodePtr rightFoot,
                  VirtualRobot::RobotNodePtr leftFootTCP,
@@ -22,7 +22,7 @@ ForceDistributor::ForceDistributor(double mass, Eigen::Vector3f gravity,
 /**
  * Warning: This only works if we have a position without a slope!
  */
-double ForceDistributor::computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
+double ZMPDistributor::computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
                                        const Eigen::Matrix4f& groundPoseRight,
                                        const Eigen::Vector3f& refZMP,
                                        const Eigen::Vector2f& relZMPLeft,
@@ -54,7 +54,7 @@ double ForceDistributor::computeAlpha(const Eigen::Matrix4f& groundPoseLeft,
     return alpha;
 }
 
-ForceDistributor::ForceTorque ForceDistributor::distributeZMP(const Eigen::Vector3f& localAnkleLeft,
+ZMPDistributor::ForceTorque ZMPDistributor::distributeZMP(const Eigen::Vector3f& localAnkleLeft,
                                                               const Eigen::Vector3f& localAnkleRight,
                                                               const Eigen::Matrix4f& leftFootPoseGroundFrame,
                                                               const Eigen::Matrix4f& rightFootPoseGroundFrame,

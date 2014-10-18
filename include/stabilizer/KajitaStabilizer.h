@@ -11,7 +11,7 @@
 #include "../bipedal.h"
 #include "../utils/Estimation.h"
 
-#include "kajita/ForceDistributor.h"
+#include "kajita/ZMPDistributor.h"
 
 #include "FrameAdaptingStabilizer.h"
 #include "TorqueControllingStabilizer.h"
@@ -110,7 +110,7 @@ private:
     FootForceControllerPtr             footForceController;
     FootTorqueControllerPtr            footTorqueController;
     TwoDOFPostureControllerPtr         chestPostureController;
-    ForceDistributorPtr                forceDistributor;
+    ZMPDistributorPtr                forceDistributor;
     VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorX;
     VirtualRobot::ForceTorqueSensorPtr rightAnkleSensorX;
     VirtualRobot::ForceTorqueSensorPtr leftAnkleSensorY;
@@ -135,7 +135,7 @@ private:
     Eigen::Vector3f leftAnkleOffset;
     Eigen::Vector3f rightAnkleOffset;
 
-    ForceDistributor::ForceTorque ft;
+    ZMPDistributor::ForceTorque ft;
 };
 
 }

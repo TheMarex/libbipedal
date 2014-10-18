@@ -1,5 +1,5 @@
-#ifndef __FORCE_DISTRIBUTOR_H__
-#define __FORCE_DISTRIBUTOR_H__
+#ifndef __ZMP_DISTRIBUTOR_H__
+#define __ZMP_DISTRIBUTOR_H__
 
 #include "../../bipedal.h"
 
@@ -12,7 +12,7 @@ namespace Bipedal
  * Implements the force distributor proposed by Kajita in his 2010 paper.
  */
 
-class ForceDistributor
+class ZMPDistributor
 {
 public:
     struct ForceTorque
@@ -25,7 +25,7 @@ public:
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     };
 
-    ForceDistributor(double mass, Eigen::Vector3f gravity,
+    ZMPDistributor(double mass, Eigen::Vector3f gravity,
                      VirtualRobot::RobotNodePtr leftFoot,
                      VirtualRobot::RobotNodePtr rightFoot,
                      VirtualRobot::RobotNodePtr leftFootTCP,
@@ -56,7 +56,7 @@ private:
     VirtualRobot::MathTools::ConvexHull2DPtr rightConvexHull;
 };
 
-typedef boost::shared_ptr<ForceDistributor> ForceDistributorPtr;
+typedef boost::shared_ptr<ZMPDistributor> ZMPDistributorPtr;
 
 }
 

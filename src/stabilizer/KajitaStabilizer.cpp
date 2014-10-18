@@ -12,7 +12,7 @@
 #include "kajita/FootTorqueController.h"
 #include "kajita/ZMPTrackingController.h"
 
-#include "stabilizer/kajita/ForceDistributor.h"
+#include "stabilizer/kajita/ZMPDistributor.h"
 #include "stabilizer/KajitaStabilizer.h"
 
 #include "controller/PostureController.h"
@@ -61,7 +61,7 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , rightAnkleSensorY(rightAnkleSensorY)
 /* Controllers */
 , chestPostureController(new TwoDOFPostureController(40, 5, 80, 5))
-, forceDistributor(new ForceDistributor(robot->getMass(),
+, forceDistributor(new ZMPDistributor(robot->getMass(),
                                         Eigen::Vector3f(0.0, 0.0, -9.81),
                                         leftFootBody, rightFootBody, leftFoot, rightFoot))
 , footTorqueController(new FootTorqueController())
