@@ -17,7 +17,7 @@ template<bool, bool, bool> class PostureController;
 using TwoDOFPostureController = PostureController<true, true, false>;
 using ThreeDOFPostureController = PostureController<true, true, true>;
 
-class CoMProvider;
+class CoPZMPEstimator;
 class FallDetector;
 class ZMPFallDetector;
 class SupportPhaseSensor;
@@ -66,7 +66,7 @@ typedef ControlPointParser<Eigen::Vector3f>  ControlPointParser3f;
 typedef ControlMatrixEntry<Eigen::Matrix4f>  ControlMatrixEntry4f;
 typedef ControlMatrixParser<Eigen::Matrix4f> ControlMatrixParser4f;
 
-typedef boost::shared_ptr<CoMProvider>                 CoMProviderPtr;
+typedef boost::shared_ptr<CoPZMPEstimator>             CoPZMPEstimatorPtr;
 typedef boost::shared_ptr<ZMPFallDetector>             ZMPFallDetectorPtr;
 typedef boost::shared_ptr<FallDetector>                FallDetectorPtr;
 typedef boost::shared_ptr<SupportPhaseSensor>          SupportPhaseSensorPtr;

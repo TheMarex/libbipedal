@@ -34,6 +34,9 @@ struct SupportInterval
     SupportPhase phase;
 };
 
+/**
+ * Detects the support phase based on the contact on the feet.
+ */
 class SupportPhaseSensor
 {
 public:
