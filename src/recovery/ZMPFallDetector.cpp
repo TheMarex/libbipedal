@@ -14,19 +14,20 @@
 namespace Bipedal
 {
 
-ZMPFallDetector::ZMPFallDetector(const VirtualRobot::RobotNodePtr& leftFoot,
+ZMPFallDetector::ZMPFallDetector(double mass, double gravity,
+                                 const VirtualRobot::RobotNodePtr& leftFoot,
                                  const VirtualRobot::RobotNodePtr& rightFoot,
                                  const VirtualRobot::ContactSensorPtr& leftFootContactSensor,
                                  const VirtualRobot::ContactSensorPtr& rightFootContactSensor,
                                  const VirtualRobot::MathTools::ConvexHull2DPtr& leftSupportHull,
                                  const VirtualRobot::MathTools::ConvexHull2DPtr& rightSupportHull)
-: zmpEstimator(9.81)
+: zmpEstimator(mass, gravity)
 , leftFoot(leftFoot)
 , rightFoot(rightFoot)
 , leftSupportHull(leftSupportHull)
 , rightSupportHull(rightSupportHull)
 , supportPhaseSensor(new SupportPhaseSensor(leftFootContactSensor, rightFootContactSensor))
-, maxHullDist(10)
+, maxHullDist(3)
 , minFallingFrames(20)
 , fallingFrameCounter(0)
 , lastSupportPhase(Bipedal::SUPPORT_NONE)
@@ -101,14 +102,20 @@ bool ZMPFallDetector::getStabilityInidcator(SupportPhase phase,
     return stillFalling;
 }
 
-void ZMPFallDetector::update(const Eigen::Vector3f& com, const Eigen::Vector3f& comVel, double dt)
+void ZMPFallDetector::update(const Eigen::Vector3f& com,
+                             const Eigen::Vector3f& comVel,
+                             const Eigen::Vector3f& linearMomentum,
+                             const Eigen::Vector3f& angularMomentum,
+                             double dt)
 {
     supportPhaseSensor->update(dt);
     SupportPhase phase = supportPhaseSensor->phase;
 
     // update the dynamics estimation
     zmpEstimator.update(com/1000.0,
-                        comVel/1000.0, dt);
+                        linearMomentum,
+                        angularMomentum,
+                        dt);
 
     bool stillFalling = getStabilityInidcator(phase,
                                               leftFoot->getGlobalPose(),

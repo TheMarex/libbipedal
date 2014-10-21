@@ -40,6 +40,8 @@ private:
     double gravity;
     Bipedal::SupportPhase recoverySupportPhase;
     Bipedal::CubivBezierCurve3f recoveryTrajectory;
+    Bipedal::ThreeDOFPostureControllerPtr leftFootPostureController;
+    Bipedal::ThreeDOFPostureControllerPtr rightFootPostureController;
     Eigen::Vector3f comPosition;
     Eigen::Vector3f comVelocity;
 

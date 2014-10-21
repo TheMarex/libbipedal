@@ -126,6 +126,63 @@ private:
     double t;
 };
 
+struct StepInterpolation
+{
+public:
+    Eigen::Vector3f position;
+    Eigen::Vector3f start;
+    Eigen::Vector3f end;
+private:
+    double t;
+    double T;
+    double cx;
+    double dx;
+    double bz;
+    double cz;
+    double dz;
+
+public:
+    StepInterpolation()
+    : position(Eigen::Vector3f::Zero())
+    , start(Eigen::Vector3f::Zero())
+    , end(Eigen::Vector3f::Zero())
+    , T(0)
+    , t(0)
+    {
+    }
+
+    StepInterpolation(const Eigen::Vector3f& start, const Eigen::Vector3f& end, double stepHeight, double T)
+    : T(T)
+    , start(start)
+    , end(end)
+    {
+        cx = -2 / (T*T*T);
+        dx =  3 / (T*T);
+        bz = 16  * stepHeight / (T*T*T*T);
+        cz = -32 * stepHeight / (T*T*T);
+        dz = 16  * stepHeight / (T*T);
+    }
+
+    inline bool finished() { return t > T; }
+
+    inline void update(double dt)
+    {
+        double x1, x2, x3, x4;
+        x1 = t;
+        x2 = x1 * x1;
+        x3 = x2 * x1;
+        x4 = x3 * x1;
+
+        double s = cx * x3 + dx * x2;
+        double z = bz * x4 + cz * x3 + dz * x2;
+
+        position = (1-s) * start + s * end;
+        position.z() = z;
+
+        t += dt;
+    }
+};
+
 using CubivBezierCurve3f = CubivBezierCurve<Eigen::Vector3f>;
 using CubivBezierCurve2f = CubivBezierCurve<Eigen::Vector2f>;
 

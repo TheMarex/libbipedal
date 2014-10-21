@@ -7,6 +7,8 @@
 #include "utils/Interpolation.h"
 #include "utils/CapturePoint.h"
 
+#include "controller/PostureController.h"
+
 #include <VirtualRobot/VirtualRobot.h>
 #include <VirtualRobot/IK/DifferentialIK.h>
 #include <VirtualRobot/MathTools.h>
@@ -36,6 +38,8 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodePtr& lef
 , initialRightFootPose(Eigen::Matrix4f::Identity())
 , initialChestPose(Eigen::Matrix4f::Identity())
 , initialPelvisPose(Eigen::Matrix4f::Identity())
+, leftFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
+, rightFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
 {
 }
 
@@ -54,6 +58,8 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
     if (recoveryTrajectory.finished())
     {
         recovering = false;
+        leftFootPose = projectPoseToGround(leftFootPose);
+        rightFootPose = projectPoseToGround(rightFootPose);
         return;
     }
     else
@@ -68,12 +74,23 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
     const auto& initialStandingFootPose = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? initialLeftFootPose  : initialRightFootPose;
 
     Eigen::Matrix4f recoveryFootPose = Eigen::Matrix4f::Identity();
-    recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
+    recoveryFootPose.block(0, 3, 3, 1) += recoveryTrajectory.position - recoveryFoot->getGlobalPose().block(0, 3, 3, 1);
 
     if (recoverySupportPhase == Bipedal::SUPPORT_LEFT)
     {
-        leftFootPose = initialStandingFootPose;
+        /*
+        //leftFootPose = initialStandingFootPose;
+        leftFootPose = initialLeftFootPose;
+        leftFootPose.block(0, 0, 3, 3) = standingFoot->getGlobalPose().block(0, 0, 3, 3).inverse();
         rightFootPose = leftFootPose * standingFoot->getGlobalPose().inverse() * recoveryFootPose;
+        */
+        recoveryFootPose = projectPoseToGround(initialRightFootPose);
+        recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
+        leftFootPose = projectPoseToGround(initialStandingFootPose)
+                     * leftFootPostureController->correctPosture(projectPoseToGround(initialStandingFootPose),
+                                                                 standingFoot->getGlobalPose());
+        rightFootPose = recoveryFootPose * rightFootPostureController->correctPosture(recoveryFootPose,
+                                                                                      standingFoot->getGlobalPose());
     }
     else
     {

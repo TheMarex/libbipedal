@@ -19,6 +19,8 @@ public:
      */
     virtual void update(const Eigen::Vector3f& com,
                         const Eigen::Vector3f& comVel,
+                        const Eigen::Vector3f& linearMomentum,
+                        const Eigen::Vector3f& angularMomentum,
                         double dt) = 0;
 
     /**

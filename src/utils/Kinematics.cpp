@@ -73,7 +73,7 @@ void transformOrientationToGroundFrame(const VirtualRobot::RobotPtr& robot,
 
 SupportPhaseSensor::SupportPhaseSensor(const VirtualRobot::ContactSensorPtr& leftFootSensor,
                                        const VirtualRobot::ContactSensorPtr& rightFootSensor)
-: sameStateThreshold(0.01)
+: sameStateThreshold(0.05)
 , sameStateTime(0)
 , phase(SUPPORT_NONE)
 , nextPhase(SUPPORT_NONE)
