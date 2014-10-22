@@ -49,8 +49,8 @@ public:
     {
         zCtrlDC.update((leftFootForceRef.z() - rightFootForceRef.z()) - (leftFootForce.z() - rightFootForce.z()));
 
-        leftFootPose(2, 3)  = leftFootPose(3, 2) - zCtrlDC.delta / 2.0;
-        rightFootPose(2, 3) = rightFootPose(3, 2) + zCtrlDC.delta / 2.0;
+        leftFootPose(2, 3)  = leftFootPose(2, 3) - zCtrlDC.delta / 2.0;
+        rightFootPose(2, 3) = rightFootPose(2, 3) + zCtrlDC.delta / 2.0;
 
     }
 
