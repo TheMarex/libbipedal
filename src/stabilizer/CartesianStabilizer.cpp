@@ -53,7 +53,6 @@ CartesianStabilizer::CartesianStabilizer(const VirtualRobot::RobotPtr& robot,
 , zmpPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
 , zmpPositionRef(Eigen::Vector3f::Zero())
-, stepAdaptionFrame(Eigen::Matrix4f::Zero())
 {
 }
 
@@ -70,19 +69,10 @@ void CartesianStabilizer::update(float dt,
                                  const Eigen::Vector3f& comVelocityRefGroundFrame,
                                  const Eigen::Vector3f& zmpRefGroundFrame)
 {
-    if (stepAdaptionFrame == Eigen::Matrix4f::Zero())
-    {
-        std::cout << "Initializing step adaption frame..." << std::endl;
-        stepAdaptionFrame =
-            computeGroundFrame(leftFoot->getGlobalPose(), rightFoot->getGlobalPose(), phase)
-          * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
-        std::cout << "Step adaption frame: " << stepAdaptionFrame << std::endl;
-    }
-
-    chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
-    pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
-    leftFootPoseRef  = stepAdaptionFrame * leftFootPoseRefWorld;
-    rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
+    chestPoseRef     = chestPoseRefWorld;
+    pelvisPoseRef    = pelvisPoseRefWorld;
+    leftFootPoseRef  = leftFootPoseRefWorld;
+    rightFootPoseRef = rightFootPoseRefWorld;
 
     // Reference coordinate system for orientations is the ground frame
     // not the global frame

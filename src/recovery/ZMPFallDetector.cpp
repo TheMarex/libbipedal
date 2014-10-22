@@ -122,6 +122,7 @@ void ZMPFallDetector::update(const Eigen::Vector3f& com,
                                               rightFoot->getGlobalPose());
 
 
+    std::cout << falling << " : counter " << fallingFrameCounter << std::endl;
     if (stillFalling && !falling)
     {
         fallingFrameCounter++;

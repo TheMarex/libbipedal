@@ -88,8 +88,6 @@ private:
     Eigen::Vector3f comPosition;
     Eigen::Vector3f zmpPosition;
 
-    Eigen::Matrix4f stepAdaptionFrame;
-
     Eigen::Matrix4f rootPose;
     Eigen::VectorXf resultAngles;
 };

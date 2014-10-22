@@ -76,7 +76,6 @@ KajitaStabilizer::KajitaStabilizer(const VirtualRobot::RobotPtr& robot,
 , comPosition(Eigen::Vector3f::Zero())
 , comPositionRef(Eigen::Vector3f::Zero())
 , zmpPositionRef(Eigen::Vector3f::Zero())
-, stepAdaptionFrame(Eigen::Matrix4f::Zero())
 , ft({Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero(), Eigen::Vector3f::Zero()})
 {
     BOOST_ASSERT(robot);
@@ -125,20 +124,11 @@ void KajitaStabilizer::update(float dt,
     auto groundFrame = Bipedal::computeGroundFrame(leftToWorld, rightToWorld, phase);
     auto worldToGroundFrame = groundFrame.inverse();
 
-    // orient reference trajectory to initial orientation of robot
-    if (stepAdaptionFrame == Eigen::Matrix4f::Zero())
-    {
-        std::cout << "Initializing step adaption frame..." << std::endl;
-        stepAdaptionFrame = groundFrame
-          * computeGroundFrame(leftFootPoseRefWorld, rightFootPoseRefWorld, phase).inverse();
-        std::cout << "Step adaption frame: " << stepAdaptionFrame << std::endl;
-    }
-
     // Apply step adation frame to reference values
-    chestPoseRef     = stepAdaptionFrame * chestPoseRefWorld;
-    pelvisPoseRef    = stepAdaptionFrame * pelvisPoseRefWorld;
-    leftFootPoseRef  = stepAdaptionFrame * leftFootPoseRefWorld;
-    rightFootPoseRef = stepAdaptionFrame * rightFootPoseRefWorld;
+    chestPoseRef     = chestPoseRefWorld;
+    pelvisPoseRef    = pelvisPoseRefWorld;
+    leftFootPoseRef  = leftFootPoseRefWorld;
+    rightFootPoseRef = rightFootPoseRefWorld;
     comPositionRef   = comRefGroundFrame;
     zmpPositionRef   = zmpRefGroundFrame;
 
