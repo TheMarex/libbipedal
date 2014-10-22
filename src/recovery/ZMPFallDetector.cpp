@@ -27,8 +27,8 @@ ZMPFallDetector::ZMPFallDetector(double mass, double gravity,
 , leftSupportHull(leftSupportHull)
 , rightSupportHull(rightSupportHull)
 , supportPhaseSensor(new SupportPhaseSensor(leftFootContactSensor, rightFootContactSensor))
-, maxHullDist(3)
-, minFallingFrames(20)
+, maxHullDist(4)
+, minFallingFrames(30)
 , fallingFrameCounter(0)
 , lastSupportPhase(Bipedal::SUPPORT_NONE)
 , contactPoint(Eigen::Vector3f::Zero())
@@ -133,9 +133,9 @@ void ZMPFallDetector::update(const Eigen::Vector3f& com,
 
     if (!stillFalling)
     {
-        if (fallingFrameCounter > minFallingFrames/2.0)
+        if (fallingFrameCounter > fallingFrameCounter/2)
         {
-            fallingFrameCounter--;
+            fallingFrameCounter -= 2;
         }
         else
         {

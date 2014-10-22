@@ -58,8 +58,6 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
     if (recoveryTrajectory.finished())
     {
         recovering = false;
-        leftFootPose = projectPoseToGround(leftFootPose);
-        rightFootPose = projectPoseToGround(rightFootPose);
         return;
     }
     else
@@ -73,29 +71,44 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
     const auto& initialRecoveryFootPose = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? initialRightFootPose : initialLeftFootPose;
     const auto& initialStandingFootPose = recoverySupportPhase == Bipedal::SUPPORT_LEFT ? initialLeftFootPose  : initialRightFootPose;
 
-    Eigen::Matrix4f recoveryFootPose = Eigen::Matrix4f::Identity();
-    recoveryFootPose.block(0, 3, 3, 1) += recoveryTrajectory.position - recoveryFoot->getGlobalPose().block(0, 3, 3, 1);
-
     if (recoverySupportPhase == Bipedal::SUPPORT_LEFT)
     {
-        /*
-        //leftFootPose = initialStandingFootPose;
-        leftFootPose = initialLeftFootPose;
-        leftFootPose.block(0, 0, 3, 3) = standingFoot->getGlobalPose().block(0, 0, 3, 3).inverse();
-        rightFootPose = leftFootPose * standingFoot->getGlobalPose().inverse() * recoveryFootPose;
-        */
-        recoveryFootPose = projectPoseToGround(initialRightFootPose);
+        Eigen::Matrix4f recoveryFootPose = projectPoseToGround(initialRightFootPose);
         recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
+        if (recoveryFoot->getGlobalPose()(2, 3) < 5)
+        {
+            recoveryFootPose.block(0, 3, 3, 1) = rightFootPose.block(0, 3, 3, 1);
+            if (recoveryFoot->getGlobalPose()(2, 3) > 0.5)
+            {
+                recoveryFootPose(2, 3) -= 0.1;
+            }
+        }
         leftFootPose = projectPoseToGround(initialStandingFootPose)
                      * leftFootPostureController->correctPosture(projectPoseToGround(initialStandingFootPose),
                                                                  standingFoot->getGlobalPose());
         rightFootPose = recoveryFootPose * rightFootPostureController->correctPosture(recoveryFootPose,
-                                                                                      standingFoot->getGlobalPose());
+                                                                                      recoveryFoot->getGlobalPose());
     }
     else
     {
-        rightFootPose = initialStandingFootPose;
-        leftFootPose = rightFootPose * standingFoot->getGlobalPose().inverse() * recoveryFootPose;
+        Eigen::Matrix4f recoveryFootPose = projectPoseToGround(initialLeftFootPose);
+        recoveryFootPose.block(0, 3, 3, 1) = recoveryTrajectory.position;
+        // This is a hack: If we are above ground, move very slowly.
+        // This should be replaced by propper cartesian space controll
+        // of the foot position.
+        if (recoveryFoot->getGlobalPose()(2, 3) < 5)
+        {
+            recoveryFootPose.block(0, 3, 3, 1) = leftFootPose.block(0, 3, 3, 1);
+            if (recoveryFoot->getGlobalPose()(2, 3) > 0.5)
+            {
+                recoveryFootPose(2, 3) -= 0.1;
+            }
+        }
+        rightFootPose = projectPoseToGround(initialStandingFootPose)
+                     * rightFootPostureController->correctPosture(projectPoseToGround(initialStandingFootPose),
+                                                                  standingFoot->getGlobalPose());
+        leftFootPose = recoveryFootPose * leftFootPostureController->correctPosture(recoveryFootPose,
+                                                                                    recoveryFoot->getGlobalPose());
     }
 }
 
@@ -111,6 +124,8 @@ void CapturePointRecovery::startRecovering(Bipedal::SupportPhase phase)
     initialRightFootPose = leftFoot->getGlobalPose();
     initialPelvisPose    = pelvis->getGlobalPose();
     initialChestPose     = chest->getGlobalPose();
+    leftFootPose = initialLeftFootPose;
+    rightFootPose = initialRightFootPose;
     chestPose = initialChestPose;
     pelvisPose = initialPelvisPose;
 

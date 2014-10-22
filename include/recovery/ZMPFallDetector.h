@@ -51,8 +51,8 @@ private:
 
     bool falling;
     double maxHullDist;
-    unsigned minFallingFrames;
-    unsigned fallingFrameCounter;
+    int minFallingFrames;
+    int fallingFrameCounter;
     Bipedal::SupportPhase lastSupportPhase;
     Bipedal::SupportPhaseSensorPtr supportPhaseSensor;
 
