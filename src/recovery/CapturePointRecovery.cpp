@@ -38,8 +38,6 @@ CapturePointRecovery::CapturePointRecovery(const VirtualRobot::RobotNodePtr& lef
 , initialRightFootPose(Eigen::Matrix4f::Identity())
 , initialChestPose(Eigen::Matrix4f::Identity())
 , initialPelvisPose(Eigen::Matrix4f::Identity())
-, leftFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
-, rightFootPostureController(new ThreeDOFPostureController(10, 17, 15, 30, 20, 20))
 {
 }
 
@@ -78,16 +76,13 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
         if (recoveryFoot->getGlobalPose()(2, 3) < 5)
         {
             recoveryFootPose.block(0, 3, 3, 1) = rightFootPose.block(0, 3, 3, 1);
-            if (recoveryFoot->getGlobalPose()(2, 3) > 0.5)
+            if (recoveryFoot->getGlobalPose()(2, 3) > 1)
             {
                 recoveryFootPose(2, 3) -= 0.1;
             }
         }
-        leftFootPose = projectPoseToGround(initialStandingFootPose)
-                     * leftFootPostureController->correctPosture(projectPoseToGround(initialStandingFootPose),
-                                                                 standingFoot->getGlobalPose());
-        rightFootPose = recoveryFootPose * rightFootPostureController->correctPosture(recoveryFootPose,
-                                                                                      recoveryFoot->getGlobalPose());
+        leftFootPose = projectPoseToGround(initialStandingFootPose);
+        rightFootPose = recoveryFootPose;
     }
     else
     {
@@ -104,11 +99,8 @@ void CapturePointRecovery::update(const Eigen::Vector3f& com, const Eigen::Vecto
                 recoveryFootPose(2, 3) -= 0.1;
             }
         }
-        rightFootPose = projectPoseToGround(initialStandingFootPose)
-                     * rightFootPostureController->correctPosture(projectPoseToGround(initialStandingFootPose),
-                                                                  standingFoot->getGlobalPose());
-        leftFootPose = recoveryFootPose * leftFootPostureController->correctPosture(recoveryFootPose,
-                                                                                    recoveryFoot->getGlobalPose());
+        rightFootPose = projectPoseToGround(initialStandingFootPose);
+        leftFootPose = recoveryFootPose;
     }
 }
 
