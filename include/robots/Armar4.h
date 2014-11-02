@@ -1,3 +1,12 @@
+/*
+
+Copyright (c) 2014, Patrick Niklaus, others
+All rights reserved.
+
+This file is licensed under the simplified 2-clause BSD license as provided
+in by LICENSE file.
+
+*/
 #ifndef __CONFIG_ARMAR4_H__
 #define __CONFIG_ARMAR4_H__
 

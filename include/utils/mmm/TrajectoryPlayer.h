@@ -1,3 +1,12 @@
+/*
+
+Copyright (c) 2014, Patrick Niklaus, others
+All rights reserved.
+
+This file is licensed under the simplified 2-clause BSD license as provided
+in by LICENSE file.
+
+*/
 #ifndef __TRAJECTORY_PLAYER_H__
 #define __TRAJECTORY_PLAYER_H__
 

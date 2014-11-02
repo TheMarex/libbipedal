@@ -1,3 +1,12 @@
+/*
+
+Copyright (c) 2014, Patrick Niklaus, others
+All rights reserved.
+
+This file is licensed under the simplified 2-clause BSD license as provided
+in by LICENSE file.
+
+*/
 #ifndef __CAPTURE_POINT_RECOVERY_H__
 #define __CAPTURE_POINT_RECOVERY_H__
 

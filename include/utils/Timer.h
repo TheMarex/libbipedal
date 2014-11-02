@@ -1,3 +1,12 @@
+/*
+
+Copyright (c) 2014, Patrick Niklaus, others
+All rights reserved.
+
+This file is licensed under the simplified 2-clause BSD license as provided
+in by LICENSE file.
+
+*/
 #ifndef __UTILS_TIMER_H__
 #define __UTILS_TIMER_H__
 
