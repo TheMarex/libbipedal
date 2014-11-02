@@ -6,6 +6,8 @@ was originally developed as part of my Bachelor's Thesis at [H2T](http://h2t.ant
 This library is written in C++11, but still uses boost::shared_ptr to integrate better
 with ```Simox```.
 
+libBipedal is licensed under the simplified BSD 2-clause license.
+
 # How to build
 
     mkdir build
