@@ -14,10 +14,7 @@ before_script:
  - cd build
  - cmake .. $CMAKEOPTIONS
 script:
- - make -j 2
-after_script:
-# - cd ..
-# - cucumber -p verify
+ - make -j2
 branches:
   only:
     - master
