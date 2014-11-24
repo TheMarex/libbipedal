@@ -8,6 +8,8 @@ with ```Simox```.
 
 libBipedal is licensed under the simplified BSD 2-clause license.
 
+[![Build Status](https://travis-ci.org/TheMarex/libbipedal.png?branch=master)](https://travis-ci.org/TheMarex/libbipedal)
+
 # How to build
 
     mkdir build
