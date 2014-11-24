@@ -11,8 +11,8 @@ libBipedal is licensed under the simplified BSD 2-clause license.
 # How to build
 
     mkdir build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
     cd build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
     make
 
 # Structure
@@ -36,6 +36,9 @@ libBipedal is licensed under the simplified BSD 2-clause license.
 * MMM is only needed for ```TrajectoryPlayer``` and ```TrajectoryExporter``` make it optional
 
 * The push recovery is very basic and is mostely a hack: Do this properly.
+  I think the best way would be to integrate a force-feedback to check when the recovery foot
+  has actually reached the floor. This is a problem because we are actually **falling** thus
+  the pre-planed foot trajectory will much likely not hit the floor when expected.
 
 * Add in-depth documentation for the public interfaces
 
