@@ -12,10 +12,11 @@ install:
  - svn checkout https://svn.code.sf.net/p/simox/code/trunk simox
  - cd simox
  - mkdir build
+ - cd build
  - cmake .. $CMAKEOPTIONS
  - make -j2
  - sudo make install
- - cd ..
+ - cd ../..
  - git clone https://gitlab.com/mastermotormap/mmmcore.git
  - cd mmmcore
  - mkdir build
