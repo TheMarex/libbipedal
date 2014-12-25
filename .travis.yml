@@ -2,6 +2,7 @@ language: cpp
 compiler:
   - gcc
 before_script:
+ - ls
  - utils/install_deps.sh
  - mkdir build
  - cd build
