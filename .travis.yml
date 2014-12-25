@@ -2,31 +2,7 @@ language: cpp
 compiler:
   - gcc
 install:
- - sudo apt-add-repository -y ppa:ubuntu-toolchain-r/test
- - sudo add-apt-repository -y ppa:boost-latest/ppa
- - sudo apt-get update >/dev/null
- - sudo apt-get -q install g++-4.8 cmake
- - sudo apt-get install libboost1.54-all-dev subversion libeigen3-dev libsoqt4-dev libxml2-dev libcoin60-dev libbullet-dev
- - mkdir third_party
- - cd third_party
- - [ ! -f simox ] && svn checkout https://svn.code.sf.net/p/simox/code/trunk simox
- - cd simox
- - svn up
- - mkdir build
- - cd build
- - cmake .. $CMAKEOPTIONS
- - make -j2
- - sudo make install
- - cd ../..
- - [ ! -f mmmcore ] && git clone https://gitlab.com/mastermotormap/mmmcore.git
- - cd mmmcore
- - git pull
- - mkdir build
- - cd build
- - cmake .. $CMAKEOPTIONS
- - make -j2
- - sudo make install
- - cd ../../..
+ - utils/install_deps.sh
 before_script:
  - mkdir build
  - cd build
