@@ -1,9 +1,8 @@
 language: cpp
 compiler:
   - gcc
-install:
- - utils/install_deps.sh
 before_script:
+ - utils/install_deps.sh
  - mkdir build
  - cd build
  - cmake .. $CMAKEOPTIONS
