@@ -13,9 +13,9 @@ branches:
   only:
     - master
 cache:
-- apt
+  apt: true
   directories:
-  - third_party
+   - third_party
 env:
  - CMAKEOPTIONS="-DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=g++-4.8"
  - CMAKEOPTIONS="-DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_COMPILER=g++-4.8"
