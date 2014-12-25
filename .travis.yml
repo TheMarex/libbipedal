@@ -8,7 +8,7 @@ install:
  - sudo add-apt-repository -y ppa:boost-latest/ppa
  - sudo apt-get update >/dev/null
  - sudo apt-get -q install g++-4.8 cmake
- - sudo apt-get install libboost1.54-all-dev subversion eigen
+ - sudo apt-get install libboost1.54-all-dev subversion libeigen3-dev
  - svn checkout https://svn.code.sf.net/p/simox/code/trunk simox
  - cd simox
  - mkdir build
